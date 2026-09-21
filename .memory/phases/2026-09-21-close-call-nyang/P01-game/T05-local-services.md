@@ -180,4 +180,4 @@ Task: T05-local-services
 - Implementation extensions within T05: audioCore.ts/audio.web.ts isolate common policy and catch HTML media Promise rejection discarded by installed Expo web API; shareText.ts avoids platform self-import; ShareFeedbackPanel.tsx exposes honest manual fallback; usePreferences.test.tsx/service-panels.test.tsx and AsyncStorage Jest setup cover additional boundaries. No dependency versions changed.
 - Review fixes: inline modal a11y flags hid the sibling storage-error notice; old play Promise rejection could stop new playback. Accessibility regression and old/current request token tests now pass.
 - No push, Pages/iOS deployment, physical-device or actual audio/browser validation claimed.
-- commit: pending
+- commit: 646c188

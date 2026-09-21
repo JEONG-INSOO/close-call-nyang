@@ -6,13 +6,13 @@ Windows에서 Expo SDK 57 + TypeScript + Reanimated + SVG로 한국어 가로 �
 - Decisions: [확정 결정](../decisions/2026-09-21-close-call-nyang.md)
 - Character amendment: [세 캐릭터·100% 달성 보상](../decisions/2026-09-21-character-collection.md). 기본rookie(2번), 첫 달성diligent(1번),10회veteran(3번). 외형 전용·기기별 수집이며 기존14개 Task에 통합한다.
 - Planning date: 2026-09-21
-- Implementation gate: 모델 변경 안내 후2026-09-21 사용자 실행 요청을 받아 P01-T01(e2d066a), P01-T02(f09b6d1), P01-T03(ce14e74), P01-T04(cab6500) 구현/자동 검사 완료. 다음 active는 P01-T05. 실제 브라우저·iPhone 품질 검증은 아직 미완료다.
-- Amendment: 닉네임·온라인 리더보드 결정을 반영해 P02-leaderboard 3개 Task를 추가하고 기존 출시 단계를 P03-release로 이동했다. 총14개 Task 중4개 구현 단계를 완료했다.
+- Implementation gate: 모델 변경 안내 후2026-09-21 사용자 실행 요청을 받아 P01-T01(e2d066a), P01-T02(f09b6d1), P01-T03(ce14e74), P01-T04(cab6500), P01-T05(646c188) 구현/자동 검사 완료. 다음 active는 P01-T06. 실제 브라우저·iPhone 품질 검증은 아직 미완료다.
+- Amendment: 닉네임·온라인 리더보드 결정을 반영해 P02-leaderboard 3개 Task를 추가하고 기존 출시 단계를 P03-release로 이동했다. 총14개 Task 중5개 구현 단계를 완료했다.
 
 ## Phases
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | 로컬 게임·검증 가능한 웹 플레이 완성 (기반·엔진·장면·플레이4/6완료; 실제 QA 대기) | [P01](../phases/2026-09-21-close-call-nyang/P01-game/phase.md) |
+| P01 | `in_progress` | 로컬 게임·웹 플레이·로컬 서비스5/6완료; 실제 QA 대기 | [P01](../phases/2026-09-21-close-call-nyang/P01-game/phase.md) |
 | P02 | `pending` | 익명 플레이어·서버 기록 검증·공통 리더보드 및 실제 서비스 확인 | [P02](../phases/2026-09-21-close-call-nyang/P02-leaderboard/phase.md) |
 | P03 | `pending` | Pages·스토어 준비, 외부 iOS 검증·심사 제출·학습노트 마감 | [P03](../phases/2026-09-21-close-call-nyang/P03-release/phase.md) |
 
@@ -90,7 +90,7 @@ P01은 로컬 게임 규칙과 화면, P02는 새로 추가된 서버·네트워
 - [Supabase anonymous users](https://supabase.com/docs/guides/auth/auth-anonymous), [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security), [function limits](https://supabase.com/docs/guides/functions/limits), [pricing](https://supabase.com/pricing)
 
 ## Progress
-- Tasks done: 4/14
-- Active: P01-T05 (playable UI/controller committed; targeted73/full249 tests, typecheck and web export passed; actual browser/device QA still pending)
+- Tasks done: 5/14
+- Active: P01-T06 (local services committed; character24/service-ad90/full355 tests, typecheck, deterministic5WAVs and web export passed; actual browser/device/listening QA still pending)
 - GitHub amendment2026-09-21: user explicitly authorized public repository creation/push for current work; authenticated account JEONG-INSOO, repository https://github.com/JEONG-INSOO/close-call-nyang. Earlier user-only remote creation restrictions do not block this expressly requested handoff. Pages activation/release deployment remain later Tasks.
 - Adjacent out-of-scope defects: 특이사항 없음. 기존 스타터 문서/예시는 보존한다.
