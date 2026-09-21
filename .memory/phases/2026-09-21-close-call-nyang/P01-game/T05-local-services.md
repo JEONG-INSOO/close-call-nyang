@@ -3,7 +3,7 @@
 ## Status: pending
 
 ## Goal
-기록과 설정이 기기에 남고 소리/햅틱/공유가 동작하며, 개발에서만 5초 가상 광고를 통해 한 번 부활할 수 있게 완성한다.
+기록·설정·3종 캐릭터 해금/선택이 기기에 남고 소리/햅틱/공유가 동작하며, 개발에서만5초 가상 광고를 통해 한 번 부활할 수 있게 완성한다.
 
 ## Decision Summary
 - 이 Task는 로컬 최고 기록·설정을 AsyncStorage에 저장한다. 후속 P02-leaderboard에서 익명 세션·닉네임·온라인 기록 저장을 별도 키/서비스로 추가한다. 분석/추적/실제 광고 SDK는 제외한다. 음악/효과음/진동/화면 흔들림 줄이기는 독립 설정이다.
@@ -25,7 +25,12 @@
   export interface Settings {
     musicEnabled: boolean; sfxEnabled: boolean; hapticsEnabled: boolean; reduceMotion: boolean;
   }
-  export interface Preferences { schemaVersion: 1; bestScore: number; settings: Settings }
+  export interface CollectionState {
+    completedRuns: number; selectedCharacter: CharacterId;
+  }
+  export interface Preferences {
+    schemaVersion: 1; bestScore: number; settings: Settings; collection: CollectionState;
+  }
   export type StorageStatus = 'loading' | 'ready' | 'memoryOnly';
   export interface PreferencesResult { value: Preferences; status: 'ready' | 'memoryOnly' }
   export function parsePreferences(raw: string | null): Preferences;
@@ -35,6 +40,11 @@
   export function usePreferences(): {
     value: Preferences; status: StorageStatus;
     setSettings(patch: Partial<Settings>): void; recordScore(score: number): void;
+    beginAttempt(eligible: boolean): number;
+    observeAttempt(attemptId: number, score: number): void;
+    selectCharacter(id: CharacterId): boolean;
+    newlyUnlocked: readonly CharacterId[];
+    clearUnlockNotice(): void;
   };
   export type ShareResult = { status: 'shared' | 'copied' | 'cancelled' | 'manual'; text: string };
   export function formatShareText(score: number): string;
@@ -45,8 +55,8 @@
   }
   ```
 - **Data & Schema Fields**:
-  - Single key `close-call-nyang.preferences.v1`; defaults schemaVersion1,bestScore0,musicEnabled true,sfxEnabled true,hapticsEnabled true,reduceMotion false. No name, identifier, history, runs, tokens, scores upload or active run storage.
-  - Only recognized bool fields loaded; malformed JSON/unknown schema return safe defaults; missing fields backfill individually. best finite nonnegative integer, invalid→0. Do not trust arbitrary stored property names.
+  - Single key `close-call-nyang.preferences.v1`; defaults schemaVersion1,bestScore0,musicEnabled true,sfxEnabled true,hapticsEnabled true,reduceMotion false,collection{completedRuns:0,selectedCharacter:'rookie'}. No identity, authentication token, input history, score upload or active-run persistence. The local aggregate collection is not a server-verified ranking record.
+  - Only recognized fields loaded; malformed JSON/unknown schema return safe defaults; missing fields backfill individually. best finite nonnegative integer, invalid→0. Collection count finite number→floor/clamp0..10; invalid→0. CharacterId comes from src/characters/catalog.ts (rookie|diligent|veteran); unknown/locked selection→rookie. Old v1 preferences without collection retain best/settings and get count0/rookie; do not infer10 wins or any past count from bestScore. Do not trust arbitrary stored property names.
   - Persistence sequential/coalesced writer prevents older result overwriting newer best/settings. Best is monotonic max(current,incoming); load merges best if gameplay began during async hydration. User settings edits during hydration take priority over older stored values for touched fields.
 - **Execution Flow / Logic**:
   1. Load asynchronously at root; title can appear immediately with stable defaults, do not trap game behind spinner. Failure gives in-memory session and unobtrusive Korean notice when relevant. Failed read must not immediately overwrite stored data with defaults automatically.
@@ -100,7 +110,42 @@
 - Future SDK integration seam documented: replace mock provider with explicit result from network SDK, but preserve one-time engine eligibility and validate on native build; **do not implement real provider now**. Current engine requires later intentional API change for external reward, not hidden auto-switch when ad happens to arrive.
 - Tests: corrupt prefs, partial bools, refused storage, load/edit races, monotonic scores and serialized writes; clipboard reject/cancel/no copied lie; audio setup/unmount/toggle no duplicate players; no haptic when disabled/web; reduced motion unchanged run results; ad completes at5 active seconds, cancels early, pauses in background, repeats rejected; __DEV__ false+env true cannot enable ad; 100 produces no new cue.
 
+### I04. Three-character local collection
+- Related Files:
+  - `src/characters/catalog.ts` :: CharacterId/CHARACTERS/getUnlockedCharacterIds — read-only from T03
+  - `src/services/characterProgress.ts` :: normalizeCollection/applyCompletion — new
+  - `src/services/preferences.ts`, `usePreferences.ts` :: collection persistence and exactly-once active attempt — modify
+  - `src/screens/CharacterSelectPanel.tsx` :: original character previews/locks/selection — new
+  - `src/screens/TitleScreen.tsx`, `ResultScreen.tsx`, `App.tsx`, `src/i18n/ko.ts` :: buttons/notice/render prop — modify
+  - `src/services/__tests__/characterProgress.test.ts`, `src/screens/__tests__/character-collection.test.tsx` :: progress/selection/integration — new
+  - `docs/learning-notes.md` :: appearance versus physics, duplicate prevention, local-data limits — modify
+#### Details
+- **Signatures & Types**:
+  ```typescript
+  // CharacterId from ../characters/catalog; CollectionState/Preferences as above.
+  export function normalizeCollection(raw: unknown): CollectionState;
+  export function applyCompletion(value: Preferences): {
+    value: Preferences; unlocked: readonly CharacterId[];
+  };
+  export interface CharacterSelectPanelProps {
+    visible: boolean; collection: CollectionState;
+    onSelect(id: CharacterId): void; onClose(): void;
+  }
+  ```
+- **Data & Schema Fields**: rookie=option2/default, diligent=option1/unlocks1 completion, veteran=option3/unlocks10 completions. Names are 허둥대는 냥대리/성실한 냥대리/베테랑 냥대리. selectedCharacter changes only on explicit unlocked selection, not auto-grant. completedRuns saturates10 solely for collection; score/best has no100/10 cap. No backend fields or account requirement.
+- **Execution Flow / Logic**:
+  1. Accepted new START (not ignored repeated taps) calls beginAttempt(!flags.mockAdsEnabled) exactly once and captures selectedCharacter for that entire run. beginAttempt creates a monotonic in-memory attempt number independent of engine/server run IDs, stores {id,eligible,counted:false}, and clears only the previous result notice. Rejected START, pause/resume, ad/revive, rerender and restored visibility never create a new attempt. There is no active-game resume after application restart.
+  2. Subscribe to cached controller snapshots and always read actual engine score. At first score>=100, observeAttempt requires current attempt ID, eligible and !counted, marks counted synchronously before any await, then applies one completion. Ignore stale attempts, nonfinite/negative score, repeated snapshots/results and score200+. Also observe result as a fallback. The controller's100 crossing notification must not trigger an audio/haptic or physics event.
+  3. applyCompletion increments min(10,count+1), computes newly available IDs by comparing old/new catalog availability, preserves selectedCharacter/best/settings and has no side effects. Persist at this milestone through the existing serialized writer, not every frame and not delayed solely until fall. Loss/rejection leaves visible in-memory progress with the existing storage-failure notice; never promise crash-proof persistence before a write resolves.
+  4. Hydration race: before load resolves, journal successful current-session completion deltas (bounded at10) instead of overwriting a stored count with defaults. On success merge loaded count plus delta once, then compute new unlock notices against the loaded baseline; apply touched selection only if unlocked after merge. On read failure keep session progress in memory without immediately overwriting unread data. Clearing/redelivering snapshots must not replay the completion journal twice.
+  5. Title/result show 캐릭터 button and a three-card panel with name, preview, 획득/선택됨 or required count1/10 and progress. Locked cards cannot select. Panels are not available during an active run; subsequent scene receives selection only on new START. After a new award, result shows a short unlocked-name notice and 캐릭터 선택 button; no automatic equip, modal interruption, mid-run transformation, extra100 audio, haptic or confetti.
+  6. Offline ordinary games count; leaderboard validation/network/profile state does not gate collection. Production never has mock ads. Development runs with mockAdsEnabled true are collection-ineligible; unit tests can inject eligibility without production cheat UI. Deleting online profile keeps local best/settings/collection. Clearing app/browser storage removes collection; no cross-device sync or anti-tamper guarantee is claimed.
+  7. All three characters use exactly the same physics/controller/score and original collision threshold. Never pass skin stats into engine or ranked replay. Record design rationale and actual test results in learning notes when implemented, not now.
+- **Tests**: zero→rookie;0→1 unlocks onlydiligent;8→9 none;9→10 onlyveteran;10→11 remains10;99.99 not counted;100/101/200 in same attempt total1; ten distinct eligible attempts unlockveteran; pause/result/retry/rerender/stale callbacks cannot duplicate; mock-enabled attempts excluded; selection cannot equip locked IDs; no auto-equip; preference missing/corrupt/invalid/hydration/write failure; saved selection and unlocks restore; online deletion preserves collection; same input/seed with three cosmetic IDs has identical score/fall state.
+
 ## Acceptance Criteria
+- [ ] Default rookie, first100 diligent and tenth distinct qualifying run veteran; local count/selection restore and duplicate awards are prevented.
+- [ ] Character selection and result unlock notice work without changing physics or adding mid-run100 celebration.
 - [ ] Settings/record survive reload; storage failure leaves usable game with accurate notice.
 - [ ] Original loop/effects/optional haptics obey independent toggles and lifecycle.
 - [ ] Share uses native sheet/web clipboard with cancellation/failure fallback.
@@ -108,6 +153,7 @@
 - [ ] This local-service layer sends no runtime data and adds no native advertising/microphone permissions; P02's explicitly scoped ranking API data is separate.
 
 ## Validation
+- `npm.cmd test -- --runInBand src/services/__tests__/characterProgress.test.ts src/screens/__tests__/character-collection.test.tsx` — exact-once/local restore/selection/threshold tests pass.
 - `npm.cmd run assets:audio` — deterministic valid WAVs generated, no clipping/header mismatch.
 - `npm.cmd test -- --runInBand src/services/__tests__ src/screens/__tests__/settings-and-ad.test.tsx` — adapters and screen behavior pass.
 - `npm.cmd run typecheck` — clean.

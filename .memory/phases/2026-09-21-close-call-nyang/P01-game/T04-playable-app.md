@@ -26,7 +26,7 @@
   - `GameState` has screen title/countdown/playing/paused/ad/result, run nullable, resumeTo playing/countdown/ad/null, countdownSeconds/adSeconds.
   - Run fields: id,seed,rng,distanceM,elapsedSeconds,angleRad,angularVelocity,hasCoffee,reviveUsed,protectionSeconds,event|null,nextEventAt,stepIndex,nextFootstepAt,lastWobbleAt. WorkEvent{id,direction:-1|1,phase:warning|active,remainingSeconds,strength}. `scoreOf`, `stageOf` derive display.
   - Actions START{runId,seed}, TICK{dt,input:{left,right}}, PAUSE,RESUME,HOME,REQUEST_AD,CANCEL_AD. Effects footstep/wobble/coffee/fall/revive{runId} or eventWarning{runId,eventId,direction}.
-  - SceneFrame{distanceM,elapsedSeconds,angleRad,angularVelocity,hasCoffee,protectionSeconds,playing,fallen,seed}. GameScene receives `{frame:SharedValue<SceneFrame>,reduceMotion:boolean}`; score100 color outside scene.
+  - SceneFrame{distanceM,elapsedSeconds,angleRad,angularVelocity,hasCoffee,protectionSeconds,playing,fallen,seed}. GameScene receives `{frame:SharedValue<SceneFrame>,reduceMotion:boolean,characterId?:CharacterId}`; CharacterId from src/characters/catalog.ts is rookie|diligent|veteran and defaults rookie. This is a render-only prop, never an engine field. Score100 color is outside scene.
 - **Signatures & Types**:
   ```typescript
   export type ControlAction = Exclude<GameAction, { type: 'TICK' }>;
@@ -101,6 +101,7 @@
   }
   ```
 - UI defaults during T04 before services: in-memory best record, reduceMotion false; share/settings callbacks either receive wired read-only basic settings panel or remain deliberately hidden until T05, never show a button that silently does nothing. canRevive false until actual mock screen integration T05 even if flag true.
+- Character default is rookie (user option2). T05 adds local unlocks/selection; do not show a nonfunctional character button here. A chosen character is frozen at accepted START and passed only to the scene; never change it during countdown/playing/paused/ad/result. Publish a controller snapshot immediately on the first crossing from score<100 to score>=100 and on result so T05 can observe the achievement without any100 audio/haptic/GameEffect. This is state notification, not a gameplay effect.
 - App keeps GameScene mounted behind relevant overlays; one state switch shows Title/Game/Result. Korean title and one `업무 시작` CTA, highest score. No tutorial. START runId increments in app, seed from local time/random outside pure engine; fixtures inject fixed values.
 - GameHud: top score `프로젝트 성공률 N%`, accessible text; color ink until score<100, accent teal thereafter. No score100 sound/animation/vibration. Top right pause44pt+. Event warning centered near top with directional arrow and event label; after warning active treatment brief but no balance bar.
 - Controls: both lower corners translucent pads minimum72pt for play, safe area padding plus16; on press in/out/cancel provide persistent input. Multi-touch on different pads must work simultaneously; if RN Pressable responder exclusivity interferes, implement per-touch responder IDs and test device, not assumption. No background props over buttons, zIndex overlays above.

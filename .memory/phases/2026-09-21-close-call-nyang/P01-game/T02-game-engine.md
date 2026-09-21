@@ -131,4 +131,4 @@ Task: T02-game-engine
 - validation: game rules73/73; full Jest85/85 across5suites; typecheck0errors; git diff --check passed.
 - regression: a14,000-tick live replay exposed an event-expiry floating point tail; discard remaining substeps <=timerEpsilon to prevent false numeric-failure falls. Long replay beyond100% now passes without weakening physics.
 - limitation: controller/rendering/device QA and cross-runtime replay remain future Tasks.
-- commit: recorded in the following memory synchronization commit
+- commit: f09b6d1

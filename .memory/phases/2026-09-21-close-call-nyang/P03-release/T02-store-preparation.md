@@ -6,6 +6,7 @@
 게임과 일관된 벡터 아이콘, 사용자가 검토할 한국어 스토어 초안, Windows에서 사용할 EAS 배포 설정을 로컬에서 재현 가능하게 준비한다.
 
 ## Decision Summary
+- Character collection amendment: icon/launch identity uses the default rookie (user option2), sharing the same original SVG style as diligent/veteran. Local-only completedRuns0..10 and selectedCharacter are settings/progress data, not server rank data; privacy inventory and review notes must distinguish them. Unlock1 at the first100% run and unlock3 at10 distinct runs; never claim character stat advantages. User still reviews final store copy/screenshots later.
 - 이름 `아슬아슬 냥대리`, slug `close-call-nyang`, bundle `com.mocca.closecallnyang`, 가로 iPhone 게임. 밝은 파스텔과 커피를 든 냥대리 얼굴을 코드 기반 SVG로 제작한다.
 - 게임/캐주얼, 4+ 콘텐츠 목표이며 Kids 지정은 하지 않는다. 회원가입/로그인 화면 없이 닉네임·기기별 익명 계정으로 공통 온라인 순위에 참여하며 서버 검증 기록을 저장한다. 문구·스크린샷·최종 제출은 사용자 승인 대상이다. 이 Task는 빌드나 심사 제출을 실행하지 않는다.
 
