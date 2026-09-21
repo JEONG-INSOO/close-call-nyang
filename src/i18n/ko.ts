@@ -9,6 +9,9 @@ export const ko = {
   settings: '설정',
   scoreLabel: '프로젝트 성공률',
   bestLabel: '최고 기록',
+  characterRookie: '허둥대는 냥대리',
+  characterDiligent: '성실한 냥대리',
+  characterVeteran: '베테랑 냥대리',
   foundationStatus: '개발 환경 준비 완료',
   foundationDescription: '냥대리의 아슬아슬한 출근길을 준비하고 있어요.',
 } as const;

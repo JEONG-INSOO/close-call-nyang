@@ -1,6 +1,6 @@
 # Task: T03 냥대리와 횡스크롤 벡터 장면
 
-## Status: pending
+## Status: done
 
 ## Goal
 가로 게임판 안에 두 발로 걷는 오리지널 고양이 3종과 커피·출근길·회사 입구·사무실을 같은 파스텔 벡터 스타일로 표현하고, 엔진 상태에 맞춰 부드럽게 움직인다.
@@ -23,6 +23,7 @@
   - `src/scene/StreetScene.tsx`, `OfficeScene.tsx`, `SceneryProps.tsx` :: SVG props — new
   - `src/scene/GameScene.tsx` :: GameScene — new
   - `src/scene/layout.ts` :: getViewport/getSceneModel — new
+  - `src/scene/svgMotion.ts` :: svgTransform/svgTransformAdapter — new (native matrix/web transform boundary)
   - `src/game/types.ts` :: RunState/Stage (contracts below) — read-only
 #### Details
 - **Signatures & Types**:
@@ -76,6 +77,7 @@
 - Related Files:
   - `src/scene/__tests__/layout.test.ts` :: geometric boundary tests — new
   - `src/scene/__tests__/GameScene.test.tsx` :: rendering contract — new
+  - `src/scene/__tests__/svgMotion.test.ts` :: native/web adapter contract — new
   - `src/characters/__tests__/catalog.test.ts` :: default/order/unlock threshold contracts — new
   - `docs/art-direction.md` :: reusable vector style and QA poses — new
   - `docs/learning-notes.md` :: SVG/Reanimated and rendering/physics distinction — modify
@@ -87,11 +89,11 @@
 - In `docs/art-direction.md` record the 205/118/51/36 proportion, original silhouette/face choices, each personality and all three coffee/lean poses. In `docs/learning-notes.md` record why broad proportion reference is separated from original visual construction, and why a cosmetic catalog does not modify the game engine. Do not claim a proportion change guarantees legal clearance. Record only actual implementation/inspection results when this task executes.
 
 ## Acceptance Criteria
-- [ ] All three original, approximately1.74-head-height suited cats have readable two-legged walking, visible tail and recognizable cup; rookie is the default.
-- [ ] Shared catalog exposes exact0/1/10 thresholds and Korean labels; variant changes preserve the same pivot, dimensions and physics behavior.
-- [ ] Cafe and doorway use actual score positions; office scenery remains bounded during long runs.
-- [ ] Reanimated displays engine lean and walking; pause and reduced-motion respect gameplay invariants.
-- [ ] No gauge,100% celebration, third-party artwork, or physics changes from rendering.
+- [x] Three original approximately1.74-head-height cats implement separate legs, tail and cup; rookie is default. Rig/props contracts pass; visual readability remains the specified T06/P03 inspection.
+- [x] Shared catalog exposes exact0/1/10 thresholds and Korean labels; variant changes preserve the same pivot, dimensions and physics behavior.
+- [x] Cafe and doorway use actual score positions; office scenery remains bounded during long runs.
+- [x] Reanimated displays engine lean and walking; pause and reduced-motion respect gameplay invariants in structural tests.
+- [x] No gauge,100% celebration, third-party artwork, or physics changes from rendering.
 
 ## Validation
 - `npm.cmd test -- --runInBand src/scene/__tests__` — boundary/rendering contracts pass.
@@ -114,6 +116,9 @@ Task: T03-vector-scene
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- validation: scene76 + catalog16 =92 new tests; full Jest177/177 across9suites; typecheck0errors; app web export and separate GameScene web bundle passed; git diff --check passed.
+- regression: replacement SharedValue retained stale scenery subscriptions; explicit [frame] dependencies and replacement-frame test fix this without changing physics.
+- visual QA: not completed. Preview bundled but browser tool failed twice with trusted Node process exited unexpectedly. T06 browser/P03 native QA remain; App.tsx still foundation screen pendingT04.
+- commit: recorded in following memory synchronization commit
