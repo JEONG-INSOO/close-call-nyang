@@ -6,7 +6,7 @@ export interface PauseOverlayProps { onResume(): void; onHome(): void; onSetting
 
 export function PauseOverlay({ onResume, onHome, onSettings }: PauseOverlayProps) {
   return (
-    <View testID="pause-overlay" style={styles.root} accessibilityViewIsModal>
+    <View testID="pause-overlay" style={styles.root}>
       <View style={styles.card}>
         <Text accessibilityRole="header" style={styles.title}>{ko.pausedTitle}</Text>
         <Text style={styles.description}>{ko.pausedDescription}</Text>
@@ -19,7 +19,7 @@ export function PauseOverlay({ onResume, onHome, onSettings }: PauseOverlayProps
             style={({ pressed }) => [styles.secondary, pressed && styles.pressed]}>
             <Text style={styles.secondaryText}>{ko.home}</Text>
           </Pressable>
-          {onSettings && <Pressable accessibilityRole="button" accessibilityLabel={ko.settings} onPress={onSettings}
+          {onSettings && <Pressable testID="pause-settings" accessibilityRole="button" accessibilityLabel={ko.settings} onPress={onSettings}
             style={({ pressed }) => [styles.secondary, pressed && styles.pressed]}>
             <Text style={styles.secondaryText}>{ko.settings}</Text>
           </Pressable>}

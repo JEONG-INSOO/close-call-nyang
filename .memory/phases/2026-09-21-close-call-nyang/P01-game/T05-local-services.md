@@ -1,6 +1,6 @@
 # Task: T05 로컬 설정·소리·공유와 개발용 부활
 
-## Status: pending
+## Status: done
 
 ## Goal
 기록·설정·3종 캐릭터 해금/선택이 기기에 남고 소리/햅틱/공유가 동작하며, 개발에서만5초 가상 광고를 통해 한 번 부활할 수 있게 완성한다.
@@ -144,13 +144,13 @@
 - **Tests**: zero→rookie;0→1 unlocks onlydiligent;8→9 none;9→10 onlyveteran;10→11 remains10;99.99 not counted;100/101/200 in same attempt total1; ten distinct eligible attempts unlockveteran; pause/result/retry/rerender/stale callbacks cannot duplicate; mock-enabled attempts excluded; selection cannot equip locked IDs; no auto-equip; preference missing/corrupt/invalid/hydration/write failure; saved selection and unlocks restore; online deletion preserves collection; same input/seed with three cosmetic IDs has identical score/fall state.
 
 ## Acceptance Criteria
-- [ ] Default rookie, first100 diligent and tenth distinct qualifying run veteran; local count/selection restore and duplicate awards are prevented.
-- [ ] Character selection and result unlock notice work without changing physics or adding mid-run100 celebration.
-- [ ] Settings/record survive reload; storage failure leaves usable game with accurate notice.
-- [ ] Original loop/effects/optional haptics obey independent toggles and lifecycle.
-- [ ] Share uses native sheet/web clipboard with cancellation/failure fallback.
-- [ ] Dev-only5sec ad grants one revive; production cannot display or activate it.
-- [ ] This local-service layer sends no runtime data and adds no native advertising/microphone permissions; P02's explicitly scoped ranking API data is separate.
+- [x] Default rookie, first100 diligent and tenth distinct qualifying run veteran; local count/selection restore and duplicate awards are prevented (real App/hooks with mocked disk boundary).
+- [x] Character selection and result unlock notice work without changing physics or adding mid-run100 celebration. Three skins × reduceMotion on/off produce identical engine outcomes.
+- [x] Settings/record survive App remount; storage failure leaves usable game with accurate notice (automated storage boundary; physical-device persistence QA remains pending).
+- [x] Original loop/effects/optional haptics obey independent toggles and lifecycle in adapter tests. Actual listening/device feedback is not yet verified.
+- [x] Share uses native sheet/web clipboard adapters with cancellation/failure fallback; actual OS sheet/browser clipboard QA remains pending.
+- [x] Dev-only5sec ad grants one revive; production cannot display or activate it (automated flow/guard tests).
+- [x] No automatic analytics/ranking data transmission or native advertising/microphone permissions were added; explicit user-initiated text sharing and local asset loading are separate. P02's scoped API is not implemented here.
 
 ## Validation
 - `npm.cmd test -- --runInBand src/services/__tests__/characterProgress.test.ts src/screens/__tests__/character-collection.test.tsx` — exact-once/local restore/selection/threshold tests pass.
@@ -174,6 +174,10 @@ Task: T05-local-services
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 지정된 자동 검증 통과; 실제 브라우저/iPhone·청취·공유/저장 장치 QA는 T06/P03에 남김
+- Results: character24, service/ad90, full25 suites/355 tests passed; typecheck0errors; generated5 deterministic validated WAVs; web export includes5 local sounds; diff check clean.
+- Implementation extensions within T05: audioCore.ts/audio.web.ts isolate common policy and catch HTML media Promise rejection discarded by installed Expo web API; shareText.ts avoids platform self-import; ShareFeedbackPanel.tsx exposes honest manual fallback; usePreferences.test.tsx/service-panels.test.tsx and AsyncStorage Jest setup cover additional boundaries. No dependency versions changed.
+- Review fixes: inline modal a11y flags hid the sibling storage-error notice; old play Promise rejection could stop new playback. Accessibility regression and old/current request token tests now pass.
+- No push, Pages/iOS deployment, physical-device or actual audio/browser validation claimed.
 - commit: pending

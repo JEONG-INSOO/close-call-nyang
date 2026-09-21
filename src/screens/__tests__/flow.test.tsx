@@ -8,10 +8,16 @@ import * as engine from '../../game/engine';
 import { BALANCE } from '../../game/balance';
 import { ko } from '../../i18n/ko';
 import { installBrowserFixture } from '../../input/__tests__/browserFixture';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 jest.mock('expo-screen-orientation', () => ({
   OrientationLock: { LANDSCAPE: 5 }, lockAsync: jest.fn(() => Promise.resolve()),
 }));
+jest.mock('../../services/audio', () => {
+  const api = { unlock: jest.fn(), setPlaying: jest.fn(), cue: jest.fn() };
+  return { useGameAudio: () => api };
+});
+jest.mock('../../services/haptics', () => ({ playHaptic: jest.fn(() => Promise.resolve()) }));
 let mockDimensions = { width: 844, height: 390, scale: 1, fontScale: 1 };
 jest.mock('react-native/Libraries/Utilities/useWindowDimensions', () => ({
   __esModule: true, default: () => mockDimensions,
@@ -24,7 +30,8 @@ let requestSerial = 0;
 let timestamp = 0;
 let lifecycle: ((state: AppStateStatus) => void) | undefined;
 
-beforeEach(() => {
+beforeEach(async () => {
+  await AsyncStorage.clear();
   requests = new Map();
   requestSerial = 0;
   timestamp = 0;
@@ -90,7 +97,7 @@ async function fixtureFall(distanceM: number) {
 }
 
 describe('playable app flow', () => {
-  it('counts down, runs, falls immediately, retries and preserves only the in-memory best', async () => {
+  it('counts down, runs, falls immediately, retries and preserves the best record', async () => {
     await render(<App />);
     await startPlaying();
     const id = controller.readState().run!.id;
@@ -98,7 +105,7 @@ describe('playable app flow', () => {
     expect(controller.readState().screen).toBe('result');
     expect(screen.getByRole('button', { name: ko.retry })).toBeOnTheScreen();
     expect(screen.queryByRole('button', { name: ko.revive })).toBeNull();
-    expect(screen.queryByRole('button', { name: ko.share })).toBeNull();
+    expect(screen.getByRole('button', { name: ko.share })).toBeOnTheScreen();
     expect(screen.getAllByText(/128%/).length).toBeGreaterThan(0);
     await fireEvent.press(screen.getByRole('button', { name: ko.retry }));
     expect(controller.readState().screen).toBe('countdown');

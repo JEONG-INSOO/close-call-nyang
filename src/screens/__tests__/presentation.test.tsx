@@ -10,25 +10,28 @@ import { ResultScreen } from '../ResultScreen';
 import { TitleScreen } from '../TitleScreen';
 
 describe('screen presentation contracts', () => {
-  it('offers one functional start action and no unfinished settings or character button', async () => {
-    const start = jest.fn();
-    await render(<TitleScreen bestScore={125.9} onStart={start} onSettings={jest.fn()} />);
+  it('offers start, settings and character actions through the supplied callbacks', async () => {
+    const start = jest.fn(); const settings = jest.fn(); const characters = jest.fn();
+    await render(<TitleScreen bestScore={125.9} onStart={start} onSettings={settings} onCharacters={characters} />);
     expect(screen.getByRole('header', { name: ko.title })).toBeOnTheScreen();
     expect(screen.getByLabelText(`${ko.bestLabel} 125%`)).toBeOnTheScreen();
-    expect(screen.getAllByRole('button')).toHaveLength(1);
-    expect(screen.queryByRole('button', { name: ko.settings })).toBeNull();
+    expect(screen.getAllByRole('button')).toHaveLength(3);
     await fireEvent.press(screen.getByRole('button', { name: ko.start }));
     expect(start).toHaveBeenCalledTimes(1);
+    await fireEvent.press(screen.getByRole('button', { name: ko.settings }));
+    await fireEvent.press(screen.getByRole('button', { name: ko.characters }));
+    expect(settings).toHaveBeenCalledTimes(1); expect(characters).toHaveBeenCalledTimes(1);
   });
 
-  it('shows uncapped results and functioning retry/home without unfinished share or ad entries', async () => {
-    const retry = jest.fn(); const home = jest.fn();
+  it('shows uncapped results and functional retry/home/share, while ad availability stays explicit', async () => {
+    const retry = jest.fn(); const home = jest.fn(); const share = jest.fn();
     await render(<ResultScreen score={128.9} bestScore={90} canRevive={false}
-      onRetry={retry} onHome={home} onShare={jest.fn()} onRevive={jest.fn()} />);
+      onRetry={retry} onHome={home} onShare={share} onRevive={jest.fn()} />);
     expect(screen.getByLabelText(`${ko.scoreLabel} 128%`)).toBeOnTheScreen();
     expect(screen.getByLabelText(`${ko.bestLabel} 128%`)).toBeOnTheScreen();
     expect(screen.queryByRole('button', { name: ko.revive })).toBeNull();
-    expect(screen.queryByRole('button', { name: ko.share })).toBeNull();
+    await fireEvent.press(screen.getByRole('button', { name: ko.share }));
+    expect(share).toHaveBeenCalledTimes(1);
     await fireEvent.press(screen.getByRole('button', { name: ko.retry }));
     await fireEvent.press(screen.getByRole('button', { name: ko.home }));
     expect(retry).toHaveBeenCalledTimes(1); expect(home).toHaveBeenCalledTimes(1);
