@@ -11,9 +11,9 @@
 | T03 | `done` | SVG 냥대리3종·캐릭터 목록·횡스크롤 배경 | [T03](./T03-vector-scene.md) |
 | T04 | `done` | 입력·루프·플레이 화면 구현/자동 검사 완료; 실제 웹·기기 QA 대기 | [T04](./T04-playable-app.md) |
 | T05 | `done` | 설정·저장·캐릭터 해금/선택·소리·공유·가상 광고; 자동 검사 완료 | [T05](./T05-local-services.md) |
-| T06 | `in_progress` | 회귀 검증·웹 QA·조작감 조정 (active, 실행 대기) | [T06](./T06-quality-pass.md) |
+| T06 | `done` | 회귀·실제 production Chromium QA 완료, 물리 유지; iPhone 검증은 P03 | [T06](./T06-quality-pass.md) |
 
 ## Progress
-- done: 5/6 (active: T06)
-- execution: T01 e2d066a; T02 f09b6d1; T03 ce14e74; T04 cab6500; T05 646c188. Latest character24/service-ad90/full Jest355, typecheck, deterministic5WAV generation, web export with5sounds and diff check passed. Actual browser interaction, phone layout, listening/autoplay/interruption/native feedback/share/storage QA remain unchecked for T06/P03. The prior browser tool startup failed; T05 did not rerun visual/device QA. T06 not started.
+- done: 6/6 (active: none; next P02-T01)
+- execution: T01 e2d066a; T02 f09b6d1; T03 ce14e74; T04 cab6500; T05 646c188; T06 7efcc8c. Latest full Jest373, server14, typecheck, Expo dependency check, production/fixture exports, actual Chromium26pass/7intentional skips/0fail and diff check passed. Web keyboard/touch/phone-size layout/persistence/share fallback/production ad guard verified. Separate labeled art fixtures inspected; physics unchanged. One intermediate countdown auto-pause remains an explicitly recorded host/lifecycle uncertainty; final standalone suite passed without bypass. iPhone/audio listening/native services/long-play performance remain P03 not-run. See docs/qa-report.md.
 - next phase: [P02 leaderboard](../P02-leaderboard/phase.md)

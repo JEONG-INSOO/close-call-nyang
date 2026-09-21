@@ -4,21 +4,21 @@
 [아슬아슬 냥대리](./plans/2026-09-21-close-call-nyang.md)
 
 ## Active Phase
-[P01 Game](./phases/2026-09-21-close-call-nyang/P01-game/phase.md)
+[P02 Leaderboard](./phases/2026-09-21-close-call-nyang/P02-leaderboard/phase.md)
 
 ## Active Task
-[T06 회귀 검증·웹 QA·조작감 조정](./phases/2026-09-21-close-call-nyang/P01-game/T06-quality-pass.md)
+[T01 닉네임·리더보드 서버 기반](./phases/2026-09-21-close-call-nyang/P02-leaderboard/T01-ranking-backend.md)
 
 ## Status
 - Interview: complete including online nickname/leaderboard and [3종 캐릭터 수집 변경](./decisions/2026-09-21-character-collection.md); [기존 결정](./decisions/2026-09-21-close-call-nyang.md)
-- Planning: complete; 3 phases / 14 tasks / 5 implementation tasks completed
+- Planning: complete; 3 phases / 14 tasks / 6 implementation tasks completed
 - Execution: user requested continuation after the model-switch reminder on2026-09-21.
-- Completed: P01-T01 foundation(e2d066a), P01-T02 game engine(f09b6d1), P01-T03 characters/scenery(ce14e74), P01-T04 playable app(cab6500), P01-T05 local services(646c188); original planning commit2a1c426.
-- Validation: T05 character24 tests, service/ad90, full Jest355/355, typecheck0errors, generated5 deterministic validated WAVs, playable web export with5sounds and git diff --check passed. T01 SDK check/Doctor21/21 and audit are historical results, not newly rerun. Actual browser/iPhone play, phone layout, listening/volume/autoplay/headphone interruption, OS share and physical-device storage remain unverified for T06/P03.
-- Active Task: P01-T06 ready, not implemented yet. Earlier browser tool failed during Windows sandbox/trusted Node startup; T05 did not retry browser/device visual QA. No cloud/app deployment performed.
+- Completed: P01-T01 foundation(e2d066a), P01-T02 game engine(f09b6d1), P01-T03 characters/scenery(ce14e74), P01-T04 playable app(cab6500), P01-T05 local services(646c188), P01-T06 web QA(7efcc8c); original planning commit2a1c426.
+- Validation: T06 full Jest373/373(26suites), server14/14, typecheck0errors, Expo dependency check, Pages-base production export with5sounds/mockenvtrue, isolated fixtures and diff check passed. Actual Chromium153 final26pass/7intentional skips/0fail in137.7sec; app errors/warnings0. Keyboard/touch/pause/phone-size layout/storage/share fallback/ad absence verified. Separate art fixtures inspected, not iOS/high-score evidence. Real iPhone/Safari/listening/native services/long-play performance remain not-run. Doctor21/21 and prior audit are historical, not rerun this task.
+- Active Task: P02-T01 ready, not implemented or blueprint-read in T06. No cloud/app deployment or push performed.
 
 ## Next Step (IMPORTANT)
-다음 실행 요청 시 P01-T06 청사진만 읽고 통합 회귀·실제 웹 QA·조작감 조정을 진행한다. T01~T05 구현은 재작성하지 않는다. 현재 앱은 저장·설정·캐릭터 수집/선택·음원·공유·개발용 텍스트 광고까지 연결됐다. 자동 테스트를 실제 브라우저/iPhone/청취 성공으로 바꾸어 적지 말고, 이전 도구 초기화 오류와 미검증 항목을 확인한다. 실제 확인이 막히면 구체적인 제약/남은 검증을 기록하며 무조건 출시 완료로 넘기지 않는다. 기본2번/첫100%1번/10판3번, 외형 전용·다음 START 적용,100% 색상만,production 광고 비활성화를 유지한다. 모델 변경 안내와 실행 허가는 이미 완료됐으며 한 Task를 완료하고 멈춘다.
+다음 실행 요청 시 P02-T01 청사진만 읽고 닉네임·공통 리더보드의 서버 데이터 모델/권한/API/입력 재생 검증을 구현한다. P01 로컬 게임과 서비스를 재작성하지 않는다. 실제 Supabase 계정·배포 검증은 P02-T03에서 다루며 필요한 권한이나 운영값은 해당 단계에서 확인한다. 클라이언트 직접 점수 쓰기나 비밀키 포함을 금지하고 기존 순수 엔진을 규칙의 기준으로 유지한다. Pages 하위 경로/production 광고 차단/캐릭터 수집 규칙을 보존한다. 검증은 docs/qa-report.md와 docs/development.md의 실제 production 절차를 사용하고 iPhone/장시간 성능을 웹 성공으로 대체하지 않는다. 모델 변경 안내와 실행 허가는 이미 완료됐으며 한 Task를 완료하고 멈춘다.
 
 ## Handoff Facts
 - 캐릭터 변경: 약1.74등신 SVG3종/카탈로그(T03), 실제 집계·저장·선택UI(T05) 구현 완료. 기본2번 rookie, 서로 다른 적격 판100% 첫 달성1번 diligent,10회3번 veteran. 외형만 다르고 동일 물리. 로컬/오프라인 포함·판당1회·개발 광고 활성 판 제외, 안내는 결과 화면·자동장착없음·선택은 다음 START부터. 3skins×reduceMotion2설정의6조합 엔진 결과가 동일함을 App 통합 테스트로 확인했다.
@@ -33,9 +33,11 @@
 - T05 storage: close-call-nyang.preferences.v1 stores best/settings/collection only. Defaults use parsePreferences(null); settings music/sfx/haptics true, reduceMotion false. One serialized/coalesced writer, hook synchronous session ref, hydration touched-fields+max-best+completion journal. Failed reads do not auto-overwrite unread data; later intentional saves retry. beginAttempt independent of runId, counted synchronously before async; no crash-proof/cross-device/anti-tamper claim. Online data remains separate and unimplemented.
 - T05 feedback: useGameAudio stable API; native5Expo players, web5HTML elements because installed Expo web play discards its Promise. audioCore owns cooldowns/max2SFX/pending seek and play tokens/interruption. Music0.15/effects<=0.4, fall allowed just after setPlaying(false), no100cue. generate-audio.mjs creates original12s100BPM5bar loop+4SFX; hashes repeat/no clipping. No real listening/device test. Haptic disabled/web noop. Share native sheet/web clipboard with manual selectable fallback; URL still planned, not live deployment.
 - T05 integration: App.subscribe and subscribeEffects read latest service refs; accepted START captures selected skin and new eligible attempt. Panels block start/resume; inline title/result/pause modal flags removed so sibling storage error stays accessible. MockAd reads engine time only; production callback+engine guards false even publicenvtrue,5active seconds/one revive. A real SDK is not installed and needs explicit future provider/engine API work, not automatic ad arrival switching.
-- 시각검사제한: ignored output/의정적프리뷰bundle은성공했으나 browser CUArepl이trusted Node process exited unexpectedly로2회실패. 브라우저/기기육안QA통과주장금지. 임시로컬서버는종료했고프리뷰는App/커밋에포함하지않았다.
-- 사용자가 앞선 GitHub 작업에서 공개 저장소 생성·푸시를 승인했다. 실제 GitHub 인증 계정은 JEONG-INSOO이며 https://github.com/JEONG-INSOO/close-call-nyang 을 생성했다. T02~T05는 로컬 커밋만 했고 푸시하지 않았다. 브랜치 동기화 여부는 git status/원격 HEAD로 확인한다. 이후 무조건 자동 푸시를 허가한 것으로 확대 해석하지 않는다. Pages 사이트는 아직 배포하지 않았다.
+- T06 web QA: Playwright1.63/Chromium153의 실제 production UI를1280×720/844×390/667×375로검사. Native accessibilityState가RNW DOM에누락돼ControlButton web aria-disabled/aria-pressed,CharacterSelect aria-pressed수정. CDP부분손가락해제는설치Chromium에서touchEnd:[종료할point],브라우저업그레이드시재검증. 이전CUA초기화실패와달리이번실제웹/합성장면육안검사는완료; iPhone은미검증.
+- T06 harness: web:export는GITHUB_PAGES=true자식env로/close-call-nyang적용,개발/native기본경로는유지. web:serve는127.0.0.1:4173/dist,fixture별도4174/output/qa-fixtures. fixtures:build후e2e실행;test-results/playwright-report/output/dist는ignored이고다음실행시기존증거교체가능. 실제앱치트/fixture route없음,로컬서버종료확인.
+- T06 limitation: 중간전체실행에서retry초기화성공뒤countdownPAUSE1회. 긴프레임보호또는lifecycle후보이나정확한트리거미계측. 물리/정지보호우회없이별도전체재실행26pass. 실제기기에서반복되면rAF/lifecycle계측필요.5번짧은판window구독수동일은장시간누수/60fps증거가아님. 상태·실패·미검증은docs/qa-report.md에보존.
+- 사용자가 앞선 GitHub 작업에서 공개 저장소 생성·푸시를 승인했다. 실제 GitHub 인증 계정은 JEONG-INSOO이며 https://github.com/JEONG-INSOO/close-call-nyang 을 생성했다. T02~T06는 로컬 커밋만 했고 푸시하지 않았다. 브랜치 동기화 여부는 git status/원격 HEAD로 확인한다. 이후 무조건 자동 푸시를 허가한 것으로 확대 해석하지 않는다. Pages 사이트는 아직 배포하지 않았다.
 - 실제 예정 Pages URL은 https://jeong-insoo.github.io/close-call-nyang/ 이다. 기존 mocca 호스트와 CORS 관련 계획 문자열을 교정했고 iOS bundle ID com.mocca.closecallnyang은 유지했다.
 - npm audit10moderate(Expo/xcode/uuid 하위 의존성),0high/critical. 강제 Expo 하향/무시 설정 없음; 호환 수정판 및 출시 전 재검토 필요.
 - Store 소개 문구·스크린샷·최종 심사 제출은 실제 자료를 다시 보여주고 사용자 확인 후 진행한다. 제출과 승인/공개는 구분한다.
-- `docs/learning-notes.md`와 `docs/development.md`를 생성했다. 학습노트에 T01~T05의 실제 변경·검증·실패 해결·미검증 사항을 기록했으며 이후 Task에서 누적한다. 전체 게임/서버/스토어 완료 기록은 아니다.
+- `docs/learning-notes.md`와 `docs/development.md`, `docs/qa-report.md`에T01~T06의실제변경·검증·실패해결·미검증사항을기록했다. 이후Task에서누적하며전체서버/스토어출시완료기록은아니다.

@@ -6,11 +6,11 @@
 ## Tasks
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| T01 | `pending` | 데이터 모델·권한·닉네임/순위 API·서버 기록 검증 | [T01](./T01-ranking-backend.md) |
+| T01 | `in_progress` | 데이터 모델·권한·닉네임/순위 API·서버 기록 검증 (active, 실행 대기) | [T01](./T01-ranking-backend.md) |
 | T02 | `pending` | 익명 세션·닉네임/순위 UI·입력 제출·오프라인 대응 | [T02](./T02-ranking-client.md) |
 | T03 | `pending` | 실제 Supabase 설정·권한/통합 검증·운영 안내 | [T03](./T03-hosted-verification.md) |
 
 ## Progress
-- done: 0/3 (active: none; waiting for P01)
+- done: 0/3 (active: T01; P01 completed in7efcc8c, implementation not started)
 - next phase: [P03 release](../P03-release/phase.md)
 - external prerequisites: 사용자의 Supabase 계정·실제 프로젝트 설정은 T03에서 수행. 현재는 계획만 작성됨.
