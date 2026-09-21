@@ -1,0 +1,20 @@
+/** Initial tuning values, shared by the engine and its numerical tests. */
+export const BALANCE = Object.freeze({
+  fixedDt: 1 / 120,
+  maxTickSeconds: 1 / 30,
+  timerEpsilon: 1e-9,
+  criticalAngleRad: 0.7,
+  controlAcceleration: 4.8,
+  damping: 3.2,
+  countdownSeconds: 3,
+  mockAdSeconds: 5,
+  protectionSeconds: 1.5,
+  stabilizationRate: 4,
+  warningSeconds: 1.2,
+  activeEventSeconds: 0.7,
+  wobbleCooldownSeconds: 1.5,
+  baseSpeedMps: 0.9193552309022899,
+  footstepBaseSeconds: 0.45,
+  minFootstepSeconds: 0.18,
+  firstEventDelaySeconds: 6,
+});

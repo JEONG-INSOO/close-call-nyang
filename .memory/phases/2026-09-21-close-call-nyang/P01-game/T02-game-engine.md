@@ -1,6 +1,6 @@
 # Task: T02 결정론적 게임 규칙과 상태 머신
 
-## Status: pending
+## Status: done
 
 ## Goal
 React나 장치 없이 테스트할 수 있는 보행·균형·사건·실패·부활 규칙을 만들고, 거리/시간 경계와 모든 화면 전환을 자동 검증한다.
@@ -63,7 +63,7 @@ React나 장치 없이 테스트할 수 있는 보행·균형·사건·실패·�
 - **Data & Schema Fields**:
   - All number fields finite. Angles radians, elapsed/dt seconds, distance meters. No storage/DB fields or nullable values except declared nulls.
   - Score: `Math.floor(max(0,distanceM))`; stage office only distanceM>=51. hasCoffee false initially, true exactly when crossing15; never lost on revive.
-  - Initial run: distance/time/velocity/stepIndex/protection0; small deterministic angle ±0.025; reviveUsed false; event null; nextEventAt Number.MAX_VALUE until coffee (finite unscheduled sentinel); nextFootstepAt0.45; lastWobbleAt -1.5. `rng` unsigned32 seed, replace zero with1. No Date.now/Math.random inside rules.
+  - Initial run: distance/time/velocity/stepIndex/protection0; small deterministic angle ±0.025 from first PRNG draw; reviveUsed false; event null; nextEventAt Number.MAX_VALUE until coffee (finite unscheduled sentinel); nextFootstepAt0.45; lastWobbleAt -1.5. START accepts integer uint32 seed; zero normalizes to1 for stored seed as well as PRNG initialization, rng stores the state after choosing initial lean. runId is a positive safe integer. No Date.now/Math.random inside rules.
   - BALANCE proposed tunable defaults: fixedDt1/120, criticalAngleRad0.70, controlAcceleration4.8, damping3.2, countdown3, mockAd5, protection1.5, warning1.2, activeEvent0.7, wobbleCooldown1.5. These are engineering defaults, not verbatim user-selected values.
   - For distance `m`, let `x=max(0,m-15)`, `L=ln(1+x/35)`; `speedAt(m)=0.9193552309022899*(1+0.7*ln(1+x/85))` m/s. This yields 0→100 about90 active seconds including initial constant speed; initial15 about16.3sec. Speed after100 continues increasing.
   - Difficulty: level L, instability `2.2+0.9L`, disturbance `0.12+0.16L`, eventStrength `0.8+0.5L`, eventIntervalSeconds `max(5,10/(1+0.2L))`. L and strength have no gameplay upper bound. Interval floor preserves readable warnings; no overlapping events.
@@ -71,7 +71,7 @@ React나 장치 없이 테스트할 수 있는 보행·균형·사건·실패·�
 - **Execution Flow / Logic**:
   1. Helpers reject nonfinite arguments safely (score/stage use safe zero, engine invalid inputs preserve state). Clamp no **gameplay** score/difficulty cap. Numerical representability errors return a recoverable result, not NaN in UI.
   2. Repeated held input uses signed control `(right?1:0)-(left?1:0)`; both=0. Screen renderer and phone orientation do not influence rules.
-  3. Exact 15,51,100 tests use explicit fixtures; no approximate threshold based on sprite coordinates. Only renderer consults score>=100 to choose color; there is no hundred-percent effect.
+  3. Exact15,51,100 tests use explicit fixtures; no approximate threshold based on sprite coordinates. Renderer chooses score color and T05's local collection observes100% outside this kernel; there is no hundred-percent GameEffect or character-specific physics.
 
 ### I02. Pure transition and physics
 - Related Files:
@@ -101,11 +101,11 @@ React나 장치 없이 테스트할 수 있는 보행·균형·사건·실패·�
 - Speed-only integration (without balancing) reaches100 at90±0.5sec. Sampling m15/50/100/200/1000 shows monotonic velocity and difficulty above15 and no100/200 ceiling. Do not write a test asserting inexperienced humans must survive90sec.
 
 ## Acceptance Criteria
-- [ ] All approved boundaries and immediate failure hold in pure tests.
-- [ ] Distance/time freeze whenever not playing; countdown/ad freeze when paused.
-- [ ] One foreground-completed mock ad gives one protected revive at unchanged distance.
-- [ ] No100% celebration effect and no presentation/accessibility dependence in physics.
-- [ ] Curves are documented initial tuning values; speed target validated numerically.
+- [x] All approved boundaries and immediate failure hold in pure tests.
+- [x] Distance/time freeze whenever not playing; countdown/ad freeze when paused.
+- [x] One foreground-completed mock ad gives one protected revive at unchanged distance.
+- [x] No100% celebration effect and no presentation/accessibility dependence in physics.
+- [x] Curves are documented initial tuning values; speed target validated numerically.
 
 ## Validation
 - `npm.cmd test -- --runInBand src/game/__tests__` — all rule cases pass.
@@ -126,6 +126,9 @@ Task: T02-game-engine
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- validation: game rules73/73; full Jest85/85 across5suites; typecheck0errors; git diff --check passed.
+- regression: a14,000-tick live replay exposed an event-expiry floating point tail; discard remaining substeps <=timerEpsilon to prevent false numeric-failure falls. Long replay beyond100% now passes without weakening physics.
+- limitation: controller/rendering/device QA and cross-runtime replay remain future Tasks.
+- commit: recorded in the following memory synchronization commit
