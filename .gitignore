@@ -1,0 +1,27 @@
+# Dependencies and generated build/test output
+node_modules/
+.expo/
+dist/
+coverage/
+test-results/
+playwright-report/
+output/
+*.tsbuildinfo
+npm-debug.log*
+
+# Local credentials and signing material
+.env
+.env.*
+!.env.example
+*.p8
+*.p12
+*.mobileprovision
+credentials.json
+
+# Existing local usage tooling and reports are not game source
+.codeburn/
+.codex/
+
+# OS/editor-local files
+.DS_Store
+Thumbs.db
