@@ -5,6 +5,7 @@ dist/
 coverage/
 test-results/
 playwright-report/
+blob-report/
 output/
 *.tsbuildinfo
 npm-debug.log*

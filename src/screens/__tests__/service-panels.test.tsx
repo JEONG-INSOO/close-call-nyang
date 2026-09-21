@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Platform } from 'react-native';
 import { CHARACTERS } from '../../characters/catalog';
 import { ko } from '../../i18n/ko';
 import type { Settings } from '../../services/preferences';
@@ -72,6 +73,21 @@ describe('local service panels', () => {
     expect(select).not.toHaveBeenCalled();
     await fireEvent.press(screen.getByRole('button', { name: ko.close }));
     expect(close).toHaveBeenCalledTimes(1);
+  });
+
+  it('exposes the selected character as a pressed web button while preserving native selection', async () => {
+    const previous = Object.getOwnPropertyDescriptor(Platform, 'OS')!;
+    Object.defineProperty(Platform, 'OS', { configurable: true, value: 'web' });
+    try {
+      const view = await render(<SafeAreaProvider><CharacterSelectPanel visible
+        collection={{ completedRuns: 1, selectedCharacter: 'diligent' }} onSelect={jest.fn()} onClose={jest.fn()} /></SafeAreaProvider>);
+      expect(screen.getByTestId('select-rookie').props['aria-pressed']).toBe(false);
+      expect(screen.getByTestId('select-diligent').props['aria-pressed']).toBe(true);
+      expect(screen.getByTestId('select-diligent').props.accessibilityState.selected).toBe(true);
+      expect(screen.getByTestId('select-veteran')).toBeDisabled();
+      expect(screen.getByTestId('select-veteran').props['aria-pressed']).toBe(false);
+      await view.unmount();
+    } finally { Object.defineProperty(Platform, 'OS', previous); }
   });
 
   it('shows the unlocked name only on result and waits for an explicit character selection action', async () => {

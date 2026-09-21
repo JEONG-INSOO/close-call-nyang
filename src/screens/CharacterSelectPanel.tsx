@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import Svg, { G } from 'react-native-svg';
 import { CHARACTERS, getUnlockedCharacterIds, type CharacterId } from '../characters/catalog';
@@ -52,6 +52,7 @@ export function CharacterSelectPanel({ visible, collection, onSelect, onClose }:
               <Pressable testID={`select-${character.id}`} accessibilityRole="button"
                 accessibilityLabel={`${name} ${ko.characterSelectAction}`}
                 accessibilityState={{ disabled: !owned, selected }} disabled={!owned}
+                {...(Platform.OS === 'web' ? { 'aria-pressed': selected } : {})}
                 onPress={() => { if (owned) onSelect(character.id); }}
                 style={({ pressed }) => [styles.select, !owned && styles.locked, selected && styles.selectedButton, pressed && styles.pressed]}>
                 <Text style={styles.selectText}>{selected ? ko.characterSelected : owned ? ko.characterSelectAction : `${character.requiredCompletions}회 달성 시 획득`}</Text>

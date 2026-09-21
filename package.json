@@ -9,7 +9,11 @@
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "test:ci": "jest --ci --runInBand",
-    "web:export": "expo export --platform web",
+    "web:export": "node scripts/export-web.mjs",
+    "web:serve": "node scripts/serve-web.mjs --port 4173 --base /close-call-nyang",
+    "e2e": "playwright test",
+    "fixtures:build": "node scripts/build-scene-fixtures.mjs",
+    "test:server": "node --test scripts/serve-web.test.mjs",
     "assets:audio": "node scripts/generate-audio.mjs"
   },
   "dependencies": {
@@ -32,6 +36,7 @@
     "react-native-worklets": "0.10.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@testing-library/react-native": "14.0.1",
     "@types/jest": "29",
     "@types/node": "24",

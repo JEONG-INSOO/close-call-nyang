@@ -64,6 +64,26 @@ describe('web control pad pointer sequences', () => {
   const capture = () => ({ setPointerCapture: jest.fn(), releasePointerCapture: jest.fn() });
   const pointer = (id: number, target = capture(), button = 0) => ({ nativeEvent: { pointerId: id, button }, currentTarget: target });
 
+  it('exposes real RN-web disabled/pressed DOM semantics, including enabled false omission', async () => {
+    // Exercise the installed DOM conversion rather than assuming native test props map.
+    const createDOMProps = require('react-native-web/dist/cjs/modules/createDOMProps') as
+      (element: string, props: Record<string, unknown>) => Record<string, unknown>;
+    const result = await render(<ControlButton direction={-1} disabled onChange={jest.fn()} />);
+    const domState = () => {
+      const props = screen.getByTestId('control-left').props;
+      return createDOMProps('button', { role: 'button', 'aria-disabled': props['aria-disabled'], 'aria-pressed': props['aria-pressed'] });
+    };
+    expect(domState()).toMatchObject({ disabled: true, 'aria-disabled': true, 'aria-pressed': false });
+    await result.rerender(<ControlButton direction={-1} disabled={false} onChange={jest.fn()} />);
+    expect(domState()).not.toHaveProperty('disabled');
+    expect(domState()).not.toHaveProperty('aria-disabled');
+    expect(domState()['aria-pressed']).toBe(false);
+    await fireEvent(screen.getByTestId('control-left'), 'pointerDown', pointer(8));
+    expect(domState()['aria-pressed']).toBe(true);
+    await fireEvent(screen.getByTestId('control-left'), 'pointerCancel', pointer(8));
+    expect(domState()['aria-pressed']).toBe(false);
+  });
+
   it('captures each pointer and preserves remaining fingers on cancel/lost capture', async () => {
     const change = jest.fn();
     await render(<ControlButton direction={-1} disabled={false} onChange={change} />);

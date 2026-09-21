@@ -83,6 +83,9 @@ export function ControlButton({ direction, disabled, onChange }: ControlButtonPr
     if (!disabled) change('accessible', !held.current.has(`${prefix}:accessible`));
   };
   const webProps = Platform.OS === 'web' ? {
+    // RN-web does not forward the native composite accessibilityState prop.
+    'aria-disabled': disabled,
+    'aria-pressed': pressed,
     onPointerDown: (event: PadPointerEvent) => {
       if (disabled || (event.nativeEvent.button !== undefined && event.nativeEvent.button !== 0)) return;
       const id = event.nativeEvent.pointerId;

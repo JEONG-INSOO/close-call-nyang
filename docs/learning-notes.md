@@ -12,7 +12,7 @@
 
 사용자 선택은 귀여운 냥대리, 가로 횡스크롤, 15% 커피와 가속, 51% 사무실, 100%를 넘는 기록, 균형 게이지 없음, 출시 광고 비활성화입니다. 닉네임 중복을 허용하고 가입 화면 없이 iOS/웹이 같은 온라인 순위표를 봅니다.
 
-기술 기본값은 Expo/TypeScript/SVG/Reanimated, 순수 게임 규칙과 화면·저장·서버의 분리, 최고 기록 상위100명과 내 순위입니다. P01-T05까지 구현해 로컬 저장·설정·소리·수집 보상·공유·개발 가상 광고를 플레이 화면에 연결했습니다. 서버/Supabase·닉네임·온라인 랭킹은 아직 연결하지 않았으며, 실제 브라우저와 iPhone 조작감·소리 검증도 남아 있습니다.
+기술 기본값은 Expo/TypeScript/SVG/Reanimated, 순수 게임 규칙과 화면·저장·서버의 분리, 최고 기록 상위100명과 내 순위입니다. P01의 로컬 게임과 서비스를 구현하고 T06에서 실제 production Chromium 흐름을 검사했습니다. 서버/Supabase·닉네임·온라인 랭킹은 아직 연결하지 않았으며, iPhone 조작감·소리·출시 검증도 남아 있습니다. 아래 각 Task 기록은 당시 결과이고, 최신 웹 결과는 [QA 기록](./qa-report.md)에 있습니다.
 
 추가 결정은 약1.74등신의 독창적 냥대리3종입니다. 기본2번(허둥대는 냥대리), 100% 첫 달성1번(성실한 냥대리), 서로 다른10판 달성3번(베테랑 냥대리)을 지급합니다. T03의 그림·카탈로그에 T05의 판당1회 집계·로컬 저장·선택을 연결했습니다. 외형은 게임 물리와 무관하며 가상 광고를 활성화한 개발 판은 수집에서 제외됩니다.
 
@@ -234,6 +234,57 @@ if (!session.hydrated) session.completionDelta = Math.min(10, session.completion
 ### 이번 범위 밖
 
 새로운 범위 밖 결함은 특이사항 없음입니다. Expo 웹 오디오 Promise 문제는 이번 서비스 어댑터 안에서 대응했으며 패키지 자체는 수정하지 않았습니다. 기존 하위 의존성 보안 경고는 출시 전 재검토합니다. 온라인 닉네임·랭킹은 P02의 별도 작업입니다.
+
+## 2026-09-21 · P01-T06 production 웹 QA와 회귀 검사
+
+### 무엇을, 왜 바꿨나
+
+- `playwright.config.ts`, `e2e/helpers.ts`, `e2e/{game,storage,layout,lifecycle}.spec.ts`: 실제 Chromium에서 제목→카운트다운→지속 조작→낙하→재도전, 정지/회전/blur, 동시 터치, 설정/최고 기록 저장, 공유 실패를 검사합니다. 브라우저의 실제 DOM/SVG와 localStorage를 읽으며 production 앱에 가짜 점수·해금·무적 기능을 넣지 않습니다. 의도적으로 손상된 JSON과 거절하는 클립보드만 실패 경계에 주입합니다.
+- `scripts/export-web.mjs`, `app.config.ts`: Expo를 shell 없이 직접 실행하며 이 명령의 자식 프로세스에서만 `GITHUB_PAGES=true`로 하위 경로를 적용합니다. Expo Go/개발 기본 경로와 웹 배포 경로를 섞지 않습니다.
+- `scripts/serve-web.mjs`/`.test.mjs`: `dist`를 지정된 URL 아래에서만 제공하는 로컬 전용 서버입니다. 없는 JS를 HTML로 대신 응답하지 않으며, MIME·경로 탈출·외부 junction을 검사합니다. 서버14개 검사는 임시 테스트 디렉터리를 사용합니다.
+- `src/components/ControlButton.tsx`, `src/screens/CharacterSelectPanel.tsx`: 실제 웹 QA에서 드러난 접근성 상태 누락을 고쳤습니다. 네이티브 `accessibilityState`는 유지하고 웹 버튼에 `aria-disabled`/`aria-pressed`를 명시합니다. `src/input/__tests__/ControlButton.test.tsx`는 설치된 RNW의 실제 DOM 변환까지 검사하고 서비스 패널 검사도 추가했습니다.
+- `src/game/__tests__/regression.test.ts`: 30/60/120Hz 동일 입력·정지·패배·재시작, 광고 중 숨김, production 부활 요청 거절, 긴 정지 뒤 약90초/100%, 과도한 발걸음 효과 방지,1000m 합성 상태의 사건 예고→힘 적용을 회귀 검사합니다. 규칙/난이도 상수는 바꾸지 않았습니다.
+- `e2e/fixtures/`, `e2e/fixtures.spec.ts`, `scripts/build-scene-fixtures.mjs`: 실제 앱과 별도의 그림 검사 번들입니다. 두 휴대폰 크기로0/15/50/50.5/51/100 장면과3종×커피2상태×기울기2방향을 확인합니다. 모든 캡처에 `TEST FIXTURE — 합성 상태 / iOS 스크린샷 아님`을 표시합니다.
+- `package.json`/lockfile, `.gitignore`: 개발 의존성 Playwright와 재현 명령을 추가하고 생성 보고서를 제외합니다. 게임의 runtime 의존성·실제 광고 SDK는 추가하지 않았습니다. `docs/development.md`의 오래된 첫 화면 설명도 현재 구현과 맞췄습니다.
+
+### 핵심 코드와 알아야 할 점
+
+```ts
+// ControlButton의 webProps 중 실제 상태 속성
+'aria-disabled': disabled,
+'aria-pressed': pressed,
+```
+
+`aria-*`는 웹 보조기술이 읽는 상태입니다. 버튼이 눌렸다는 의미는 `aria-selected`보다 `aria-pressed`가 맞습니다. 설치된 RNW는 비활성 false를 DOM에서 생략하므로 `aria-disabled="false"`라는 문자열 대신 `toBeEnabled()`로 검사합니다.
+
+```ts
+await page.keyboard.down('ArrowRight');
+await expect(page.getByTestId('result-screen')).toBeVisible();
+await page.keyboard.up('ArrowRight');
+```
+
+이 브라우저 검사는 실제 시간과 입력으로 넘어집니다. 반면 단위 검사에서는 물리의 고정1/120초를 직접 반복하므로90초나1000m를 빠르게 검증할 수 있습니다. 그 합성 성공을 사람이 실제로100% 달성했다거나 iPhone에서 부드럽게 실행됐다는 증거로 쓰면 안 됩니다.
+
+1. controller는 JS에서 고정 시간 규칙을 계산하고 Reanimated shared value가 그림을 갱신합니다. React 점수 갱신 주기와 실제 SVG 변환 갱신을 혼동하지 않도록 fixture는 라벨뿐 아니라 cup opacity와 transform을 기다린 뒤 캡처합니다.
+2. 배포 환경변수는 신뢰 경계가 아닙니다. `EXPO_PUBLIC_ENABLE_MOCK_AD=true`로 export해도 `__DEV__`가 false여서 가상 광고/부활이 노출되지 않음을 실제 결과 화면에서 확인합니다.
+3. 100% 관련 수집의0/1/9/10회 경계, 별도10판·중복 집계 방지·잠긴 선택·저장 실패·캐릭터별 동일 물리는 기존 단위/앱 검사를 포함한 전체 회귀로 확인합니다. 실제 브라우저에서는 기본 캐릭터·잠금과 정상 플레이 최고 기록 저장을 확인했으며 가짜 성공 횟수를 넣지 않았습니다.
+4. 소리5개가 올바른 WAV/MIME으로 로드되고 앱 오류가 없다는 사실은 실제 청취·음량·Safari 자동재생 통과와 다릅니다. 기존의 코드 생성 원본 WAV는 그대로 유지했습니다. iPhone 오디오·햅틱·공유·저장·멀티터치·성능은 P03에서 실제 증거가 필요합니다.
+5. 5번의 짧은 실제 판을 반복해 window 이벤트 구독 수가 증가하지 않음을 관찰했습니다. 메모리/DOM 수치는 GC 시점에 영향을 받으므로 장시간 누수 없음이나60fps를 주장하지 않습니다. 제어력·감쇠·위험 각도0.70 및90초 곡선은 이번에 조정하지 않았고 사용자 장시간 체감 밸런스도 확정하지 않았습니다.
+
+### 실패·검토와 해결
+
+- 앞선 UI 도구는 Windows trusted Node 오류로 실행되지 않았습니다. 이번에는 청사진에 지정된 개발용 Playwright로 Chromium headless shell을 설치해 실제 배포 번들을 실행했습니다. 단순 export 성공이나 모의 렌더러를 브라우저 성공으로 대체하지 않았습니다.
+- 최초 E2E 헬퍼의 닫는 중괄호 누락은 테스트 작성 오류였고 타입 검사로 수정했습니다. 이후 실제 버튼에서 접근성 상태가 빠지는 결함을 발견해 앱을 고쳤습니다. 초기 `aria-disabled=false` 검사도 RNW DOM 규칙에 맞췄습니다.
+- 동시 터치에서 `touchEnd:[b]`로 남길 오른손을 전달했지만 설치 Chromium153 경로는 전달한 손가락을 종료했습니다. `touchMove:[b]`도 왼손을 종료하지 않았습니다. [Chromium 구현](https://chromium.googlesource.com/chromium/src/+/master/content/browser/devtools/protocol/input_handler.cc)을 확인해 종료할 왼손 `[a]`를 전달하고 실제 눌림·해제·기울기까지 다시 검사했습니다. 이 실패 때문에 게임 물리를 임의 수정하지 않았습니다. 브라우저 기능 플래그/버전 변경 시 프로토콜 동작 재검증이 필요합니다.
+- 콘솔 앱 오류, pageerror, HTTP400 이상, 취소가 아닌 네트워크 실패는 E2E를 실패시킵니다. `net::ERR_ABORTED`는 페이지 전환·미디어 정리에서도 발생하므로 일괄 제외하며 각 취소의 세부 원인은 별도로 분류하지 않습니다. 경고는 보고서에 따로 남기고 필수 JS/WAV 로드는 별도 검사합니다.
+
+### 검증 기록
+
+타입 검사, 전체 Jest373/373(26 suites), 정적 서버14/14, Expo 의존성 호환 검사, 두 웹 번들 빌드가 통과했습니다. 최종 브라우저는26개 통과/중복 프로젝트 등7개 의도적 제외/실패0,137.7초였고 앱 오류·경고도0입니다. 중간 실행에서 재도전 초기화 후 카운트다운이 자동 정지한1회는 정확한 프레임/lifecycle 원인을 확정하지 못했습니다. 게임 보호를 우회하지 않고 다음 전체 실행을 통과했으며 재현되면 실제 기기에서 계측해야 합니다. 상세 결과·화면 경로·실기기 미검증 표는 [QA 기록](./qa-report.md)에 남깁니다. 스크린샷은 재생성 산출물이므로 Git 커밋하지 않습니다. GitHub 푸시·Pages 공개·EAS/iOS 빌드·스토어 소개문구 승인은 수행하지 않았습니다.
+
+### 이번 범위 밖
+
+새로운 범위 밖 결함은 특이사항 없음입니다. 발견한 버튼 접근성 누락은 T06의 게임 동작 수정 범위 안에서 해결했습니다. 기존 Expo 하위 의존성 중간등급10개 경고는 여전히 출시 전 확인 대상입니다. 닉네임·온라인 랭킹은 다음 P02이고, 실기기 조작감 확인을 자동 테스트로 면제하지 않습니다.
 
 ## 요청 범위 밖 발견 사항
 

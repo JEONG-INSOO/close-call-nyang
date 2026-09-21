@@ -18,6 +18,9 @@ const config: ExpoConfig = {
     bundler: 'metro',
     output: 'single',
   },
+  ...(process.env.GITHUB_PAGES === 'true'
+    ? { experiments: { baseUrl: '/close-call-nyang' } }
+    : {}),
   plugins: [
     'expo-asset',
     'expo-status-bar',

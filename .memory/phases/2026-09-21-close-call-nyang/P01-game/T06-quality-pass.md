@@ -1,6 +1,6 @@
 # Task: T06 통합 검증과 웹 조작감 점검
 
-## Status: pending
+## Status: done
 
 ## Goal
 완성된 게임을 실제 production 웹 산출물로 실행해 입력·화면·시간·저장·광고 차단 회귀를 확인하고, 측정 결과와 실기기 미검증 항목을 구분해 기록한다.
@@ -62,11 +62,11 @@
 - Record local result as P01 complete only after code/unit/browser criteria pass. App has not been published; GitHub remote/user push and Apple build remain pending.
 
 ## Acceptance Criteria
-- [ ] Full unit/screen/type checks and actual production browser tests pass.
-- [ ] Subpath resources/controls/rendering work without page errors at target viewports.
-- [ ] Release flag cannot enable mock ads even with misleading env input.
-- [ ] Game rules/90sec curve hold after any documented tuning.
-- [ ] QA and learning records distinguish evidence from pending iPhone/release work.
+- [x] Full unit/screen/type checks and actual production browser tests pass.
+- [x] Subpath resources/controls/rendering work without page errors at target viewports.
+- [x] Release flag cannot enable mock ads even with misleading env input.
+- [x] Game rules/90sec curve hold after any documented tuning.
+- [x] QA and learning records distinguish evidence from pending iPhone/release work.
 
 ## Validation
 - `npm.cmd run typecheck` — zero errors.
@@ -90,6 +90,15 @@ Task: T06-quality-pass
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending
+
+## Execution Evidence · 2026-09-21
+- Full Jest26 suites/373 tests, typecheck0errors, static-server14tests, Expo dependency check, Pages-base production export with mock env=true, isolated fixture build and diff check passed.
+- Actual Chromium153.0.8010.12/Playwright1.63.0 at1280×720,844×390,667×375: final26pass/7intentionally skipped/0fail,137.7sec. Skips: duplicate fixture/lifecycle project combinations6 and non-touch desktop touch case1. Browser app errors/warnings0.
+- Real keyboard/start/fall/retry/persistence/share failure and mobile-size two-touch pointers verified. Separate marked scene fixtures0/15/50/50.5/51/100 and all3characters×coffee2×lean2 inspected; not actual high-score/unlock/iOS evidence.
+- Targeted in-scope fix: ControlButton web disabled/pressed semantics and CharacterSelect web pressed selection; actual RNW DOM regression added. Physics/constants unchanged; critical0.70 and90±0.5sec maintained.
+- Additional reproducible files: e2e/helpers.ts, e2e/lifecycle.spec.ts, e2e/fixtures.spec.ts, e2e/fixtures/{index,SceneFixtures}.tsx, scripts/build-scene-fixtures.mjs, scripts/serve-web.test.mjs. Fixture output remains separate from dist and ignored.
+- Intermediate failure: retry reset succeeded but countdown auto-paused once; exact long-frame/lifecycle trigger not captured. No bypass/automatic resume or test retries; next complete standalone run passed. Evidence and native/performance follow-up in docs/qa-report.md.
+- Actual iPhone Expo Go/TestFlight, Safari/native audio/haptics/share/storage, long-play performance, online service and deployment remain not-run/future P02/P03. No push or publication.
