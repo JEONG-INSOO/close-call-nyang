@@ -9,11 +9,11 @@
 | T01 | `done` | Expo/TypeScript/Jest 기반과 Git | [T01](./T01-foundation.md) |
 | T02 | `done` | 물리·점수·사건·상태 머신 | [T02](./T02-game-engine.md) |
 | T03 | `done` | SVG 냥대리3종·캐릭터 목록·횡스크롤 배경 | [T03](./T03-vector-scene.md) |
-| T04 | `in_progress` | 입력·루프·플레이 가능한 화면 (active, 실행 대기) | [T04](./T04-playable-app.md) |
-| T05 | `pending` | 설정·저장·캐릭터 해금/선택·소리·공유·가상 광고 | [T05](./T05-local-services.md) |
+| T04 | `done` | 입력·루프·플레이 화면 구현/자동 검사 완료; 실제 웹·기기 QA 대기 | [T04](./T04-playable-app.md) |
+| T05 | `in_progress` | 설정·저장·캐릭터 해금/선택·소리·공유·가상 광고 (active, 실행 대기) | [T05](./T05-local-services.md) |
 | T06 | `pending` | 회귀 검증·웹 QA·조작감 조정 | [T06](./T06-quality-pass.md) |
 
 ## Progress
-- done: 3/6 (active: T04)
-- execution: T01 e2d066a; T02 f09b6d1; T03 ce14e74. Latest scene76+catalog16/full Jest177, typecheck, app web export, scene bundle and diff check passed. Browser visual inspection failed on tool startup; native QA pending. T04 implementation not started.
+- done: 4/6 (active: T05)
+- execution: T01 e2d066a; T02 f09b6d1; T03 ce14e74; T04 cab6500. Latest targeted73/full Jest249, typecheck, playable web export and diff check passed. Browser tool failed on Windows sandbox startup; actual browser interaction, phone layout and native multi-touch QA remain unchecked for T06/P03. T05 implementation not started.
 - next phase: [P02 leaderboard](../P02-leaderboard/phase.md)

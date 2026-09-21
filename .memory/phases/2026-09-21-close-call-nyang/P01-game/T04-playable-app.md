@@ -144,4 +144,4 @@ Task: T04-playable-app
 - Additional regression files: src/input/__tests__/{keyboard,lifecycle,ControlButton}.test.tsx, browserFixture.ts; src/screens/__tests__/presentation.test.tsx. The fixture is test-only, not an actual browser.
 - Review fix: hidden controls could be keyboard-activated under a portrait pointer-only gate; display:none plus start/resume guards and non-pointer click tests now cover it.
 - Browser tool failed with trusted Node / Windows sandbox initialization errors. No browser/iPhone visual success, push or deployment claimed.
-- commit: pending
+- commit: cab6500
