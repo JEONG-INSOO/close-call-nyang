@@ -1,6 +1,6 @@
 # Task: T04 입력·게임 루프와 플레이 화면 연결
 
-## Status: pending
+## Status: done
 
 ## Goal
 제목에서 시작해 손/키보드로 균형을 잡고 넘어지면 기록을 확인·재도전할 수 있는 앱을 구성한다. 수동·자동 정지와 입력 해제를 함께 검증한다.
@@ -110,11 +110,13 @@
 - Tests: START countdown→play→instant result using injected engine fixture; retry resets; paused frame does not tick; left+A release cases; opposite cancel; cancel/unmount clears; long delta auto pause; app resume doesn't auto-play; production no revive; score100 color/no gauge. Use dependency injection in tests, not production URL cheats. T05 wires share/settings before overall game acceptance.
 
 ## Acceptance Criteria
-- [ ] Browser runs a complete balance/retry loop with held keys and touch controls.
-- [ ] Pause/app lifecycle/portrait transitions freeze time and release all inputs.
-- [ ] rAF fixed steps feed pure engine, animation shared values avoid full scene React updates each frame.
-- [ ] Touch pads remain usable at landscape phone widths, no balance gauge or tutorial.
-- [ ] Display100 only changes color; game continues beyond100.
+- [ ] Browser runs a complete balance/retry loop with held keys and touch controls. Implementation and mocked behavior tests pass; actual browser interaction remains unverified after tool startup failure, assigned to the planned T06 browser QA.
+- [x] Pause/app lifecycle/portrait transitions freeze time and release all inputs (automated). Portrait also rejects hidden keyboard/accessibility start/resume activations.
+- [x] rAF fixed steps feed pure engine, animation shared values avoid full scene React updates each frame.
+- [ ] Touch pads remain usable at landscape phone widths, no balance gauge or tutorial. 76pt pads and safe-area layout implemented; actual 844×390/667×375 visual and iPhone multi-touch checks remain T06/P03 QA. No gauge/tutorial confirmed in component tests.
+- [x] Display100 only changes color; game continues beyond100 (component tests and real engine/controller normal-input run beyond101%).
+
+T04 implementation and specified automated Validation are complete. Unchecked visual/device acceptance evidence is explicitly pending, not claimed passed; full browser QA was already scheduled under T06 below.
 
 ## Validation
 - `npm.cmd test -- --runInBand src/game/__tests__/controller.test.ts src/input/__tests__ src/screens/__tests__ src/__tests__/App.test.tsx` — behavior passes.
@@ -136,6 +138,10 @@ Task: T04-playable-app
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 지정된 자동 검증 통과; 브라우저/실기기 증거는 위 미체크 항목으로 유지
+- Validation result: targeted8 suites/73 tests; full16 suites/249 tests; typecheck0errors; playable web export and diff check passed.
+- Additional regression files: src/input/__tests__/{keyboard,lifecycle,ControlButton}.test.tsx, browserFixture.ts; src/screens/__tests__/presentation.test.tsx. The fixture is test-only, not an actual browser.
+- Review fix: hidden controls could be keyboard-activated under a portrait pointer-only gate; display:none plus start/resume guards and non-pointer click tests now cover it.
+- Browser tool failed with trusted Node / Windows sandbox initialization errors. No browser/iPhone visual success, push or deployment claimed.
 - commit: pending
