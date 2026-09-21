@@ -121,4 +121,4 @@ Task: T03-vector-scene
 - validation: scene76 + catalog16 =92 new tests; full Jest177/177 across9suites; typecheck0errors; app web export and separate GameScene web bundle passed; git diff --check passed.
 - regression: replacement SharedValue retained stale scenery subscriptions; explicit [frame] dependencies and replacement-frame test fix this without changing physics.
 - visual QA: not completed. Preview bundled but browser tool failed twice with trusted Node process exited unexpectedly. T06 browser/P03 native QA remain; App.tsx still foundation screen pendingT04.
-- commit: recorded in following memory synchronization commit
+- commit: ce14e74

@@ -8,12 +8,12 @@
 | :--- | :--- | :--- | :--- |
 | T01 | `done` | Expo/TypeScript/Jest 기반과 Git | [T01](./T01-foundation.md) |
 | T02 | `done` | 물리·점수·사건·상태 머신 | [T02](./T02-game-engine.md) |
-| T03 | `in_progress` | SVG 냥대리3종·캐릭터 목록·횡스크롤 배경 (active, 실행 대기) | [T03](./T03-vector-scene.md) |
-| T04 | `pending` | 입력·루프·플레이 가능한 화면 | [T04](./T04-playable-app.md) |
+| T03 | `done` | SVG 냥대리3종·캐릭터 목록·횡스크롤 배경 | [T03](./T03-vector-scene.md) |
+| T04 | `in_progress` | 입력·루프·플레이 가능한 화면 (active, 실행 대기) | [T04](./T04-playable-app.md) |
 | T05 | `pending` | 설정·저장·캐릭터 해금/선택·소리·공유·가상 광고 | [T05](./T05-local-services.md) |
 | T06 | `pending` | 회귀 검증·웹 QA·조작감 조정 | [T06](./T06-quality-pass.md) |
 
 ## Progress
-- done: 2/6 (active: T03)
-- execution: T01 committed e2d066a; earlier12tests/typecheck/SDK check/Doctor21/21/web export passed. T02 committed f09b6d1; game rules73/73, full Jest85/85, typecheck and diff check passed. T03 implementation not started.
+- done: 3/6 (active: T04)
+- execution: T01 e2d066a; T02 f09b6d1; T03 ce14e74. Latest scene76+catalog16/full Jest177, typecheck, app web export, scene bundle and diff check passed. Browser visual inspection failed on tool startup; native QA pending. T04 implementation not started.
 - next phase: [P02 leaderboard](../P02-leaderboard/phase.md)
