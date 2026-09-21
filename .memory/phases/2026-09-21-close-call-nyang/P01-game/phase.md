@@ -6,14 +6,14 @@
 ## Tasks
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| T01 | `pending` | Expo/TypeScript/Jest 기반과 Git | [T01](./T01-foundation.md) |
-| T02 | `pending` | 물리·점수·사건·상태 머신 | [T02](./T02-game-engine.md) |
+| T01 | `done` | Expo/TypeScript/Jest 기반과 Git | [T01](./T01-foundation.md) |
+| T02 | `in_progress` | 물리·점수·사건·상태 머신 (active, 실행 대기) | [T02](./T02-game-engine.md) |
 | T03 | `pending` | SVG 냥대리와 횡스크롤 배경 | [T03](./T03-vector-scene.md) |
 | T04 | `pending` | 입력·루프·플레이 가능한 화면 | [T04](./T04-playable-app.md) |
 | T05 | `pending` | 설정·저장·소리·공유·가상 광고 | [T05](./T05-local-services.md) |
 | T06 | `pending` | 회귀 검증·웹 QA·조작감 조정 | [T06](./T06-quality-pass.md) |
 
 ## Progress
-- done: 0/6 (active: T01)
-- execution: awaiting model-switch handoff; implementation has not started
+- done: 1/6 (active: T02)
+- execution: T01 committed e2d066a;12tests/typecheck/SDK check/Doctor21/21/web export passed. T02 implementation not started.
 - next phase: [P02 leaderboard](../P02-leaderboard/phase.md)

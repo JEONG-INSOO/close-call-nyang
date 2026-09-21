@@ -6,7 +6,7 @@
 온라인 순위표가 통합된 게임을 `/close-call-nyang/` 하위 경로에서 검증하고, 올바른 공개 백엔드 설정과 검사가 통과한 산출물만 GitHub Pages로 배포하는 구성 및 한국어 지원·개인정보 페이지를 준비한다.
 
 ## Decision Summary
-- P01의 Expo SDK 57 비-Router 앱과 P02에서 검증한 Supabase 익명 인증/Postgres/Edge Functions 순위표를 사용한다. `web.output: single`, Metro, npm lockfile 유지. GitHub 사용자/저장소는 `mocca/close-call-nyang`; 원격 생성·연결·푸시와 최초 Pages 활성화는 사용자 담당이다.
+- P01의 Expo SDK 57 비-Router 앱과 P02에서 검증한 Supabase 익명 인증/Postgres/Edge Functions 순위표를 사용한다. `web.output: single`, Metro, npm lockfile 유지. GitHub 사용자/저장소는 `JEONG-INSOO/close-call-nyang`; 원격 생성·연결·푸시와 최초 Pages 활성화는 사용자 담당이다.
 - 회원가입·로그인 화면 없이 기기별 익명 ID/닉네임·검증 점수를 서버에 저장한다. 분석·광고 추적·광고 SDK·서비스 워커는 추가하지 않는다. 공개 지원 연락처는 추측하지 않으며 미입력 초안은 제출에 사용할 수 없다.
 
 ## Implementation
@@ -27,7 +27,7 @@
 #### Details
 - **Signatures & Types**: 아래는 설정 계약이며 이 단계의 청사진 자체를 앱 코드로 실행하지 않는다.
   ```typescript
-  const PUBLIC_WEB_URL: 'https://mocca.github.io/close-call-nyang/';
+  const PUBLIC_WEB_URL: 'https://jeong-insoo.github.io/close-call-nyang/';
   function getFeatureFlags(isDev: boolean, enableMockAd: string | undefined): { mockAdsEnabled: boolean };
   type WebExportOptions = { directory: string; basePath: '/close-call-nyang/'; release: boolean };
   type LeaderboardPublicConfig = {
@@ -44,7 +44,7 @@
 
 - **배포 데이터 흐름**: iOS와 웹은 같은 production Supabase URL/publishable key를 사용해 공통 순위표를 조회한다. 익명 identity는 기기/브라우저별이고 닉네임이 같아도 병합하지 않는다. 공개 순위는 플레이어별 누적 최고 정수 %, 상위 100명과 본인 순위, 동점 공동 순위/안정적 시각 순서다. 오프라인 시작 판은 로컬 기록만 갱신하고 순위에 올리지 않는다. 서버가 만든 seed/run과 입력 리플레이가 통과한 production 판만 등록한다.
 - **공개 설정/비밀 경계**: 위 두 `EXPO_PUBLIC_*`는 공개 번들에 들어가는 값이다. URL은 실제 `https://<project>.supabase.co`, key는 publishable 키여야 한다. 서버 secret/service-role key, DB password, JWT signing secret, 플레이어 access/refresh token을 코드·Pages·Git·Expo public env·빌드 로그에 넣지 않는다. service-role 권한은 서버에서만 사용하고 publishable key를 권한 통제 대신 사용하지 않는다.
-- **CORS**: 배포 웹 origin은 `https://mocca.github.io`이며 `/close-call-nyang/`가 포함되지 않는다. P02 Edge Functions의 allowlist/OPTIONS가 그 origin을 허용하는지 검증한다. localhost는 테스트 환경에서만 별도로 허용한다. Origin이 없는 native의 공개 GET leaderboard는 identity/JWT 없이 rate limit을 적용해 허용하며, 쓰기는 검증된 JWT/소유권·서버 입력 검증을 필수로 적용한다. 제공된 잘못된 bearer를 공개 요청으로 조용히 낮추지 않는다. CORS를 인증 또는 부정 기록 방지 수단으로 취급하지 않는다.
+- **CORS**: 배포 웹 origin은 `https://jeong-insoo.github.io`이며 `/close-call-nyang/`가 포함되지 않는다. P02 Edge Functions의 allowlist/OPTIONS가 그 origin을 허용하는지 검증한다. localhost는 테스트 환경에서만 별도로 허용한다. Origin이 없는 native의 공개 GET leaderboard는 identity/JWT 없이 rate limit을 적용해 허용하며, 쓰기는 검증된 JWT/소유권·서버 입력 검증을 필수로 적용한다. 제공된 잘못된 bearer를 공개 요청으로 조용히 낮추지 않는다. CORS를 인증 또는 부정 기록 방지 수단으로 취급하지 않는다.
 - **실제 보존·삭제 계약**: 매일 cleanup 기준은 active 및 terminal run 무활동 24시간, finalized receipt 7일, report 90일, rate bucket/단기 salted IP hash 24시간이며 best/profile은 사용자 삭제 또는 운영 moderation까지 보관한다. 완료된 deletion tombstone은 7일 및 Auth 만료 안전 조건을 모두 만족한 뒤 제거하고 `pending_auth_delete`는 Auth 삭제 완료 전 정리하지 않는다. provider 로그는 실제 provider 보존 기간을 설명한다. 앱의 `온라인 프로필과 기록 삭제`는 서버 Auth user까지 삭제 완료된 뒤 로컬 session/profile/queue를 비우고 로컬 최고/설정은 유지한다. 사용자가 닉네임 참여를 다시 고르기 전 자동 재가입하지 않는다. 세션은 native AsyncStorage/browser storage에 저장되며 암호화 저장이라고 주장하지 않는다.
 
 ### I02. 실제 export 검증과 배포 workflow

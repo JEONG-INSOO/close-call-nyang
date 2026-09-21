@@ -104,7 +104,7 @@
 
 ## D25. 웹 배포
 - **Chosen**: 일반 정적 웹 게임. PWA·서비스 워커는 제외한다. GitHub Pages 저장소 이름 `close-call-nyang`, 사용자명 `mocca`.
-- **Rationale**: 예정 URL은 `https://mocca.github.io/close-call-nyang/`. 현재 저장소 소유권·공개·배포를 검증한 것은 아니다.
+- **Rationale**: 예정 URL은 `https://jeong-insoo.github.io/close-call-nyang/`. 현재 저장소 소유권·공개·배포를 검증한 것은 아니다.
 
 ## D26. Git 작업 범위
 - **Chosen**: 로컬 Git 저장소 초기화, 작업별 검증·커밋, Actions 설정까지 준비한다. 새 GitHub 저장소 생성과 원격 푸시는 사용자가 수행한다.
@@ -159,6 +159,10 @@
 - **Implementation default**: Supabase Free 범위로 시작하며 실제 계정/프로젝트 연결은 실행 단계에서 한다. 현재 계정 생성·배포·요금제 결제는 하지 않았다. 무료 프로젝트 휴면과 사용량 제한을 운영 문서에 설명하고 유료 전환은 사용자가 결정한다. [요금/제한](https://supabase.com/pricing)
 - **Rationale**: 기존 "데이터 전송 없음" 문구는 더 이상 최종 사양이 아니다. 공개 닉네임·검증된 성공률과 비공개 익명ID·인증 세션·검증용 플레이 자료·신고/삭제 처리의 목적 및 보관 기간을 개인정보 페이지와 App Store 답변에 반영한다. 분석·광고 추적은 계속 제외한다.
 - **Implementation default**: 현재 규칙 버전의 역대 최고 기록을 유지하고, 검증 중 판은 마지막 요청24시간 후 만료, 중복 응답용 완료 영수증은7일 후 정리, 운영 신고는90일 후 정리한다. 원시 입력은 검증 후 서버에 장기 저장하지 않는다. 최초 출시 이후 물리 규칙을 바꿀 때 랭킹 정책은 별도로 검토한다.
+
+## D38. 실제 GitHub 계정과 이번 커밋·푸시 승인
+- **Chosen**: 2026-09-21 사용자가 현재 작업 커밋·푸시와 공개 저장소 생성을 요청했다. 인증 결과 JEONG-INSOO 계정으로 확인되어 JEONG-INSOO/close-call-nyang 저장소를 생성했다. 예전 mocca 호스트는 실제 검증 전 계획값이었다.
+- **Rationale**: Pages 및 API CORS 주소는 실제 계정에 맞춰야 한다. 앞으로 사용할 Pages 호스트는 https://jeong-insoo.github.io 이며 아직 사이트를 배포한 것은 아니다. iOS bundle ID는 기존 결정 그대로다. 최초 원격 생성·현재 이력 푸시에 한해 이전 사용자 직접 처리 결정을 최신 요청으로 대체한다.
 
 ## 코드에서 확인한 사실과 구현 기본값
 - 기존 게임 코드·package.json·Git 저장소 없음. README는 메모리 워크플로 스타터 안내이고 `.memory/current.md`는 미설정 예시였다.

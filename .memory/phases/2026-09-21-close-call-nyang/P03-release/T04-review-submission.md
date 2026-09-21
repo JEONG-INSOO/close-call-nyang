@@ -71,7 +71,7 @@
   ```
 - **Execution Flow / Logic**:
   1. Precondition & Validation: 공개 지원 연락처·저작권자·가격·배포 지역 등 실제 제출에 필요한 값이 없으면 실행 시 사용자에게 운영 정보로 받는다. 인증과 심사용 비공개 연락처는 적절한 계정 UI에 입력하고 Git에 보관하지 않는다. 4+는 닉네임 사용자 콘텐츠와 신고/기본 moderation을 포함해 설문을 사실대로 작성한 결과로 확인하며 임의로 등급을 낮추지 않는다. Supabase 프로젝트가 활성 상태이고 현재 무료 한도 내 운영 가능하며 앱/웹의 공개 URL/publishable key가 같은 서버를 가리키는지 확인한다.
-  2. Core Processing: 지원/개인정보 문서에 실제 운영 정보, anonymous UUID·닉네임·검증 점수/입력 증명의 목적·보존·처리 위치, 닉네임 신고/변경·온라인 데이터 삭제 방법과 계정 복구 한계를 반영하고 모든 `data-release-pending` 표식을 제거한다. 사용자가 GitHub 저장소를 생성/push하고 Pages Source를 Actions로 활성화하도록 안내한다. 에이전트는 원격 생성·push를 하지 않는다. 실제 게임/privacy/support URL을 열어 올바른 내용과 200을 확인하고 Pages origin `https://mocca.github.io`에서 온라인 조회/인증 요청이 CORS 오류 없이 동작하는지 확인한다. 홈페이지 응답만 보고 API나 하위 문서까지 검증했다고 기록하지 않는다.
+  2. Core Processing: 지원/개인정보 문서에 실제 운영 정보, anonymous UUID·닉네임·검증 점수/입력 증명의 목적·보존·처리 위치, 닉네임 신고/변경·온라인 데이터 삭제 방법과 계정 복구 한계를 반영하고 모든 `data-release-pending` 표식을 제거한다. 사용자가 GitHub 저장소를 생성/push하고 Pages Source를 Actions로 활성화하도록 안내한다. 에이전트는 원격 생성·push를 하지 않는다. 실제 게임/privacy/support URL을 열어 올바른 내용과 200을 확인하고 Pages origin `https://jeong-insoo.github.io`에서 온라인 조회/인증 요청이 CORS 오류 없이 동작하는지 확인한다. 홈페이지 응답만 보고 API나 하위 문서까지 검증했다고 기록하지 않는다.
   3. Error & Exception Handling: URL 404·초안 연락처/삭제·보존 정보·미처리 빌드·미정 가격/지역·backend 중단/잘못된 공개 설정·권한 부족은 제출 차단. 로컬 코드·이미지·문구 준비가 끝났더라도 외부 상태를 success로 대체하지 않는다. 사용자의 검토를 기다리는 동안 준비 가능한 작업은 끝내되 승인되지 않은 소개문구/이미지를 제출하지 않는다.
   4. State Transition & Return: 실제 빌드 번호와 backend URL, 네 스크린샷, 온라인 순위를 포함한 소개문구/부제/키워드, 지원·개인정보 URL 및 데이터 처리/삭제 설명, 가격/지역, manual 출시를 한 검토 묶음으로 사용자에게 보여준다. 사용자의 명시적 확인 후 approvedAt/evidence와 metadata/manifest/release-inputs/privacy-inventory 해시를 기록한다. 승인 자료 또는 backend 대상이 바뀌면 pending으로 되돌리고 변경된 자료를 재확인한다.
 
@@ -100,9 +100,9 @@
 - 작업 폴더 `D:\GrillmeEDU`: `npm.cmd run store:render`, `npm.cmd run store:verify` — 원본 해시·크기·불투명·manifest 검사 통과 및 최종 이미지 직접 검토.
 - `npm.cmd run typecheck`, `npm.cmd run test:ci`, `npm.cmd run web:export`, `node scripts/verify-web-export.mjs --release`, `npm.cmd run e2e` — 최종 수정 후 관련 전체 검사 통과.
 - `npm.cmd run ranked:check`, `npm.cmd run ranking:env-check` — 승인한 앱·서버 rules 및 최종 공개 설정/서버 비밀 분리 확인. native golden hash/실제 hosted QA는 P03-T03 증거와 대조한다.
-- `Invoke-WebRequest -UseBasicParsing -Uri 'https://mocca.github.io/close-call-nyang/'` — HTTP 200/실제 게임 내용.
-- `Invoke-WebRequest -UseBasicParsing -Uri 'https://mocca.github.io/close-call-nyang/privacy/'` — HTTP 200/최종 개인정보 문서 내용.
-- `Invoke-WebRequest -UseBasicParsing -Uri 'https://mocca.github.io/close-call-nyang/support/'` — HTTP 200/실제 연락처와 최종 지원 문서 내용.
+- `Invoke-WebRequest -UseBasicParsing -Uri 'https://jeong-insoo.github.io/close-call-nyang/'` — HTTP 200/실제 게임 내용.
+- `Invoke-WebRequest -UseBasicParsing -Uri 'https://jeong-insoo.github.io/close-call-nyang/privacy/'` — HTTP 200/최종 개인정보 문서 내용.
+- `Invoke-WebRequest -UseBasicParsing -Uri 'https://jeong-insoo.github.io/close-call-nyang/support/'` — HTTP 200/실제 연락처와 최종 지원 문서 내용.
 - `Get-FileHash -Algorithm SHA256 -LiteralPath 'store/ko-KR/metadata.json','store/screenshots/manifest.json','store/release-inputs.json','store/privacy-inventory.md'` — 승인 해시와 일치.
 - 실제 Pages 및 TestFlight에서 새 시험 guest의 닉네임/순위 조회·신고·온라인 데이터 삭제 smoke 실행 — P03-T03의 production endpoint와 동일하고 결과가 정책/심사 노트와 일치. server key/session token을 캡처나 로그에 남기지 않는다.
 - `npm.cmd run ranking:verify -- --environment production` — endpoint/rules/backend가 P03-T03 이후 바뀐 경우 실제 proof/RLS/삭제 검증을 갱신한다. 변경이 없으면 같은 배포에 대한 기존 통과 증거를 재사용한다.

@@ -29,7 +29,7 @@
   export const APP_NAME = '아슬아슬 냥대리';
   export const APP_SLUG = 'close-call-nyang';
   export const IOS_BUNDLE_ID = 'com.mocca.closecallnyang';
-  export const PUBLIC_WEB_URL = 'https://mocca.github.io/close-call-nyang/';
+  export const PUBLIC_WEB_URL = 'https://jeong-insoo.github.io/close-call-nyang/';
   export type FeatureFlags = Readonly<{ mockAdsEnabled: boolean }>;
   export function getFeatureFlags(isDev: boolean, enableMockAd: string | undefined): FeatureFlags;
   export default function App(): React.JSX.Element;
@@ -72,7 +72,7 @@
 - [x] Resolved packages match SDK57; Expo dependency check and Doctor21/21 pass. No Router or ad SDK.
 - [x] Audio permissions and production mock-ad guard are configured and tested.
 - [x] Existing starter files are preserved; development and learning notes distinguish pending work.
-- [x] Actual Git identity confirmed; local implementation commit is this change. User separately authorized public remote creation/push on2026-09-21; GitHub authentication is still pending.
+- [x] Actual Git identity confirmed; implementation commit e2d066a. User separately authorized public remote creation/push on2026-09-21; GitHub authenticated as JEONG-INSOO and the public repository was created.
 
 ## Validation
 - `npm.cmd run typecheck` — zero errors.
@@ -97,6 +97,6 @@ Task: T01-foundation
 ## Progress
 - [x] 구현 완료
 - [x] 검증 통과
-- commit: recorded in the following memory synchronization commit
+- commit: e2d066a
 - Actual validation: typecheck0errors; Jest2suites/12tests; expo install --check passed; expo-doctor21/21; web export passed.
 - Remaining advisory: npm audit10moderate via Expo/xcode/uuid,0high/critical; no forced downgrade. Actual iPhone/browser visual tests not performed in this Task.

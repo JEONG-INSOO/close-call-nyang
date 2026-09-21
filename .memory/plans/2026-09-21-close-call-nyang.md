@@ -5,13 +5,13 @@ Windows에서 Expo SDK 57 + TypeScript + Reanimated + SVG로 한국어 가로 �
 
 - Decisions: [확정 결정](../decisions/2026-09-21-close-call-nyang.md)
 - Planning date: 2026-09-21
-- Implementation gate: 사용자 요청에 따라 모델 변경 안내 후 중단. 아직 구현 시작하지 않음.
-- Amendment: 닉네임·온라인 리더보드 결정을 반영해 P02-leaderboard 3개 Task를 추가하고 기존 출시 단계를 P03-release로 이동했다. 총14개 Task이며 모델 변경 안내 후 실행 요청을 기다린다.
+- Implementation gate: 모델 변경 안내 후2026-09-21 사용자 실행 요청을 받아 P01-T01 완료(e2d066a). 다음 active는 P01-T02.
+- Amendment: 닉네임·온라인 리더보드 결정을 반영해 P02-leaderboard 3개 Task를 추가하고 기존 출시 단계를 P03-release로 이동했다. 총14개 Task이며 사용자 실행 요청으로 첫 Task를 완료했다.
 
 ## Phases
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | 로컬 게임·검증 가능한 웹 플레이 완성 (현재는 계획 완료, 실행 대기) | [P01](../phases/2026-09-21-close-call-nyang/P01-game/phase.md) |
+| P01 | `in_progress` | 로컬 게임·검증 가능한 웹 플레이 완성 (기반1/6완료) | [P01](../phases/2026-09-21-close-call-nyang/P01-game/phase.md) |
 | P02 | `pending` | 익명 플레이어·서버 기록 검증·공통 리더보드 및 실제 서비스 확인 | [P02](../phases/2026-09-21-close-call-nyang/P02-leaderboard/phase.md) |
 | P03 | `pending` | Pages·스토어 준비, 외부 iOS 검증·심사 제출·학습노트 마감 | [P03](../phases/2026-09-21-close-call-nyang/P03-release/phase.md) |
 
@@ -53,7 +53,7 @@ P01은 로컬 게임 규칙과 화면, P02는 새로 추가된 서버·네트워
 3. 커밋 후 task의 commit 기록, phase 진행률, plan 진행률과 current 포인터를 동기화한다. 자기 자신의 커밋 해시를 그 커밋 안에 넣으려는 무한 amend는 하지 않는다. 후속 메모리 동기화 커밋에 기록할 수 있다.
 4. 커밋 신원/권한 또는 실제 기기 검증이 없으면 성공으로 기록하거나 다음 Task로 건너뛰지 않는다. 완료한 로컬 작업은 보존하고 구체적인 남은 의존성을 기록한다.
 5. 각 Task에서 `docs/learning-notes.md`에 무엇/왜/검증/실패와 해결/남은 한계를 누적한다. 처음부터 완료된 것으로 쓰지 않는다.
-6. GitHub 원격 생성/푸시는 사용자 담당. 실제 Pages URL 검증은 사용자 푸시 후 수행한다. App Store 문구·이미지·최종 심사 제출은 사용자 확인을 거친다. 제출 후 공개는 수동 상태로 둔다.
+6. 최초 공개 원격 생성·현재 이력 푸시는2026-09-21의 명시 요청으로 에이전트가 처리한다. 향후 출시 푸시·Pages 설정은 해당 단계에서 사용자와 진행하며 이번 승인으로 자동 배포까지 확대하지 않는다. App Store 문구·이미지·최종 심사 제출은 사용자 확인을 거친다. 제출 후 공개는 수동 상태로 둔다.
 
 ## Validation Strategy
 - 단위: 고정 간격, 15/51/100 경계, 약 90초 속도 적분, 즉시 실패, 사건 예고, 광고 5초·취소·1회 보상, 정지 중 시계 불변.
@@ -77,7 +77,7 @@ P01은 로컬 게임 규칙과 화면, P02는 새로 추가된 서버·네트워
 - 확인: Node 24.19.0, npm.cmd 11.17.0, Git 2.55.0; 기존 앱/Git 저장소 없음. PowerShell에서는 `npm.cmd`/`npx.cmd` 사용.
 - Expo SDK 57는 공식 지원 버전 조합을 `expo install`로 맞춘다. SDK57 최신 안정 패치(최소 알려진 수정 버전 57.0.17 이상)를 조회 후 lockfile로 고정하며 SDK58로 묵시적 상승 금지.
 - [2026-09-03 Go 공지](https://expo.dev/changelog/expo-go-57-login)에 따라 SDK57은 일반 iOS Expo Go에서 테스트 가능. 동일 Expo 계정 로그인 필요. `eas go`는 선택 가능한 대안이다.
-- 미확정 운영값: Git 커밋 작성자, Expo/Apple 인증·앱 ID, 공개 지원 연락처, 제출 가격/지역. 필요한 실행 단계에서만 받는다.
+- Git 커밋 작성자는 mocca3232 / mocca3232@naver.com으로 확인했다. 미확정 운영값은 Expo/Apple 인증·앱 ID, 공개 지원 연락처, 제출 가격/지역이며 필요한 실행 단계에서만 받는다.
 - Supabase Free 운영을 기본으로 계획한다. 실제 프로젝트·권한·사용량·휴면 상태는 P02-T03에서 확인한다. 유료 전환이나 계정 결제를 자동으로 하지 않는다.
 
 ## Sources
@@ -88,6 +88,7 @@ P01은 로컬 게임 규칙과 화면, P02는 새로 추가된 서버·네트워
 - [Supabase anonymous users](https://supabase.com/docs/guides/auth/auth-anonymous), [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security), [function limits](https://supabase.com/docs/guides/functions/limits), [pricing](https://supabase.com/pricing)
 
 ## Progress
-- Tasks done: 0/14
-- Active: P01-T01 (updated plan ready; model-switch/execution handoff still required)
+- Tasks done: 1/14
+- Active: P01-T02 (foundation validated and committed; next task implementation pending)
+- GitHub amendment2026-09-21: user explicitly authorized public repository creation/push for current work; authenticated account JEONG-INSOO, repository https://github.com/JEONG-INSOO/close-call-nyang. Earlier user-only remote creation restrictions do not block this expressly requested handoff. Pages activation/release deployment remain later Tasks.
 - Adjacent out-of-scope defects: 특이사항 없음. 기존 스타터 문서/예시는 보존한다.

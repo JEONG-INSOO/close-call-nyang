@@ -58,8 +58,8 @@
     locale: 'ko-KR'; name: '아슬아슬 냥대리'; subtitle: string;
     promotionalText: string; description: string; keywords: string[];
     primaryCategory: 'GAMES'; gameSubcategory: 'CASUAL'; madeForKids: false;
-    supportUrl: 'https://mocca.github.io/close-call-nyang/support/';
-    privacyPolicyUrl: 'https://mocca.github.io/close-call-nyang/privacy/';
+    supportUrl: 'https://jeong-insoo.github.io/close-call-nyang/support/';
+    privacyPolicyUrl: 'https://jeong-insoo.github.io/close-call-nyang/privacy/';
     status: 'draft' | 'approved';
   };
   ```

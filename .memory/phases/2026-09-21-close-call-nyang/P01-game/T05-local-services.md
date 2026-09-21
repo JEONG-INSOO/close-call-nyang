@@ -52,7 +52,7 @@
   1. Load asynchronously at root; title can appear immediately with stable defaults, do not trap game behind spinner. Failure gives in-memory session and unobtrusive Korean notice when relevant. Failed read must not immediately overwrite stored data with defaults automatically.
   2. Persist on settings changes and result/highest update or pause; avoid per-physics-tick disk writes. Settings change visible immediately even if write fails; status memoryOnly and retry on subsequent intentional save, no network/analytics reporting.
   3. Opening settings while playing first PAUSE; close returns paused overlay, not automatic play. Toggle labels accessible and values announced. Reduced motion affects rendering only; audio toggles immediately affect current players. UI avoids a secret dev ad toggle in production settings.
-  4. Format share score as finite int: `아슬아슬 냥대리 프로젝트 성공률 {N}%!\nhttps://mocca.github.io/close-call-nyang/`. PUBLIC_WEB_URL comes from src/config/app.ts, currently planned URL and only becomes live after user Pages setup.
+  4. Format share score as finite int: `아슬아슬 냥대리 프로젝트 성공률 {N}%!\nhttps://jeong-insoo.github.io/close-call-nyang/`. PUBLIC_WEB_URL comes from src/config/app.ts, currently planned URL and only becomes live after user Pages setup.
   5. Native uses React Native Share.share({message}); cancellation silent. Web uses expo-clipboard or browser clipboard from direct user click. Rejection/unavailable/insecure context → selectable text dialog and `복사해서 공유해 주세요`. Never claim successful copy on failure. No file or image share permissions.
 
 ### I02. Original audio and mobile feedback

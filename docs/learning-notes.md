@@ -48,7 +48,7 @@
 
 ### Git 및 다음 단계
 
-기획 문서·워크플로 규칙24개를 `2a1c426`으로 먼저 저장했습니다. 사용자가 공개 GitHub 저장소 생성과 푸시를 요청했으며, 실제 인증 계정/원격 확인 후 수행합니다. 종전 mocca/close-call-nyang 주소는 조회에서 Repository not found였습니다.
+기획 문서·워크플로 규칙24개를 `2a1c426`, 검증된 첫 구현 작업을 `e2d066a`로 저장했습니다. 사용자 인증 후 실제 GitHub 계정 JEONG-INSOO에 공개 저장소 https://github.com/JEONG-INSOO/close-call-nyang 을 생성했습니다. 종전 mocca/close-call-nyang 주소는 계획값이었고 조회에서 Repository not found였습니다. 앱·계획의 Pages/CORS 주소를 실제 계정으로 수정했으며 사이트 배포는 후속 Task입니다.
 
 T01은 필수 검사를 통과했으며 구현 커밋 후 current를 P01-T02 게임 엔진으로 전진합니다. 출시 문구와 스크린샷은 나중에 다시 확인받으며 전체 출시와 학습노트 마감은 아직 대기입니다.
 
