@@ -5,6 +5,7 @@ import Svg from 'react-native-svg';
 import { CHARACTERS, type CharacterId } from '../../src/characters/catalog';
 import { ko } from '../../src/i18n/ko';
 import { GameScene } from '../../src/scene/GameScene';
+import { EmployeeCharacterSheet } from '../../src/scene/EmployeeCharacterSheet';
 import { getSceneModel, getViewport } from '../../src/scene/layout';
 import { NYANG_RIG, NYANG_WALK, NyangCharacter } from '../../src/scene/NyangCharacter';
 import type { SceneFrame } from '../../src/scene/types';
@@ -87,6 +88,8 @@ export function SceneFixtures() {
       <Text accessibilityRole="header" style={styles.title}>냥대리 장면 · 정적 시각 검사</Text>
       <Text testID="fixture-disclaimer" style={styles.notice}>{FIXTURE_NOTICE}</Text>
       <Text style={styles.description}>아래 값은 렌더러에 직접 전달한 합성 상태입니다. 실제 플레이·해금·점수 달성 증거가 아닙니다.</Text>
+      <Text style={styles.sectionTitle}>승인 시안의 실제 SVG 구현 · 신입사원 4포즈</Text>
+      <EmployeeCharacterSheet />
       <View style={styles.controls}>
         <Text style={styles.sectionLabel}>Phone viewport / SVG contain</Text>
         <View style={styles.chips}>{PHONE_SIZES.map((size, index) => <Chip key={size.width} testID={`fixture-phone-${size.width}`}

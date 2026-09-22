@@ -9,6 +9,12 @@ import { BALANCE } from '../game/balance';
 import { palette } from '../theme/tokens';
 import type { SceneProps } from './types';
 import { svgTransform, svgTransformAdapter } from './svgMotion';
+import { GREY_TABBY_COLORS, GreyTabbyArm, GreyTabbyFace, GreyTabbyHead,
+  GreyTabbyNotes, GreyTabbySuit, GreyTabbyTail, GreyTabbyWater } from './GreyTabbyParts';
+
+/** Presentation-only poses. The engine continues to supply the unmodified frame. */
+export type EmployeePose = 'game' | 'walk' | 'water' | 'run' | 'notes';
+export interface NyangCharacterProps extends SceneProps { pose?: EmployeePose }
 
 /** Cosmetic coordinates only; every skin shares the same two-head rig. */
 export const NYANG_RIG = Object.freeze({
@@ -16,7 +22,7 @@ export const NYANG_RIG = Object.freeze({
   pivotX: 0, pivotY: 0, legLeftX: -25, legRightX: 25, cupX: 64, cupY: -60,
 });
 
-/** Local flat fills: no shader, highlight, gradient, clothing or shared theme change. */
+/** Unchanged reward-cat palette; the approved rookie has its own suited palette. */
 export const NYANG_COLORS = Object.freeze({
   outline: '#61463C', fur: '#F3D4A9', white: '#FFF9EE', pink: '#E8A3AD',
   tie: '#91CAB6', badge: '#C6B7DC', cupBand: '#EAB89D',
@@ -35,6 +41,13 @@ export function walkPhaseAt(distanceM: number): number {
   if (!Number.isFinite(distanceM) || distanceM <= 0) return 0;
   // Bound before multiplying so long runs never send infinity into SVG props.
   return (distanceM % NYANG_WALK.metersPerCycle) / NYANG_WALK.metersPerCycle * Math.PI * 2;
+}
+
+// Worklet dependencies must be initialized before capture (do not move above walkPhaseAt).
+function strideFor(pose: EmployeePose, distance: number): number {
+  'worklet';
+  return pose === 'run' ? 1 : pose === 'walk' ? 0.85
+    : pose === 'water' || pose === 'notes' ? 0 : Math.sin(walkPhaseAt(distance));
 }
 
 const AnimatedG = Animated.createAnimatedComponent(G);
@@ -86,8 +99,8 @@ const Outfit = memo(function Outfit({ id }: { id: CharacterId }) {
   );
 });
 
-const PawPads = memo(function PawPads({ side }: { side: 'left' | 'right' }) {
-  return <G fill={NYANG_COLORS.pink} stroke="none">
+const PawPads = memo(function PawPads({ side, color = NYANG_COLORS.pink }: { side: 'left' | 'right'; color?: string }) {
+  return <G fill={color} stroke="none">
     <Ellipse testID={`paw-pad-${side}`} cx={0} cy={12} rx={6} ry={4} />
     <Ellipse testID={`paw-bean-${side}-1`} cx={-7} cy={5} rx={2.5} ry={2.2} />
     <Ellipse testID={`paw-bean-${side}-2`} cx={0} cy={4} rx={2.5} ry={2.2} />
@@ -95,7 +108,11 @@ const PawPads = memo(function PawPads({ side }: { side: 'left' | 'right' }) {
   </G>;
 });
 
-export function NyangCharacter({ frame, reduceMotion, characterId = DEFAULT_CHARACTER_ID }: SceneProps): React.JSX.Element {
+export function NyangCharacter({ frame, reduceMotion, characterId = DEFAULT_CHARACTER_ID, pose = 'game' }: NyangCharacterProps): React.JSX.Element {
+  const rookie = characterId === 'rookie';
+  const artPose = rookie ? pose : 'game';
+  const fur = rookie ? GREY_TABBY_COLORS.fur : NYANG_COLORS.fur;
+  const pink = rookie ? GREY_TABBY_COLORS.pink : NYANG_COLORS.pink;
   // This local finish never writes to frame, elapsed time, scored distance or rank.
   const tumble = useSharedValue(0);
   useAnimatedReaction(
@@ -116,26 +133,32 @@ export function NyangCharacter({ frame, reduceMotion, characterId = DEFAULT_CHAR
     return { transform: svgTransform(lean + (finishedLean - lean) * progress) };
   }, [frame, reduceMotion, tumble], svgTransformAdapter);
   const leftLegProps = useAnimatedProps<GProps>(() => {
-    const stride = Math.sin(walkPhaseAt(frame.value.distanceM));
-    return { transform: svgTransform(stride * NYANG_WALK.strideDegrees, NYANG_RIG.legLeftX + stride * NYANG_WALK.lateralTravel, -NYANG_RIG.legHeight - Math.max(0, stride) * NYANG_WALK.lift) };
-  }, [frame], svgTransformAdapter);
+    const stride = strideFor(artPose, frame.value.distanceM);
+    return { transform: svgTransform(stride * (artPose === 'run' ? 25 : artPose === 'walk' ? 20 : NYANG_WALK.strideDegrees), NYANG_RIG.legLeftX + stride * NYANG_WALK.lateralTravel, -NYANG_RIG.legHeight - Math.max(0, stride) * (artPose === 'run' ? 12 : artPose === 'walk' ? 10 : NYANG_WALK.lift)) };
+  }, [frame, artPose], svgTransformAdapter);
   const rightLegProps = useAnimatedProps<GProps>(() => {
-    const stride = -Math.sin(walkPhaseAt(frame.value.distanceM));
-    return { transform: svgTransform(stride * NYANG_WALK.strideDegrees, NYANG_RIG.legRightX + stride * NYANG_WALK.lateralTravel, -NYANG_RIG.legHeight - Math.max(0, stride) * NYANG_WALK.lift) };
-  }, [frame], svgTransformAdapter);
+    const stride = -strideFor(artPose, frame.value.distanceM);
+    return { transform: svgTransform(stride * (artPose === 'run' ? 25 : artPose === 'walk' ? 20 : NYANG_WALK.strideDegrees), NYANG_RIG.legRightX + stride * NYANG_WALK.lateralTravel, -NYANG_RIG.legHeight - Math.max(0, stride) * (artPose === 'run' ? 12 : artPose === 'walk' ? 10 : NYANG_WALK.lift)) };
+  }, [frame, artPose], svgTransformAdapter);
   const leftPadProps = useAnimatedProps<GProps>(() => {
-    const exposure = frame.value.fallen ? 1 : 0.62 + 0.38 * Math.max(0, Math.sin(walkPhaseAt(frame.value.distanceM)));
+    const exposure = frame.value.fallen ? 1 : 0.62 + 0.38 * Math.max(0, strideFor(artPose, frame.value.distanceM));
     return { transform: [1, 0, 0, exposure, 0, 9 * (1 - exposure)] };
-  }, [frame], svgTransformAdapter);
+  }, [frame, artPose], svgTransformAdapter);
   const rightPadProps = useAnimatedProps<GProps>(() => {
-    const exposure = frame.value.fallen ? 1 : 0.62 + 0.38 * Math.max(0, -Math.sin(walkPhaseAt(frame.value.distanceM)));
+    const exposure = frame.value.fallen ? 1 : 0.62 + 0.38 * Math.max(0, -strideFor(artPose, frame.value.distanceM));
     return { transform: [1, 0, 0, exposure, 0, 9 * (1 - exposure)] };
-  }, [frame], svgTransformAdapter);
+  }, [frame, artPose], svgTransformAdapter);
   const tailProps = useAnimatedProps<GProps>(() => ({
-    transform: svgTransform(-frame.value.angleRad * 14 + Math.sin(walkPhaseAt(frame.value.distanceM)) * 4, -46, -47),
-  }), [frame], svgTransformAdapter);
-  const coffeeProps = useAnimatedProps<GProps>(() => ({ opacity: frame.value.hasCoffee ? 1 : 0 }), [frame]);
-  const emptyHandProps = useAnimatedProps<GProps>(() => ({ opacity: frame.value.hasCoffee ? 0 : 1 }), [frame]);
+    transform: svgTransform(-frame.value.angleRad * 14 + strideFor(artPose, frame.value.distanceM) * 4, -46, -47),
+  }), [frame, artPose], svgTransformAdapter);
+  const coffeeProps = useAnimatedProps<GProps>(() => ({ opacity: artPose === 'game' && frame.value.hasCoffee ? 1 : 0 }), [frame, artPose]);
+  const emptyHandProps = useAnimatedProps<GProps>(() => ({ opacity: (artPose === 'game' && frame.value.hasCoffee) || artPose === 'water' || artPose === 'notes' ? 0 : 1 }), [frame, artPose]);
+  const leftArmProps = useAnimatedProps<GProps>(() => ({
+    transform: svgTransform(artPose === 'notes' ? -38 : -strideFor(artPose, frame.value.distanceM) * 16, -48, -72),
+  }), [frame, artPose], svgTransformAdapter);
+  const rightArmProps = useAnimatedProps<GProps>(() => ({
+    transform: svgTransform(strideFor(artPose, frame.value.distanceM) * 16, 48, -72),
+  }), [frame, artPose], svgTransformAdapter);
   const faceProps = useAnimatedProps<GProps>(() => ({
     transform: svgTransform(0, Math.max(-2, Math.min(2, frame.value.angleRad * 2)), 0),
   }), [frame], svgTransformAdapter);
@@ -143,46 +166,59 @@ export function NyangCharacter({ frame, reduceMotion, characterId = DEFAULT_CHAR
   const protectionProps = useAnimatedProps<GProps>(() => ({ opacity: frame.value.protectionSeconds > 0 ? 0.5 : 0 }), [frame]);
 
   return (
-    <AnimatedG testID="nyang-root" animatedProps={rootProps} stroke={NYANG_COLORS.outline} strokeWidth={OUTLINE} strokeLinecap="round" strokeLinejoin="round">
+    <AnimatedG testID="nyang-root" animatedProps={rootProps} stroke={rookie ? GREY_TABBY_COLORS.outline : NYANG_COLORS.outline} strokeWidth={rookie ? 3.2 : OUTLINE} strokeLinecap="round" strokeLinejoin="round">
       <AnimatedG testID="protection-outline" animatedProps={protectionProps}>
         <Path d="M-67 -204 Q-86 -177 -79 -142 Q-74 -115 -58 -97 L-62 -80 Q-77 -65 -63 -45 Q-63 -18 -41 -9 Q-37 5 -21 5 L25 5 Q42 5 47 -13 Q65 -22 66 -40 L78 -42 Q89 -49 86 -68 L80 -89 Q76 -99 69 -109 Q87 -136 75 -172 Q72 -188 63 -203" fill="none" stroke={palette.mint} strokeWidth={7} />
       </AnimatedG>
       <AnimatedG testID="tail" animatedProps={tailProps}>
-        <Path d="M0 0 C-17 8 -34 2 -42 -10 C-51 -27 -39 -39 -29 -32 C-22 -27 -28 -22 -30 -18 C-28 -11 -16 -12 -2 -16Z" fill={NYANG_COLORS.fur} />
+        {rookie ? <GreyTabbyTail /> : <Path d="M0 0 C-17 8 -34 2 -42 -10 C-51 -27 -39 -39 -29 -32 C-22 -27 -28 -22 -30 -18 C-28 -11 -16 -12 -2 -16Z" fill={NYANG_COLORS.fur} />}
       </AnimatedG>
       <AnimatedG testID="leg-left" animatedProps={leftLegProps}>
-        <Path testID="paw-left" d="M-15 8 Q-15 0 -6 0 H6 Q15 0 15 8 Q16 18 6 18 H-6 Q-16 18 -15 8Z" fill={NYANG_COLORS.fur} />
-        <AnimatedG testID="paw-pads-left" animatedProps={leftPadProps}><PawPads side="left" /></AnimatedG>
+        <Path testID="paw-left" d="M-15 8 Q-15 0 -6 0 H6 Q15 0 15 8 Q16 18 6 18 H-6 Q-16 18 -15 8Z" fill={fur} />
+        {rookie && <Ellipse cx={0} cy={10} rx={12} ry={7} fill={GREY_TABBY_COLORS.muzzle} stroke="none" />}
+        <AnimatedG testID="paw-pads-left" animatedProps={leftPadProps}><PawPads side="left" color={pink} /></AnimatedG>
       </AnimatedG>
       <AnimatedG testID="leg-right" animatedProps={rightLegProps}>
-        <Path testID="paw-right" d="M-15 8 Q-15 0 -6 0 H6 Q15 0 15 8 Q16 18 6 18 H-6 Q-16 18 -15 8Z" fill={NYANG_COLORS.fur} />
-        <AnimatedG testID="paw-pads-right" animatedProps={rightPadProps}><PawPads side="right" /></AnimatedG>
+        <Path testID="paw-right" d="M-15 8 Q-15 0 -6 0 H6 Q15 0 15 8 Q16 18 6 18 H-6 Q-16 18 -15 8Z" fill={fur} />
+        {rookie && <Ellipse cx={0} cy={10} rx={12} ry={7} fill={GREY_TABBY_COLORS.muzzle} stroke="none" />}
+        <AnimatedG testID="paw-pads-right" animatedProps={rightPadProps}><PawPads side="right" color={pink} /></AnimatedG>
       </AnimatedG>
-      <Ellipse testID="plush-body" cx={0} cy={-57} rx={52} ry={39} fill={NYANG_COLORS.fur} />
-      <Ellipse testID="white-belly" cx={0} cy={-54} rx={33} ry={29} fill={NYANG_COLORS.white} stroke="none" />
-      <Ellipse testID="front-paw-left" cx={-51} cy={-59} rx={11} ry={13} fill={NYANG_COLORS.fur} />
+      <Ellipse testID="plush-body" cx={0} cy={-57} rx={52} ry={39} fill={fur} />
+      {rookie ? <GreyTabbySuit /> : <>
+        <Ellipse testID="white-belly" cx={0} cy={-54} rx={33} ry={29} fill={NYANG_COLORS.white} stroke="none" />
+        <Ellipse testID="front-paw-left" cx={-51} cy={-59} rx={11} ry={13} fill={NYANG_COLORS.fur} />
+      </>}
+      {rookie && artPose !== 'notes' && <AnimatedG testID="rookie-arm-left" animatedProps={leftArmProps}><GreyTabbyArm side="left" /></AnimatedG>}
       <AnimatedG testID="empty-hand" animatedProps={emptyHandProps}>
-        <Ellipse testID="front-paw-right" cx={51} cy={-59} rx={11} ry={13} fill={NYANG_COLORS.fur} />
+        {rookie ? <AnimatedG testID="rookie-arm-right" animatedProps={rightArmProps}><GreyTabbyArm side="right" /></AnimatedG>
+          : <Ellipse testID="front-paw-right" cx={51} cy={-59} rx={11} ry={13} fill={NYANG_COLORS.fur} />}
       </AnimatedG>
-      <Outfit id={characterId} />
+      {!rookie && <Outfit id={characterId} />}
       <G testID="plush-head">
+        {rookie ? <>
+          <GreyTabbyHead />
+          <AnimatedG animatedProps={faceProps}><GreyTabbyFace /></AnimatedG>
+        </> : <>
         <Path testID="head-contour" d="M-63 -167 Q-70 -181 -62 -198 Q-60 -203 -55 -198 L-35 -182 Q0 -193 35 -182 L55 -198 Q60 -203 62 -198 Q70 -181 63 -167 Q74 -152 68 -132 Q62 -107 40 -100 Q0 -92 -40 -100 Q-62 -107 -68 -132 Q-74 -152 -63 -167Z" fill={NYANG_COLORS.fur} />
         <Path d="M-57 -187 L-54 -170 L-42 -178Z M57 -187 L54 -170 L42 -178Z" fill={NYANG_COLORS.pink} stroke="none" />
         <AnimatedG animatedProps={faceProps}><Face id={characterId} /></AnimatedG>
         <AnimatedG animatedProps={concernProps}>
           <Path d="M-45 -156 L-42 -160 M-45 -151 H-41" fill="none" strokeWidth={DETAIL} />
         </AnimatedG>
+        </>}
       </G>
       <AnimatedG testID="cup-visibility" animatedProps={coffeeProps}>
-        <Path testID="coffee-arm" d="M43 -78 Q60 -83 63 -68 Q63 -59 53 -52 L42 -56" fill={NYANG_COLORS.fur} />
+        <Path testID="coffee-arm" d="M43 -78 Q60 -83 63 -68 Q63 -59 53 -52 L42 -56" fill={rookie ? GREY_TABBY_COLORS.suit : NYANG_COLORS.fur} />
         <G testID="cup" transform={`translate(${NYANG_RIG.cupX} ${NYANG_RIG.cupY})`}>
           <Path d="M-11 -20 H12 L9 10 Q0 13 -8 10Z" fill={NYANG_COLORS.white} />
           <Path d="M-10 -8 H11 L10 3 H-9Z" fill={NYANG_COLORS.cupBand} stroke="none" />
           <Rect x={-13} y={-24} width={27} height={6} rx={2} fill={NYANG_COLORS.tie} />
         </G>
-        <Ellipse testID="coffee-grip" cx={53} cy={-55} rx={11} ry={12} fill={NYANG_COLORS.fur} />
+        <Ellipse testID="coffee-grip" cx={53} cy={-55} rx={11} ry={12} fill={fur} />
         <Line x1={51} y1={-54} x2={55} y2={-54} strokeWidth={DETAIL} />
       </AnimatedG>
+      {artPose === 'water' && <GreyTabbyWater />}
+      {artPose === 'notes' && <GreyTabbyNotes />}
     </AnimatedG>
   );
 }

@@ -74,7 +74,7 @@ describe('GameScene contracts', () => {
     });
   });
 
-  it.each(CHARACTERS.map(character => character.id))('redraws %s as a flat cat wearing only a tie and badge', async id => {
+  it.each(['diligent', 'veteran'] as const)('preserves reward %s as a flat cat wearing only a tie and badge', async id => {
     const rendered = await render(<Svg><NyangCharacter frame={frame()} characterId={id} reduceMotion={false} /></Svg>);
     expect(byId('plush-head').props.transform).toBeUndefined();
     expect(byId('nyang-root').props.stroke).toBe(NYANG_COLORS.outline);

@@ -39,6 +39,25 @@ for (const phone of PHONES) {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto('http://127.0.0.1:4174/fixtures/');
     await expect(page.getByTestId('fixture-disclaimer')).toHaveText(NOTICE);
+    const employeeSheet = page.getByTestId('employee-sheet');
+    for (const id of ['walk', 'water', 'run', 'notes']) {
+      const card = employeeSheet.getByTestId(`employee-pose-${id}`);
+      await expect(card.getByTestId('badge-text')).toHaveText('ID: 001');
+      await expect(card.getByTestId('grey-tabby-bright-eyes')).toHaveCount(1);
+      await expect(card.getByTestId('water-bottle')).toHaveCount(id === 'water' ? 1 : 0);
+      await expect(card.getByTestId('note-pad')).toHaveCount(id === 'notes' ? 1 : 0);
+      await expect.poll(() => svgOpacity(card.getByTestId('cup-visibility'))).toBe(0);
+      const fits = await card.locator('svg').evaluate(element => {
+        const svg = element as SVGSVGElement;
+        const root = svg.querySelector('[data-testid="nyang-root"]') as SVGGraphicsElement;
+        const b = root.getBBox(), m = root.transform.baseVal.consolidate()!.matrix, v = svg.viewBox.baseVal;
+        return [[b.x, b.y], [b.x + b.width, b.y], [b.x, b.y + b.height], [b.x + b.width, b.y + b.height]]
+          .every(([x, y]) => { const px = m.a*x+m.c*y+m.e, py = m.b*x+m.d*y+m.f;
+            return px-2 >= v.x && px+2 <= v.x+v.width && py-2 >= v.y && py+2 <= v.y+v.height; });
+      });
+      expect(fits, `Employee sheet pose ${id} must include the full transformed bounds and stroke`).toBe(true);
+    }
+    await saveFixture(employeeSheet, info, 'actual-svg-employee-sheet');
     await expect(page.getByTestId('fixture-pose-grid')).toBeVisible();
     await page.getByTestId(`fixture-phone-${phone.width}`).click();
     await expect(page.getByTestId(`fixture-phone-${phone.width}`)).toHaveAttribute('aria-pressed', 'true');

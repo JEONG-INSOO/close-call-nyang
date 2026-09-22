@@ -8,6 +8,13 @@ test('all three flat chibi portraits fit the unchanged collection preview withou
     await preview.scrollIntoViewIfNeeded();
     await expect(preview.getByTestId(`face-${id}`)).toHaveCount(1);
     await expect(preview.getByTestId(`outfit-${id}`)).toHaveCount(1);
+    if (id === 'rookie') {
+      await expect(preview.getByTestId('grey-tabby-bright-eyes')).toHaveCount(1);
+      await expect(preview.getByTestId('suit-jacket')).toHaveCount(1);
+      await expect(preview.getByTestId('badge-text')).toHaveText('ID: 001');
+    } else {
+      await expect(preview.getByTestId('suit-jacket')).toHaveCount(0);
+    }
     const fits = await preview.locator('svg').evaluate(element => {
       const svg = element as SVGSVGElement;
       const box = (svg.querySelector('[data-testid="nyang-root"]') as SVGGraphicsElement).getBBox();
