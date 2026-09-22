@@ -88,10 +88,13 @@ export function SettingsPanel({ visible, settings, onChange, onClose, nickname, 
             <Text style={styles.settingTitle}>{row.title}</Text>
             <Text style={styles.settingDescription}>{row.description}</Text>
           </View>
-          <Switch testID={`setting-${row.key}`} accessibilityLabel={row.title}
-            value={settings[row.key]} onValueChange={enabled => onChange({ [row.key]: enabled })}
-            trackColor={{ false: palette.border, true: palette.mint }} thumbColor={palette.white}
-            ios_backgroundColor={palette.border} style={styles.switch} />
+          {/* The wrapper owns the 44pt target; stretching Switch itself misaligns its thumb and track on web. */}
+          <View style={styles.switchTarget}>
+            <Switch testID={`setting-${row.key}`} accessibilityLabel={row.title}
+              value={settings[row.key]} onValueChange={enabled => onChange({ [row.key]: enabled })}
+              trackColor={{ false: palette.border, true: palette.mint }} thumbColor={palette.white}
+              ios_backgroundColor={palette.border} />
+          </View>
         </View>
       ))}
       <Text style={styles.hint}>{ko.settingsHint}</Text>
@@ -141,7 +144,7 @@ const styles = StyleSheet.create({
   settingCopy: { flex: 1 },
   settingTitle: { color: palette.ink, fontSize: 16, lineHeight: 23, fontWeight: '700' },
   settingDescription: { color: palette.muted, fontSize: 12, lineHeight: 18, marginTop: 3 },
-  switch: { minHeight: ui.minTapSize, minWidth: 52 },
+  switchTarget: { minHeight: ui.minTapSize, minWidth: 52, alignItems: 'center', justifyContent: 'center' },
   hint: { color: palette.muted, fontSize: 12, lineHeight: 19, marginTop: 4 },
   onlineSection: { gap: 10, marginTop: 6 },
   pressed: { opacity: 0.7 },

@@ -79,6 +79,14 @@ test('subpath assets have real content and landscape controls keep their target 
   }
   const canvas = (await page.getByTestId('scene-canvas').boundingBox())!;
   expect(canvas.width / canvas.height).toBeCloseTo(16 / 9, 2);
+  // HUD and controls sit inside the letterboxed 16:9 picture, never in the side margins.
+  for (const id of ['control-left', 'control-right', 'pause-button', 'score-card']) {
+    const box = (await page.getByTestId(id).boundingBox())!;
+    expect(box.x, `${id} left edge inside the scene`).toBeGreaterThanOrEqual(canvas.x - 0.5);
+    expect(box.x + box.width, `${id} right edge inside the scene`).toBeLessThanOrEqual(canvas.x + canvas.width + 0.5);
+    expect(box.y).toBeGreaterThanOrEqual(canvas.y - 0.5);
+    expect(box.y + box.height).toBeLessThanOrEqual(canvas.y + canvas.height + 0.5);
+  }
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const js = resources.filter(item => /\.js($|\?)/.test(item.url));
   expect(js.length).toBeGreaterThan(0);
