@@ -43,6 +43,16 @@ export function walkPhaseAt(distanceM: number): number {
   return (distanceM % NYANG_WALK.metersPerCycle) / NYANG_WALK.metersPerCycle * Math.PI * 2;
 }
 
+/** Rookie sole visibility: hidden while planted, softly revealed near peak lift. */
+export function soleRevealAt(stride: number, fallen: boolean): number {
+  'worklet';
+  if (fallen) return 1;
+  if (!Number.isFinite(stride) || stride <= 0.1) return 0;
+  const progress = Math.min(1, (stride - 0.1) / 0.9);
+  const eased = progress * progress * (3 - 2 * progress);
+  return eased * 0.82;
+}
+
 // Worklet dependencies must be initialized before capture (do not move above walkPhaseAt).
 function strideFor(pose: EmployeePose, distance: number): number {
   'worklet';
@@ -99,12 +109,12 @@ const Outfit = memo(function Outfit({ id }: { id: CharacterId }) {
   );
 });
 
-const PawPads = memo(function PawPads({ side, color = NYANG_COLORS.pink }: { side: 'left' | 'right'; color?: string }) {
+const PawPads = memo(function PawPads({ side, color = NYANG_COLORS.pink, rookie = false }: { side: 'left' | 'right'; color?: string; rookie?: boolean }) {
   return <G fill={color} stroke="none">
-    <Ellipse testID={`paw-pad-${side}`} cx={0} cy={12} rx={6} ry={4} />
-    <Ellipse testID={`paw-bean-${side}-1`} cx={-7} cy={5} rx={2.5} ry={2.2} />
-    <Ellipse testID={`paw-bean-${side}-2`} cx={0} cy={4} rx={2.5} ry={2.2} />
-    <Ellipse testID={`paw-bean-${side}-3`} cx={7} cy={5} rx={2.5} ry={2.2} />
+    <Ellipse testID={`paw-pad-${side}`} cx={0} cy={12} rx={rookie ? 7 : 6} ry={rookie ? 4.8 : 4} />
+    <Ellipse testID={`paw-bean-${side}-1`} cx={-7} cy={5} rx={rookie ? 3 : 2.5} ry={rookie ? 2.6 : 2.2} />
+    <Ellipse testID={`paw-bean-${side}-2`} cx={0} cy={4} rx={rookie ? 3 : 2.5} ry={rookie ? 2.6 : 2.2} />
+    <Ellipse testID={`paw-bean-${side}-3`} cx={7} cy={5} rx={rookie ? 3 : 2.5} ry={rookie ? 2.6 : 2.2} />
   </G>;
 });
 
@@ -113,6 +123,9 @@ export function NyangCharacter({ frame, reduceMotion, characterId = DEFAULT_CHAR
   const artPose = rookie ? pose : 'game';
   const fur = rookie ? GREY_TABBY_COLORS.fur : NYANG_COLORS.fur;
   const pink = rookie ? GREY_TABBY_COLORS.pink : NYANG_COLORS.pink;
+  const gameStrideDegrees = rookie ? 18 : NYANG_WALK.strideDegrees;
+  const gameLateralTravel = rookie ? 3 : NYANG_WALK.lateralTravel;
+  const gameLift = rookie ? 8 : NYANG_WALK.lift;
   // This local finish never writes to frame, elapsed time, scored distance or rank.
   const tumble = useSharedValue(0);
   useAnimatedReaction(
@@ -134,30 +147,48 @@ export function NyangCharacter({ frame, reduceMotion, characterId = DEFAULT_CHAR
   }, [frame, reduceMotion, tumble], svgTransformAdapter);
   const leftLegProps = useAnimatedProps<GProps>(() => {
     const stride = strideFor(artPose, frame.value.distanceM);
-    return { transform: svgTransform(stride * (artPose === 'run' ? 25 : artPose === 'walk' ? 20 : NYANG_WALK.strideDegrees), NYANG_RIG.legLeftX + stride * NYANG_WALK.lateralTravel, -NYANG_RIG.legHeight - Math.max(0, stride) * (artPose === 'run' ? 12 : artPose === 'walk' ? 10 : NYANG_WALK.lift)) };
-  }, [frame, artPose], svgTransformAdapter);
+    return { transform: svgTransform(stride * (artPose === 'run' ? 25 : artPose === 'walk' ? 20 : gameStrideDegrees), NYANG_RIG.legLeftX + stride * gameLateralTravel, -NYANG_RIG.legHeight - Math.max(0, stride) * (artPose === 'run' ? 12 : artPose === 'walk' ? 10 : gameLift)) };
+  }, [frame, artPose, gameStrideDegrees, gameLateralTravel, gameLift], svgTransformAdapter);
   const rightLegProps = useAnimatedProps<GProps>(() => {
     const stride = -strideFor(artPose, frame.value.distanceM);
-    return { transform: svgTransform(stride * (artPose === 'run' ? 25 : artPose === 'walk' ? 20 : NYANG_WALK.strideDegrees), NYANG_RIG.legRightX + stride * NYANG_WALK.lateralTravel, -NYANG_RIG.legHeight - Math.max(0, stride) * (artPose === 'run' ? 12 : artPose === 'walk' ? 10 : NYANG_WALK.lift)) };
-  }, [frame, artPose], svgTransformAdapter);
+    return { transform: svgTransform(stride * (artPose === 'run' ? 25 : artPose === 'walk' ? 20 : gameStrideDegrees), NYANG_RIG.legRightX + stride * gameLateralTravel, -NYANG_RIG.legHeight - Math.max(0, stride) * (artPose === 'run' ? 12 : artPose === 'walk' ? 10 : gameLift)) };
+  }, [frame, artPose, gameStrideDegrees, gameLateralTravel, gameLift], svgTransformAdapter);
+  const leftSoleLegProps = useAnimatedProps<GProps>(() => {
+    const stride = strideFor(artPose, frame.value.distanceM);
+    return { transform: svgTransform(stride * (artPose === 'run' ? 25 : artPose === 'walk' ? 20 : gameStrideDegrees), NYANG_RIG.legLeftX + stride * gameLateralTravel, -NYANG_RIG.legHeight - Math.max(0, stride) * (artPose === 'run' ? 12 : artPose === 'walk' ? 10 : gameLift)) };
+  }, [frame, artPose, gameStrideDegrees, gameLateralTravel, gameLift], svgTransformAdapter);
+  const rightSoleLegProps = useAnimatedProps<GProps>(() => {
+    const stride = -strideFor(artPose, frame.value.distanceM);
+    return { transform: svgTransform(stride * (artPose === 'run' ? 25 : artPose === 'walk' ? 20 : gameStrideDegrees), NYANG_RIG.legRightX + stride * gameLateralTravel, -NYANG_RIG.legHeight - Math.max(0, stride) * (artPose === 'run' ? 12 : artPose === 'walk' ? 10 : gameLift)) };
+  }, [frame, artPose, gameStrideDegrees, gameLateralTravel, gameLift], svgTransformAdapter);
   const leftPadProps = useAnimatedProps<GProps>(() => {
-    const exposure = frame.value.fallen ? 1 : 0.62 + 0.38 * Math.max(0, strideFor(artPose, frame.value.distanceM));
+    const stride = strideFor(artPose, frame.value.distanceM);
+    if (rookie) {
+      const reveal = soleRevealAt(stride, frame.value.fallen);
+      return { opacity: reveal, transform: [1, 0, 0, 0.55 + reveal * 0.45, 0, 4 * (1 - reveal)] };
+    }
+    const exposure = frame.value.fallen ? 1 : 0.62 + 0.38 * Math.max(0, stride);
     return { transform: [1, 0, 0, exposure, 0, 9 * (1 - exposure)] };
-  }, [frame, artPose], svgTransformAdapter);
+  }, [frame, artPose, rookie], svgTransformAdapter);
   const rightPadProps = useAnimatedProps<GProps>(() => {
-    const exposure = frame.value.fallen ? 1 : 0.62 + 0.38 * Math.max(0, -strideFor(artPose, frame.value.distanceM));
+    const stride = -strideFor(artPose, frame.value.distanceM);
+    if (rookie) {
+      const reveal = soleRevealAt(stride, frame.value.fallen);
+      return { opacity: reveal, transform: [1, 0, 0, 0.55 + reveal * 0.45, 0, 4 * (1 - reveal)] };
+    }
+    const exposure = frame.value.fallen ? 1 : 0.62 + 0.38 * Math.max(0, stride);
     return { transform: [1, 0, 0, exposure, 0, 9 * (1 - exposure)] };
-  }, [frame, artPose], svgTransformAdapter);
+  }, [frame, artPose, rookie], svgTransformAdapter);
   const tailProps = useAnimatedProps<GProps>(() => ({
     transform: svgTransform(-frame.value.angleRad * 14 + strideFor(artPose, frame.value.distanceM) * 4, -46, -47),
   }), [frame, artPose], svgTransformAdapter);
   const coffeeProps = useAnimatedProps<GProps>(() => ({ opacity: artPose === 'game' && frame.value.hasCoffee ? 1 : 0 }), [frame, artPose]);
   const emptyHandProps = useAnimatedProps<GProps>(() => ({ opacity: (artPose === 'game' && frame.value.hasCoffee) || artPose === 'water' || artPose === 'notes' ? 0 : 1 }), [frame, artPose]);
   const leftArmProps = useAnimatedProps<GProps>(() => ({
-    transform: svgTransform(artPose === 'notes' ? -38 : -strideFor(artPose, frame.value.distanceM) * 16, -48, -72),
+    transform: svgTransform(artPose === 'notes' ? -38 : -strideFor(artPose, frame.value.distanceM) * 16, -55, -72),
   }), [frame, artPose], svgTransformAdapter);
   const rightArmProps = useAnimatedProps<GProps>(() => ({
-    transform: svgTransform(strideFor(artPose, frame.value.distanceM) * 16, 48, -72),
+    transform: svgTransform(strideFor(artPose, frame.value.distanceM) * 16, 55, -72),
   }), [frame, artPose], svgTransformAdapter);
   const faceProps = useAnimatedProps<GProps>(() => ({
     transform: svgTransform(0, Math.max(-2, Math.min(2, frame.value.angleRad * 2)), 0),
@@ -174,25 +205,42 @@ export function NyangCharacter({ frame, reduceMotion, characterId = DEFAULT_CHAR
         {rookie ? <GreyTabbyTail /> : <Path d="M0 0 C-17 8 -34 2 -42 -10 C-51 -27 -39 -39 -29 -32 C-22 -27 -28 -22 -30 -18 C-28 -11 -16 -12 -2 -16Z" fill={NYANG_COLORS.fur} />}
       </AnimatedG>
       <AnimatedG testID="leg-left" animatedProps={leftLegProps}>
-        <Path testID="paw-left" d="M-15 8 Q-15 0 -6 0 H6 Q15 0 15 8 Q16 18 6 18 H-6 Q-16 18 -15 8Z" fill={fur} />
-        {rookie && <Ellipse cx={0} cy={10} rx={12} ry={7} fill={GREY_TABBY_COLORS.muzzle} stroke="none" />}
-        <AnimatedG testID="paw-pads-left" animatedProps={leftPadProps}><PawPads side="left" color={pink} /></AnimatedG>
+        <Path testID="paw-left" d="M-15 8 Q-15 0 -6 0 H6 Q15 0 15 8 Q16 18 6 19 H-6 Q-16 18 -15 8Z" fill={fur} />
+        {!rookie && <AnimatedG testID="paw-pads-left" animatedProps={leftPadProps}><PawPads side="left" color={pink} /></AnimatedG>}
       </AnimatedG>
       <AnimatedG testID="leg-right" animatedProps={rightLegProps}>
-        <Path testID="paw-right" d="M-15 8 Q-15 0 -6 0 H6 Q15 0 15 8 Q16 18 6 18 H-6 Q-16 18 -15 8Z" fill={fur} />
-        {rookie && <Ellipse cx={0} cy={10} rx={12} ry={7} fill={GREY_TABBY_COLORS.muzzle} stroke="none" />}
-        <AnimatedG testID="paw-pads-right" animatedProps={rightPadProps}><PawPads side="right" color={pink} /></AnimatedG>
+        <Path testID="paw-right" d="M-15 8 Q-15 0 -6 0 H6 Q15 0 15 8 Q16 18 6 19 H-6 Q-16 18 -15 8Z" fill={fur} />
+        {!rookie && <AnimatedG testID="paw-pads-right" animatedProps={rightPadProps}><PawPads side="right" color={pink} /></AnimatedG>}
       </AnimatedG>
-      <Ellipse testID="plush-body" cx={0} cy={-57} rx={52} ry={39} fill={fur} />
+      {rookie && artPose !== 'notes' && <AnimatedG testID="rookie-arm-left" animatedProps={leftArmProps}><GreyTabbyArm side="left" /></AnimatedG>}
+      {rookie && <AnimatedG testID="empty-hand" animatedProps={emptyHandProps}>
+        <AnimatedG testID="rookie-arm-right" animatedProps={rightArmProps}><GreyTabbyArm side="right" /></AnimatedG>
+      </AnimatedG>}
+      {rookie && <AnimatedG testID="coffee-sleeve-visibility" animatedProps={coffeeProps}>
+        <Path testID="coffee-arm" d="M43 -78 Q61 -85 66 -68 Q65 -57 53 -50 L40 -56" fill={GREY_TABBY_COLORS.suit} />
+      </AnimatedG>}
+      <Ellipse testID="plush-body" cx={0} cy={-57} rx={rookie ? 62 : 52} ry={rookie ? 45 : 39} fill={fur} />
       {rookie ? <GreyTabbySuit /> : <>
         <Ellipse testID="white-belly" cx={0} cy={-54} rx={33} ry={29} fill={NYANG_COLORS.white} stroke="none" />
         <Ellipse testID="front-paw-left" cx={-51} cy={-59} rx={11} ry={13} fill={NYANG_COLORS.fur} />
       </>}
-      {rookie && artPose !== 'notes' && <AnimatedG testID="rookie-arm-left" animatedProps={leftArmProps}><GreyTabbyArm side="left" /></AnimatedG>}
-      <AnimatedG testID="empty-hand" animatedProps={emptyHandProps}>
-        {rookie ? <AnimatedG testID="rookie-arm-right" animatedProps={rightArmProps}><GreyTabbyArm side="right" /></AnimatedG>
-          : <Ellipse testID="front-paw-right" cx={51} cy={-59} rx={11} ry={13} fill={NYANG_COLORS.fur} />}
-      </AnimatedG>
+      {!rookie && <AnimatedG testID="empty-hand" animatedProps={emptyHandProps}>
+        <Ellipse testID="front-paw-right" cx={51} cy={-59} rx={11} ry={13} fill={NYANG_COLORS.fur} />
+      </AnimatedG>}
+      {rookie && <>
+        <AnimatedG testID="sole-overlay-left" animatedProps={leftSoleLegProps}>
+          <AnimatedG testID="paw-pads-left" animatedProps={leftPadProps}>
+            <Ellipse testID="paw-sole-left" cx={0} cy={10} rx={12} ry={7} fill={GREY_TABBY_COLORS.muzzle} stroke="none" />
+            <PawPads side="left" color={pink} rookie />
+          </AnimatedG>
+        </AnimatedG>
+        <AnimatedG testID="sole-overlay-right" animatedProps={rightSoleLegProps}>
+          <AnimatedG testID="paw-pads-right" animatedProps={rightPadProps}>
+            <Ellipse testID="paw-sole-right" cx={0} cy={10} rx={12} ry={7} fill={GREY_TABBY_COLORS.muzzle} stroke="none" />
+            <PawPads side="right" color={pink} rookie />
+          </AnimatedG>
+        </AnimatedG>
+      </>}
       {!rookie && <Outfit id={characterId} />}
       <G testID="plush-head">
         {rookie ? <>
@@ -208,7 +256,7 @@ export function NyangCharacter({ frame, reduceMotion, characterId = DEFAULT_CHAR
         </>}
       </G>
       <AnimatedG testID="cup-visibility" animatedProps={coffeeProps}>
-        <Path testID="coffee-arm" d="M43 -78 Q60 -83 63 -68 Q63 -59 53 -52 L42 -56" fill={rookie ? GREY_TABBY_COLORS.suit : NYANG_COLORS.fur} />
+        {!rookie && <Path testID="coffee-arm" d="M43 -78 Q60 -83 63 -68 Q63 -59 53 -52 L42 -56" fill={NYANG_COLORS.fur} />}
         <G testID="cup" transform={`translate(${NYANG_RIG.cupX} ${NYANG_RIG.cupY})`}>
           <Path d="M-11 -20 H12 L9 10 Q0 13 -8 10Z" fill={NYANG_COLORS.white} />
           <Path d="M-10 -8 H11 L10 3 H-9Z" fill={NYANG_COLORS.cupBand} stroke="none" />

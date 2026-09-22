@@ -2,7 +2,7 @@ import { act, render, screen, waitFor } from '@testing-library/react-native';
 import { makeMutable } from 'react-native-reanimated';
 import Svg from 'react-native-svg';
 import { GREY_TABBY_COLORS as C } from '../GreyTabbyParts';
-import { NyangCharacter, NYANG_COLORS, NYANG_WALK, type EmployeePose } from '../NyangCharacter';
+import { NyangCharacter, NYANG_COLORS, NYANG_WALK, soleRevealAt, type EmployeePose } from '../NyangCharacter';
 import { EmployeeCharacterSheet } from '../EmployeeCharacterSheet';
 import type { SceneFrame } from '../types';
 
@@ -33,11 +33,20 @@ test('approved rookie has grey stripes, two bright eyes, smile, jacket, collar a
   expect(byId('badge-text').props.children).toBe('ID: 001');
   expect(byId('paw-left').props.fill).toBe(C.fur);
   expect(byId('paw-right').props.fill).toBe(C.fur);
+  expect(byId('plush-body').props).toMatchObject({ rx: 62, ry: 45 });
   for (const side of ['left', 'right']) {
     expect(byId(`paw-pad-${side}`)).toBeTruthy();
     expect(screen.getAllByTestId(new RegExp(`^paw-bean-${side}-`), { includeHiddenElements: true })).toHaveLength(3);
   }
   expect(frame.value).toEqual(initial);
+});
+
+test('rookie sole reveal is hidden while planted and remains partial at peak lift', () => {
+  for (const stride of [-1, 0, 0.1, NaN]) expect(soleRevealAt(stride, false)).toBe(0);
+  expect(soleRevealAt(0.55, false)).toBeGreaterThan(0);
+  expect(soleRevealAt(0.55, false)).toBeLessThan(0.82);
+  expect(soleRevealAt(1, false)).toBeCloseTo(0.82);
+  expect(soleRevealAt(-1, true)).toBe(1);
 });
 
 test.each(['walk', 'water', 'run', 'notes'] as const)('art pose %s overrides props visually without mutating a coffee game frame', async pose => {

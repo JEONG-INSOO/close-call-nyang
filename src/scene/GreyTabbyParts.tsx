@@ -3,8 +3,8 @@ import { Circle, Ellipse, G, Line, Path, Rect, Text as SvgText } from 'react-nat
 
 /** Approved rookie palette. Reward cats deliberately keep their existing palette. */
 export const GREY_TABBY_COLORS = Object.freeze({
-  outline: '#383536', fur: '#B7B4B3', stripe: '#828080', muzzle: '#FFF9EC',
-  pink: '#EEA69E', suit: '#515967', lapel: '#606978', shirt: '#FFFCF4',
+  outline: '#393535', fur: '#BBB7B4', stripe: '#817C79', muzzle: '#FFF9EC',
+  pink: '#EF9696', suit: '#4D5563', lapel: '#5B6573', shirt: '#FFFCF4',
   tie: '#3871A6', lanyard: '#548DC0', iris: '#D7D8B7', pupil: '#302C29',
 });
 const C = GREY_TABBY_COLORS;
@@ -25,10 +25,10 @@ export const GreyTabbyFace = memo(function GreyTabbyFace() {
   return <G testID="face-rookie" stroke={C.outline} strokeWidth={2} fill="none" strokeLinecap="round">
     <G testID="grey-tabby-bright-eyes">
       {[-29, 29].map(x => <G key={x}>
-        <Ellipse cx={x} cy={-143} rx={17} ry={21} fill={C.muzzle} />
-        <Ellipse cx={x + 1} cy={-141} rx={13} ry={17} fill={C.iris} stroke="none" />
-        <Ellipse cx={x + 2} cy={-141} rx={10} ry={15} fill={C.pupil} stroke="none" />
-        <Ellipse testID={`eye-glint-${x < 0 ? 'left' : 'right'}`} cx={x + 5} cy={-150} rx={3.3} ry={4.2} fill={C.shirt} stroke="none" />
+        <Ellipse cx={x} cy={-143} rx={15.5} ry={19.5} fill={C.muzzle} />
+        <Ellipse cx={x + 1} cy={-141} rx={11.7} ry={15.8} fill={C.iris} stroke="none" />
+        <Ellipse cx={x + 2} cy={-141} rx={9} ry={13.7} fill={C.pupil} stroke="none" />
+        <Ellipse testID={`eye-glint-${x < 0 ? 'left' : 'right'}`} cx={x + 5} cy={-149} rx={3.1} ry={3.9} fill={C.shirt} stroke="none" />
       </G>)}
     </G>
     <Path d="M-38 -169 Q-30 -176 -22 -169 M22 -169 Q30 -176 38 -169" stroke={C.stripe} strokeWidth={3} />
@@ -42,15 +42,15 @@ export const GreyTabbyFace = memo(function GreyTabbyFace() {
 
 export const GreyTabbySuit = memo(function GreyTabbySuit() {
   return <G testID="outfit-rookie" stroke={C.outline} strokeWidth={2.3} strokeLinejoin="round">
-    <Path testID="suit-hem" d="M-39 -40 H39 L35 -17 Q24 -9 9 -17 L0 -25 L-9 -17 Q-24 -9 -35 -17Z" fill={C.suit} />
-    <Path testID="suit-jacket" d="M-29 -99 Q-45 -98 -48 -79 L-49 -36 Q-22 -22 0 -31 Q22 -22 49 -36 L48 -79 Q45 -98 29 -99Z" fill={C.suit} />
+    <Path testID="suit-hem" d="M-52 -43 H52 L48 -16 Q31 -7 12 -15 L0 -23 L-12 -15 Q-31 -7 -48 -16Z" fill={C.suit} />
+    <Path testID="suit-jacket" d="M-32 -101 Q-53 -100 -58 -80 L-60 -39 Q-31 -20 0 -29 Q31 -20 60 -39 L58 -80 Q53 -100 32 -101Z" fill={C.suit} />
     <Path testID="collared-shirt" d="M-22 -97 H22 L16 -47 L0 -37 L-16 -47Z" fill={C.shirt} />
     <G testID="tie-rookie" fill={C.tie}>
       <Path d="M-5 -85 H5 L8 -79 L4 -73 H-4 L-8 -79Z M-4 -73 H4 L9 -50 L0 -43 L-9 -50Z" />
     </G>
     <Path d="M-24 -98 L0 -87 L-11 -73 L-28 -90Z M24 -98 L0 -87 L11 -73 L28 -90Z" fill={C.shirt} />
-    <Path testID="jacket-lapels" d="M-32 -96 L-23 -98 L-5 -48 L-32 -72 L-25 -78 L-36 -85Z M32 -96 L23 -98 L5 -48 L32 -72 L25 -78 L36 -85Z" fill={C.lapel} />
-    <Path d="M-39 -51 L-23 -47 L-21 -53 M39 -51 L23 -47 L21 -53" fill="none" />
+    <Path testID="jacket-lapels" d="M-38 -97 L-24 -100 L-5 -48 L-37 -72 L-28 -79 L-43 -87Z M38 -97 L24 -100 L5 -48 L37 -72 L28 -79 L43 -87Z" fill={C.lapel} />
+    <Path d="M-48 -51 L-27 -47 L-24 -54 M48 -51 L27 -47 L24 -54" fill="none" />
     <G testID="lanyard-rookie" fill="none" strokeLinecap="round">
       <Path d="M-26 -96 L1 -58 L9 -55 L30 -96" stroke={C.outline} strokeWidth={6} />
       <Path d="M-26 -96 L1 -58 L9 -55 L30 -96" stroke={C.lanyard} strokeWidth={3.2} />
@@ -72,10 +72,10 @@ export const GreyTabbySuit = memo(function GreyTabbySuit() {
 /** Local shoulder origin; no engine state or clock is accessed by these parts. */
 export const GreyTabbyArm = memo(function GreyTabbyArm({ side }: { side: 'left' | 'right' }) {
   return <G strokeWidth={2.3}>
-    <Path d="M-9 -5 Q0 -10 9 -5 L13 12 Q10 20 -9 17 L-13 7Z" fill={C.suit} />
-    <Path d="M-9 13 L10 14 L9 19 L-9 18Z" fill={C.shirt} />
-    <Ellipse testID={`front-paw-${side}`} cx={0} cy={22} rx={11} ry={10} fill={C.fur} />
-    <Path d="M-4 23 Q-4 28 0 28" fill="none" strokeWidth={1.3} />
+    <Path d="M-12 -7 Q0 -13 12 -7 L15 12 Q11 21 -11 18 L-15 7Z" fill={C.suit} />
+    <Path d="M-11 13 Q0 17 11 14 L10 20 Q0 23 -10 19Z" fill={C.shirt} />
+    <Ellipse testID={`front-paw-${side}`} cx={0} cy={23} rx={11.5} ry={10.5} fill={C.fur} />
+    <Path d="M-4 24 Q-4 29 0 29" fill="none" strokeWidth={1.3} />
   </G>;
 });
 

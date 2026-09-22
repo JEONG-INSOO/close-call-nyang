@@ -102,6 +102,13 @@ for (const phone of PHONES) {
           await expect(pose.getByTestId(`face-${id}`)).toHaveCount(1);
           await expect(pose).toContainText(`${coffee ? '커피 있음' : '커피 없음'} · angle ${angle.toFixed(2)} rad`);
           await expect.poll(() => svgOpacity(pose.getByTestId('cup-visibility'))).toBe(coffee ? 1 : 0);
+          if (id === 'rookie') {
+            const fallen = spec.id.startsWith('fallen-');
+            const leftSole = fallen ? 1 : spec.id === 'walk-left' ? 0.82 : 0;
+            const rightSole = fallen ? 1 : spec.id === 'walk-right' ? 0.82 : 0;
+            await expect.poll(() => svgOpacity(pose.getByTestId('paw-pads-left'))).toBeCloseTo(leftSole, 4);
+            await expect.poll(() => svgOpacity(pose.getByTestId('paw-pads-right'))).toBeCloseTo(rightSole, 4);
+          }
           await expect.poll(() => pose.getByTestId('nyang-root').evaluate(element => {
             const matrix = (element as unknown as SVGGraphicsElement).transform.baseVal.consolidate()?.matrix;
             return matrix ? Math.atan2(matrix.b, matrix.a) : Number.NaN;

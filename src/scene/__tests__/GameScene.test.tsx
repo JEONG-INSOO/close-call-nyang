@@ -119,34 +119,44 @@ describe('GameScene contracts', () => {
     for (const value of [-1, NaN, Infinity]) expect(walkPhaseAt(value)).toBe(0);
   });
 
-  it.each([NYANG_WALK.metersPerCycle / 4, NYANG_WALK.metersPerCycle * 3 / 4])('uses an eleven-degree, two-unit short step and five-unit lift at %sm', async distanceM => {
+  it.each([NYANG_WALK.metersPerCycle / 4, NYANG_WALK.metersPerCycle * 3 / 4])('uses the rookie eighteen-degree, three-unit step and eight-unit lift at %sm', async distanceM => {
     await mountScene(frame({ distanceM }));
     const stride = Math.sin(walkPhaseAt(distanceM));
     for (const [id, direction, baseX] of [['leg-left', stride, -25], ['leg-right', -stride, 25]] as const) {
       const props = byId(id).props.jestAnimatedProps.value;
       const matrix = props.matrix ?? props.transform;
-      expect(matrix[0]).toBeCloseTo(Math.cos(direction * 11 * Math.PI / 180));
-      expect(matrix[1]).toBeCloseTo(Math.sin(direction * 11 * Math.PI / 180));
-      expect(matrix[4]).toBeCloseTo(baseX + direction * 2);
-      expect(matrix[5]).toBeCloseTo(-18 - Math.max(0, direction) * 5);
+      expect(matrix[0]).toBeCloseTo(Math.cos(direction * 18 * Math.PI / 180));
+      expect(matrix[1]).toBeCloseTo(Math.sin(direction * 18 * Math.PI / 180));
+      expect(matrix[4]).toBeCloseTo(baseX + direction * 3);
+      expect(matrix[5]).toBeCloseTo(-18 - Math.max(0, direction) * 8);
     }
   });
 
   it.each([
-    { distanceM: 0, fallen: false, left: 0.62, right: 0.62 },
-    { distanceM: NYANG_WALK.metersPerCycle / 4, fallen: false, left: 1, right: 0.62 },
-    { distanceM: NYANG_WALK.metersPerCycle * 3 / 4, fallen: false, left: 0.62, right: 1 },
+    { distanceM: 0, fallen: false, left: 0, right: 0 },
+    { distanceM: NYANG_WALK.metersPerCycle / 4, fallen: false, left: 0.82, right: 0 },
+    { distanceM: NYANG_WALK.metersPerCycle * 3 / 4, fallen: false, left: 0, right: 0.82 },
     { distanceM: 0, fallen: true, left: 1, right: 1 },
-  ])('exposes flat pink sole geometry with the lifted or fallen foot ($distanceM, $fallen)', async ({ distanceM, fallen, left, right }) => {
+  ])('reveals only the lifted rookie sole, or both after falling ($distanceM, $fallen)', async ({ distanceM, fallen, left, right }) => {
     await render(<Svg><NyangCharacter frame={frame({ distanceM, fallen })} reduceMotion /></Svg>);
-    for (const [side, scale] of [['left', left], ['right', right]] as const) {
+    for (const [side, reveal] of [['left', left], ['right', right]] as const) {
       const props = byId(`paw-pads-${side}`).props.jestAnimatedProps.value;
       const matrix = props.matrix ?? props.transform;
       expect(matrix[0]).toBe(1);
-      expect(matrix[3]).toBeCloseTo(scale);
-      expect(matrix[5]).toBeCloseTo(9 * (1 - scale));
-      expect(props.opacity).toBeUndefined();
+      expect(matrix[3]).toBeCloseTo(0.55 + reveal * 0.45);
+      expect(matrix[5]).toBeCloseTo(4 * (1 - reveal));
+      expect(props.opacity).toBeCloseTo(reveal);
+      expect(byId(`paw-sole-${side}`)).toBeTruthy();
     }
+  });
+
+  it('keeps the reward cats on their original eleven-degree gait', async () => {
+    await render(<Svg><NyangCharacter frame={frame({ distanceM: NYANG_WALK.metersPerCycle / 4 })} characterId="diligent" reduceMotion /></Svg>);
+    const props = byId('leg-left').props.jestAnimatedProps.value;
+    const matrix = props.matrix ?? props.transform;
+    expect(matrix[1]).toBeCloseTo(Math.sin(11 * Math.PI / 180));
+    expect(matrix[4]).toBeCloseTo(-23);
+    expect(matrix[5]).toBeCloseTo(-23);
   });
 
   it.each([false, true])('uses engine coffee state, not a duplicate score threshold (%s)', async hasCoffee => {
@@ -253,7 +263,7 @@ describe('GameScene contracts', () => {
       const root = byId('nyang-root').props.jestAnimatedProps.value;
       expect((root.matrix ?? root.transform)[1]).toBeCloseTo(Math.sin(Math.PI / 3));
       const left = byId('leg-left').props.jestAnimatedProps.value;
-      expect((left.matrix ?? left.transform)[4]).toBeCloseTo(-25 + Math.sin(walkPhaseAt(52)) * 2);
+      expect((left.matrix ?? left.transform)[4]).toBeCloseTo(-25 + Math.sin(walkPhaseAt(52)) * 3);
     });
     const cafe = byId('cafe').props.jestAnimatedProps.value;
     const root = byId('nyang-root').props.jestAnimatedProps.value;
