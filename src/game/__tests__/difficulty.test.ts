@@ -38,8 +38,8 @@ describe('initial difficulty tuning', () => {
     const initial = {
       level: 0,
       speedMps: BALANCE.baseSpeedMps,
-      instability: 2.2,
-      disturbance: 0.12,
+      instability: 4.8,
+      disturbance: 0.22,
       eventStrength: 0.8,
       eventIntervalSeconds: 10,
     };
@@ -56,8 +56,8 @@ describe('initial difficulty tuning', () => {
     const expected = {
       level,
       speedMps: BALANCE.baseSpeedMps * (1 + 0.7 * Math.log1p(extra / 85)),
-      instability: 2.2 + 0.9 * level,
-      disturbance: 0.12 + 0.16 * level,
+      instability: 4.8 + 0.9 * level,
+      disturbance: 0.22 + 0.16 * level,
       eventStrength: 0.8 + 0.5 * level,
       eventIntervalSeconds: Math.max(5, 10 / (1 + 0.2 * level)),
     };

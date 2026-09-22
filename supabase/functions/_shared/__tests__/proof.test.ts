@@ -118,8 +118,8 @@ Deno.test('the first fall must be the last tick, and cannot be replayed after te
 
 Deno.test('a valid tick landing on the rounded critical angle can be finalized', () => {
   const state = start();
-  const angleRad = 0.69;
-  const target = 0.6999999998;
+  const angleRad = BALANCE.criticalAngleRad - 0.01;
+  const target = BALANCE.criticalAngleRad - 2e-10;
   const difficulty = difficultyAt(0);
   const phase = 42 / 1000;
   const accelerationWithoutDamping = difficulty.instability * stableSin(angleRad)

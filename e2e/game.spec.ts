@@ -9,6 +9,26 @@ test('real held keyboard input leans, falls, retries, and never exposes producti
   await page.keyboard.down('ArrowRight');
   await expect.poll(() => leanDegrees(page)).toBeGreaterThan(before + 8);
   await capture(page, info, 'actual-lean');
+  const visiblePlayingAngles = await page.evaluate(() => new Promise<number[]>(resolve => {
+    const angles: number[] = [];
+    const deadline = performance.now() + 5000;
+    const sample = () => {
+      if (document.querySelector('[data-testid="result-screen"]') || performance.now() >= deadline) {
+        resolve(angles); return;
+      }
+      const root = document.querySelector('[data-testid="nyang-root"]') as SVGGraphicsElement | null;
+      const matrix = root?.getCTM();
+      if (matrix) angles.push(Math.atan2(matrix.b, matrix.a) * 180 / Math.PI);
+      requestAnimationFrame(sample);
+    };
+    sample();
+  }));
+  // The old ~40-degree boundary must no longer end visible play prematurely.
+  expect(Math.max(...visiblePlayingAngles)).toBeGreaterThan(50);
+  await info.attach('actual-playing-angles', {
+    body: JSON.stringify({ maxDegrees: Math.max(...visiblePlayingAngles), samples: visiblePlayingAngles }),
+    contentType: 'application/json',
+  });
   await expect(page.getByTestId('result-screen')).toBeVisible();
   await page.keyboard.up('ArrowRight');
   await capture(page, info, 'actual-result');

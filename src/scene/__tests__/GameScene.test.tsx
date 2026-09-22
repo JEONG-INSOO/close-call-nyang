@@ -1,8 +1,9 @@
-import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { makeMutable } from 'react-native-reanimated';
 import Svg from 'react-native-svg';
 
 import { CHARACTERS, type CharacterId } from '../../characters/catalog';
+import { palette } from '../../theme/tokens';
 import { GameScene } from '../GameScene';
 import { NyangCharacter, NYANG_RIG } from '../NyangCharacter';
 import type { SceneFrame } from '../types';
@@ -68,16 +69,47 @@ describe('GameScene contracts', () => {
 
   it('keeps the agreed shared proportions, feet pivot and cup grip', () => {
     expect(NYANG_RIG).toMatchObject({
-      height: 205, headHeight: 118, torsoHeight: 51, legHeight: 36,
-      pivotX: 0, pivotY: 0, legLeftX: -19, legRightX: 19, cupX: 58, cupY: -58,
+      height: 186, headHeight: 118, torsoHeight: 50, legHeight: 18,
+      pivotX: 0, pivotY: 0, legLeftX: -23, legRightX: 23, cupX: 62, cupY: -39,
     });
+  });
+
+  it.each(CHARACTERS.map(character => character.id))('gives %s a cream plush body and two short round paws, not human shoes', async id => {
+    await mountScene(frame(), id);
+    expect(byId('plush-head').props.transform).toBe('translate(0 19)');
+    expect(byId('plush-body').props.fill).toBe(palette.cream);
+    expect(byId('paw-left').props.fill).toBe(palette.cream);
+    expect(byId('paw-right').props.fill).toBe(palette.cream);
+    expect(byId('paw-left').props.d).toBe(byId('paw-right').props.d);
+    const left = byId('leg-left').props.jestAnimatedProps.value;
+    const right = byId('leg-right').props.jestAnimatedProps.value;
+    expect(left.matrix ?? left.transform).toEqual([1, 0, -0, 1, -23, -18]);
+    expect(right.matrix ?? right.transform).toEqual([1, -0, 0, 1, 23, -18]);
+    expect(byId('front-paw-left').props.rx).toBe(10);
+    expect(byId('front-paw-right').props.ry).toBe(10);
+    expect(byId('coffee-grip').props.cx).toBe(52);
+    expect(byId('coffee-grip').props.cy).toBe(-35);
+  });
+
+  it.each([Math.PI / 10, 3 * Math.PI / 10])('uses an eight-degree, two-unit short step with a three-unit lift at phase %s', async distanceM => {
+    await mountScene(frame({ distanceM }));
+    const stride = Math.sin(distanceM * 5);
+    for (const [id, direction, baseX] of [['leg-left', stride, -23], ['leg-right', -stride, 23]] as const) {
+      const props = byId(id).props.jestAnimatedProps.value;
+      const matrix = props.matrix ?? props.transform;
+      expect(matrix[0]).toBeCloseTo(Math.cos(direction * 8 * Math.PI / 180));
+      expect(matrix[1]).toBeCloseTo(Math.sin(direction * 8 * Math.PI / 180));
+      expect(matrix[4]).toBeCloseTo(baseX + direction * 2);
+      expect(matrix[5]).toBeCloseTo(-18 - Math.max(0, direction) * 3);
+    }
   });
 
   it.each([false, true])('uses engine coffee state, not a duplicate score threshold (%s)', async hasCoffee => {
     const sample = frame({ distanceM: hasCoffee ? 14.9 : 15, hasCoffee });
     await mountScene(sample);
     expect(byId('cup-visibility')).toHaveAnimatedProps({ opacity: hasCoffee ? 1 : 0 });
-    expect(byId('cup').props.transform).toBe('translate(58 -58)');
+    expect(byId('cup').props.transform).toBe('translate(62 -39)');
+    expect(byId('empty-hand')).toHaveAnimatedProps({ opacity: hasCoffee ? 0 : 1 });
   });
 
   it.each([0, 14.9, 15, 50, 50.5, 51, 100, 250, 10000])('renders bounded decoration at %sm', async distanceM => {
@@ -102,7 +134,7 @@ describe('GameScene contracts', () => {
     expect(count(rendered.toJSON())).toBe(before);
   });
 
-  it.each([-0.55, 0.55])('passes lean %s through a feet-centered rotation', async angleRad => {
+  it.each([-65 * Math.PI / 180, -Math.PI / 3, -0.55, 0.55, Math.PI / 3, 65 * Math.PI / 180])('passes lean %s through a feet-centered rotation', async angleRad => {
     await render(<Svg><NyangCharacter frame={frame({ angleRad })} reduceMotion={true} /></Svg>);
     const props = byId('nyang-root').props.jestAnimatedProps.value;
     const matrix = props.matrix ?? props.transform;
@@ -129,17 +161,18 @@ describe('GameScene contracts', () => {
     } finally { jest.useRealTimers(); }
   });
 
-  it.each(CHARACTERS.flatMap(({ id }) => [false, true].map(hasCoffee => ({ id, hasCoffee }))))(
-    'keeps the $id rig and cup grip identical with coffee=$hasCoffee', async ({ id, hasCoffee }) => {
-      const sample = frame({ hasCoffee, angleRad: 0.55 });
+  it.each(CHARACTERS.flatMap(({ id }) => [false, true].flatMap(hasCoffee => [-Math.PI / 3, Math.PI / 3].map(angleRad => ({ id, hasCoffee, angleRad })))))(
+    'keeps the $id rig and cup grip identical with coffee=$hasCoffee at $angleRad', async ({ id, hasCoffee, angleRad }) => {
+      const sample = frame({ hasCoffee, angleRad });
       await render(<Svg><NyangCharacter frame={sample} characterId={id} reduceMotion={true} /></Svg>);
       expect(byId(`face-${id}`)).toBeTruthy();
       expect(byId(`outfit-${id}`)).toBeTruthy();
-      expect(byId('cup').props.transform).toBe('translate(58 -58)');
+      expect(byId('cup').props.transform).toBe('translate(62 -39)');
       expect(byId('cup-visibility')).toHaveAnimatedProps({ opacity: hasCoffee ? 1 : 0 });
       const root = byId('nyang-root').props.jestAnimatedProps.value;
       expect((root.matrix ?? root.transform).slice(4)).toEqual([0, 0]);
-      expect(sample.value.angleRad).toBe(0.55);
+      expect((root.matrix ?? root.transform)[1]).toBeCloseTo(Math.sin(angleRad));
+      expect(sample.value.angleRad).toBe(angleRad);
     },
   );
 
@@ -149,39 +182,71 @@ describe('GameScene contracts', () => {
     await act(() => {
       sample.value = { ...sample.value, distanceM: 15, elapsedSeconds: 16.3, hasCoffee: true, angleRad: -0.55 };
     });
-    expect(byId('cup-visibility')).toHaveAnimatedProps({ opacity: 1 });
-    const root = byId('nyang-root').props.jestAnimatedProps.value;
-    expect((root.matrix ?? root.transform)[1]).toBeCloseTo(Math.sin(-0.55));
+    await waitFor(() => {
+      expect(byId('cup-visibility')).toHaveAnimatedProps({ opacity: 1 });
+      const root = byId('nyang-root').props.jestAnimatedProps.value;
+      expect((root.matrix ?? root.transform)[1]).toBeCloseTo(Math.sin(-0.55));
+    });
     expect(sample.value.distanceM).toBe(15);
   });
 
   it('switches every scene subscription when a new run supplies a new shared frame', async () => {
     const previous = frame();
     const rendered = await mountScene(previous);
-    const replacement = frame({ distanceM: 51, hasCoffee: true });
+    const replacement = frame({ distanceM: 51, hasCoffee: true, angleRad: Math.PI / 3, protectionSeconds: 1.5 });
     await rendered.rerender(<GameScene frame={replacement} reduceMotion={false} />);
     await act(() => { replacement.value = { ...replacement.value, distanceM: 52 }; });
+    await waitFor(() => {
+      const cafe = byId('cafe').props.jestAnimatedProps.value;
+      const entrance = byId('company-entrance').props.jestAnimatedProps.value;
+      expect((cafe.matrix ?? cafe.transform)[4]).toBe(270 + (15 - 52) * 40);
+      expect((entrance.matrix ?? entrance.transform)[4]).toBe(270 + (50.5 - 52) * 40);
+      expect(byId('office-scene')).toHaveAnimatedProps({ opacity: 1 });
+      expect(byId('cup-visibility')).toHaveAnimatedProps({ opacity: 1 });
+      expect(byId('empty-hand')).toHaveAnimatedProps({ opacity: 0 });
+      expect(byId('protection-outline')).toHaveAnimatedProps({ opacity: 0.5 });
+      const root = byId('nyang-root').props.jestAnimatedProps.value;
+      expect((root.matrix ?? root.transform)[1]).toBeCloseTo(Math.sin(Math.PI / 3));
+      const left = byId('leg-left').props.jestAnimatedProps.value;
+      expect((left.matrix ?? left.transform)[4]).toBeCloseTo(-23 + Math.sin(52 * 5) * 2);
+    });
     const cafe = byId('cafe').props.jestAnimatedProps.value;
-    const entrance = byId('company-entrance').props.jestAnimatedProps.value;
-    expect((cafe.matrix ?? cafe.transform)[4]).toBe(270 + (15 - 52) * 40);
-    expect((entrance.matrix ?? entrance.transform)[4]).toBe(270 + (50.5 - 52) * 40);
-    expect(byId('office-scene')).toHaveAnimatedProps({ opacity: 1 });
-    expect(byId('cup-visibility')).toHaveAnimatedProps({ opacity: 1 });
-    await act(() => { previous.value = { ...previous.value, distanceM: 5 }; });
+    const root = byId('nyang-root').props.jestAnimatedProps.value;
+    await act(() => { previous.value = { ...previous.value, distanceM: 5, angleRad: -Math.PI / 3 }; });
     expect(byId('cafe').props.jestAnimatedProps.value).toEqual(cafe);
+    expect(byId('nyang-root').props.jestAnimatedProps.value).toEqual(root);
+    expect(byId('cup-visibility')).toHaveAnimatedProps({ opacity: 1 });
   });
 
-  it.each([false, true])('finishes a visual tumble without changing the scored frame (reduced=%s)', async reduceMotion => {
+  it.each([false, true].flatMap(reduceMotion => [-1, 1].map(side => ({ reduceMotion, side }))))('finishes a visual tumble without changing the scored frame (reduced=$reduceMotion side=$side)', async ({ reduceMotion, side }) => {
     jest.useFakeTimers();
     try {
-      const sample = frame({ angleRad: 0.7, distanceM: 37, playing: false, fallen: true });
+      const sample = frame({ angleRad: side * 65 * Math.PI / 180, distanceM: 37, playing: false, fallen: true });
       const original = { ...sample.value };
       await render(<Svg><NyangCharacter frame={sample} reduceMotion={reduceMotion} /></Svg>);
       await act(() => { jest.advanceTimersByTime(500); });
       const root = byId('nyang-root').props.jestAnimatedProps.value;
       expect((root.matrix ?? root.transform)[0]).toBeCloseTo(Math.cos(82 * Math.PI / 180));
+      expect((root.matrix ?? root.transform)[1]).toBeCloseTo(Math.sin(side * 82 * Math.PI / 180));
+      expect((root.matrix ?? root.transform).slice(4)).toEqual([0, 0]);
       expect(sample.value).toEqual(original);
     } finally { jest.useRealTimers(); }
+  });
+
+  it('does not reduce the actual sixty-degree lean or walking pose when motion reduction changes', async () => {
+    const sample = frame({ angleRad: -Math.PI / 3, distanceM: 23, elapsedSeconds: 19 });
+    const original = { ...sample.value };
+    const rendered = await render(<Svg><NyangCharacter frame={sample} reduceMotion={false} /></Svg>);
+    const root = byId('nyang-root').props.jestAnimatedProps.value;
+    const left = byId('leg-left').props.jestAnimatedProps.value;
+    const right = byId('leg-right').props.jestAnimatedProps.value;
+    await rendered.rerender(<Svg><NyangCharacter frame={sample} reduceMotion={true} /></Svg>);
+    await waitFor(() => {
+      expect(byId('nyang-root')).toHaveAnimatedProps(root);
+      expect(byId('leg-left')).toHaveAnimatedProps(left);
+      expect(byId('leg-right')).toHaveAnimatedProps(right);
+    });
+    expect(sample.value).toEqual(original);
   });
 
   it.each([false, true])('shows a soft protection outline without a flashing timer (reduced=%s)', async reduceMotion => {

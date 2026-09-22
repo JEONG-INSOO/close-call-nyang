@@ -273,8 +273,9 @@ describe('deterministic balance and immediate failure', () => {
     }
   });
 
-  test('a crossing fall credits only the fraction of time and distance before impact', () => {
-    const state = playing({ distanceM: 60, elapsedSeconds: 12, angleRad: BALANCE.criticalAngleRad - 0.001, angularVelocity: 4 });
+  test.each([-1, 1])('a crossing fall on side %s credits only the fraction of time and distance before impact', sign => {
+    const state = playing({ distanceM: 60, elapsedSeconds: 12,
+      angleRad: sign * (BALANCE.criticalAngleRad - 0.001), angularVelocity: sign * 4 });
     const result = tick(state);
     const run = result.state.run!;
     const creditedSeconds = run.elapsedSeconds - state.run!.elapsedSeconds;
@@ -283,8 +284,9 @@ describe('deterministic balance and immediate failure', () => {
     expect(creditedSeconds).toBeLessThan(DT);
     // Both distance and elapsed checkpoints are now rounded to 1e-9.
     expect(run.distanceM - 60).toBeCloseTo(speedAt(60) * creditedSeconds, 8);
-    expect(run.angleRad).toBeCloseTo(BALANCE.criticalAngleRad, 12);
+    expect(run.angleRad).toBeCloseTo(sign * BALANCE.criticalAngleRad, 12);
     expect(result.effects.filter(effect => effect.type === 'fall')).toHaveLength(1);
+    expect(tick(result.state)).toEqual({ state: result.state, effects: [] });
   });
 
   test('no input and indefinitely holding either direction eventually cause a fall', () => {
@@ -548,7 +550,8 @@ describe('pause, mock advertisements and one-time revival', () => {
   });
 
   test('protection ending inside a tick does not grant an extra full tick of immunity', () => {
-    const patch = { distanceM: 80, hasCoffee: true, angularVelocity: 100 };
+    // Cross the current threshold in the unprotected half, regardless of tuning.
+    const patch = { distanceM: 80, hasCoffee: true, angularVelocity: 2 * BALANCE.criticalAngleRad / DT };
     const protectedThroughout = tick(playing({ ...patch, protectionSeconds: DT }));
     expect(protectedThroughout.state.screen).toBe('playing');
     const endsMidTick = tick(playing({ ...patch, protectionSeconds: DT / 2 }));

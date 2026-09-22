@@ -42,8 +42,8 @@ describe('fixed arithmetic primitives', () => {
 
   test('a rounded critical angle is terminal in the same credited tick, not the following tick', () => {
     const started = transition(createInitialState(), { type: 'START', seed: 42, runId: 1 }, FLAGS).state;
-    const angleRad = 0.69;
-    const target = 0.6999999998;
+    const angleRad = BALANCE.criticalAngleRad - 0.01;
+    const target = BALANCE.criticalAngleRad - 2e-10;
     const difficulty = difficultyAt(0);
     const phase = 42 / 1000;
     const accelerationWithoutDamping = difficulty.instability * stableSin(angleRad)
@@ -155,4 +155,10 @@ test('sync --check detects drift without rewriting it, and canonical dependencie
     appendFileSync(join(temporary, 'src/game/engine.ts'), '\nimport React from \'react\';\n');
     expect(() => execFileSync(process.execPath, [script], { stdio: 'pipe' })).toThrow();
   } finally { rmSync(temporary, { recursive: true, force: true }); }
+});
+
+test('reviewed legal-input goldens reproduce with the read-only generator check', () => {
+  const root = resolve(__dirname, '../../..');
+  expect(() => execFileSync(process.execPath, [join(root, 'scripts/generate-ranked-replays.mjs'), '--check'],
+    { stdio: 'pipe' })).not.toThrow();
 });

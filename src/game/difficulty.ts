@@ -25,8 +25,8 @@ export function difficultyAt(distanceM: number): Difficulty {
   return {
     level,
     speedMps: speedAt(distance),
-    instability: 2.2 + 0.9 * level,
-    disturbance: 0.12 + 0.16 * level,
+    instability: 4.8 + 0.9 * level,
+    disturbance: 0.22 + 0.16 * level,
     eventStrength: 0.8 + 0.5 * level,
     eventIntervalSeconds: Math.max(5, 10 / (1 + 0.2 * level)),
   };

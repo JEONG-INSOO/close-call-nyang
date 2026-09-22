@@ -6,13 +6,22 @@ import { CHARACTERS, type CharacterId } from '../../src/characters/catalog';
 import { ko } from '../../src/i18n/ko';
 import { GameScene } from '../../src/scene/GameScene';
 import { getSceneModel, getViewport } from '../../src/scene/layout';
-import { NyangCharacter } from '../../src/scene/NyangCharacter';
+import { NYANG_RIG, NyangCharacter } from '../../src/scene/NyangCharacter';
 import type { SceneFrame } from '../../src/scene/types';
 import { palette } from '../../src/theme/tokens';
 
 export const FIXTURE_NOTICE = 'TEST FIXTURE — 합성 상태 / iOS 스크린샷 아님';
 const DISTANCES = [0, 14.9, 15, 50, 50.5, 51, 100, 250] as const;
-const ANGLES = [-0.55, 0, 0.55] as const;
+const ANGLES = [-Math.PI / 3, -0.55, 0, 0.55, Math.PI / 3] as const;
+const POSES = [
+  { id: 'left', angle: -0.55, fallen: false },
+  { id: 'right', angle: 0.55, fallen: false },
+  { id: 'neutral', angle: 0, fallen: false },
+  { id: 'steep-left', angle: -Math.PI / 3, fallen: false },
+  { id: 'steep-right', angle: Math.PI / 3, fallen: false },
+  { id: 'fallen-left', angle: -1.134464014, fallen: true },
+  { id: 'fallen-right', angle: 1.134464014, fallen: true },
+] as const;
 const PHONE_SIZES = [{ width: 844, height: 390 }, { width: 667, height: 375 }] as const;
 
 function syntheticFrame(distanceM: number, angleRad: number, hasCoffee: boolean): SceneFrame {
@@ -32,19 +41,20 @@ function Chip({ children, selected, testID, onPress }: ChipProps) {
   </Pressable>;
 }
 
-const PoseCard = memo(function PoseCard({ characterId, name, coffee, angle, scale }: {
-  characterId: CharacterId; name: string; coffee: boolean; angle: number; scale: number;
+const PoseCard = memo(function PoseCard({ characterId, name, coffee, angle, fallen, pose, scale }: {
+  characterId: CharacterId; name: string; coffee: boolean; angle: number;
+  fallen: boolean; pose: string; scale: number;
 }) {
-  const frame = useSharedValue<SceneFrame>(syntheticFrame(coffee ? 15 : 0, angle, coffee));
-  const poseId = `${characterId}-${coffee ? 'coffee' : 'empty'}-${angle < 0 ? 'left' : 'right'}`;
-  // 360x285 design-pixel crop is multiplied by the exact whole-scene contain scale.
+  const frame = useSharedValue<SceneFrame>({ ...syntheticFrame(coffee ? 15 : 0, angle, coffee), fallen });
+  const poseId = `${characterId}-${coffee ? 'coffee' : 'empty'}-${pose}`;
+  // A wider crop includes the full silhouette at the 82-degree terminal pose.
   // This is a crop at game scale, not a enlarged character portrait.
   return (
     <View testID={`fixture-pose-${poseId}`} style={styles.poseCard}>
       <Text style={styles.poseName}>{name}</Text>
-      <Text style={styles.poseDescription}>{coffee ? '커피 있음' : '커피 없음'} · angle {angle.toFixed(2)} rad</Text>
-      <View style={{ width: 360 * scale, height: 285 * scale, backgroundColor: palette.sky }}>
-        <Svg width={360 * scale} height={285 * scale} viewBox="-180 -235 360 285" preserveAspectRatio="xMidYMid meet">
+      <Text style={styles.poseDescription}>{coffee ? '커피 있음' : '커피 없음'} · angle {angle.toFixed(2)} rad{fallen ? ' · 넘어진 뒤' : ''}</Text>
+      <View style={{ width: 440 * scale, height: 320 * scale, backgroundColor: palette.sky }}>
+        <Svg width={440 * scale} height={320 * scale} viewBox="-220 -235 440 320" preserveAspectRatio="xMidYMid meet">
           <NyangCharacter frame={frame} characterId={characterId} reduceMotion />
         </Svg>
       </View>
@@ -100,14 +110,14 @@ export function SceneFixtures() {
         </ScrollView>
       </View>
 
-      <Text accessibilityRole="header" style={styles.sectionTitle}>12개 포즈 · 3 캐릭터 × 커피 2 상태 × 기울기 2 방향</Text>
+      <Text accessibilityRole="header" style={styles.sectionTitle}>42개 포즈 · 3 캐릭터 × 커피 2 상태 × 기본·큰 기울기·넘어짐</Text>
       <Text testID="fixture-pose-scale" style={styles.description}>
-        실제 게임 배율 {scale.toFixed(4)} = min({phone.width}/960, {phone.height}/540). 205px 캐릭터가 화면에서 약 {(205 * scale).toFixed(1)}px 높이입니다.
+        실제 게임 배율 {scale.toFixed(4)} = min({phone.width}/960, {phone.height}/540). {NYANG_RIG.height}px 캐릭터가 화면에서 약 {(NYANG_RIG.height * scale).toFixed(1)}px 높이입니다.
       </Text>
       <View testID="fixture-pose-grid" style={styles.poseGrid}>
-        {CHARACTERS.flatMap(character => [false, true].flatMap(coffee => [-0.55, 0.55].map(lean => (
-          <PoseCard key={`${character.id}-${coffee}-${lean}`} characterId={character.id} name={ko[character.nameKey]}
-            coffee={coffee} angle={lean} scale={scale} />
+        {CHARACTERS.flatMap(character => [false, true].flatMap(coffee => POSES.map(pose => (
+          <PoseCard key={`${character.id}-${coffee}-${pose.id}`} characterId={character.id} name={ko[character.nameKey]}
+            coffee={coffee} angle={pose.angle} fallen={pose.fallen} pose={pose.id} scale={scale} />
         ))))}
       </View>
       <Text style={styles.description}>{FIXTURE_NOTICE} · 오디오·입력·엔진 시간·저장·광고·랭킹은 이 페이지에 연결하지 않았습니다.</Text>

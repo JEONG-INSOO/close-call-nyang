@@ -4,9 +4,9 @@ export const BALANCE = Object.freeze({
   fixedDt: 1 / 120,
   maxTickSeconds: 1 / 30,
   timerEpsilon: 1e-9,
-  criticalAngleRad: 0.7,
-  controlAcceleration: 4.8,
-  damping: 3.2,
+  criticalAngleRad: 1.134464014, // 65 degrees, aligned to the 1e-9 replay grid.
+  controlAcceleration: 9.6,
+  damping: 2.4,
   countdownSeconds: 3,
   mockAdSeconds: 5,
   protectionSeconds: 1.5,
