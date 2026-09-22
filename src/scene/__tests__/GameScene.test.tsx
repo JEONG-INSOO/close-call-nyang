@@ -127,8 +127,8 @@ describe('GameScene contracts', () => {
     await mountScene(frame({ distanceM }));
     // leg-left is the far leg, leg-right the near leg; +x is the walking direction.
     for (const [id, degrees, hipX, lift] of [
-      ['leg-left', 22 * stride, -22, Math.max(0, stride) * 8],
-      ['leg-right', -22 * stride, 26, Math.max(0, -stride) * 8],
+      ['leg-left', 22 * stride, -12, Math.max(0, stride) * 8],
+      ['leg-right', -22 * stride, 16, Math.max(0, -stride) * 8],
     ] as const) {
       const props = byId(id).props.jestAnimatedProps.value;
       const matrix = props.matrix ?? props.transform;

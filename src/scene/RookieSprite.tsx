@@ -13,6 +13,8 @@ import { strideFor, type EmployeePose } from './walk';
  * ROOKIE_ART.scale maps the 543px-tall assembly onto the shared 200-unit rig height.
  */
 export const ROOKIE_ART = Object.freeze({ sourceHeight: 543, scale: 200 / 543, alarmDegrees: 40 });
+/** Transparent border build-rookie-parts.mjs adds around every arm PNG for its thickened outline. */
+const ARM_PAD = 6;
 
 /** 0 calm, 1 alarmed (tilted at least 40 degrees), 2 hurt (fallen). Display only. */
 export function expressionAt(angleRad: number, fallen: boolean): 0 | 1 | 2 {
@@ -58,23 +60,24 @@ export function RookieSprite({ frame, reduceMotion, pose, tumble }: RookieSprite
   const stepScale = pose === 'run' ? 1.3 : 1;
   const legFarProps = useAnimatedProps<GProps>(() => {
     const s = strideFor(pose, frame.value.distanceM);
-    return { transform: svgTransform(22 * stepScale * s, -22, -95 - Math.max(0, s) * 8 * stepScale) };
+    return { transform: svgTransform(22 * stepScale * s, -12, -95 - Math.max(0, s) * 8 * stepScale) };
   }, [frame, pose, stepScale], svgTransformAdapter);
   const legNearProps = useAnimatedProps<GProps>(() => {
     const s = strideFor(pose, frame.value.distanceM);
-    return { transform: svgTransform(-22 * stepScale * s, 26, -95 - Math.max(0, -s) * 8 * stepScale) };
+    return { transform: svgTransform(-22 * stepScale * s, 16, -95 - Math.max(0, -s) * 8 * stepScale) };
   }, [frame, pose, stepScale], svgTransformAdapter);
-  // Arms swing against the legs; raised arms replace them once the cat is alarmed or hurt.
+  // Arms swing against the legs but always stay splayed outward: rotating them inward would tuck
+  // the paws behind the jacket. Raised arms replace them once the cat is alarmed or hurt.
   const armLeftProps = useAnimatedProps<GProps>(() => {
     const s = strideFor(pose, frame.value.distanceM);
     const raised = expressionAt(frame.value.angleRad, frame.value.fallen) > 0;
-    return { opacity: raised ? 0 : 1, transform: svgTransform(6 - 10 * s, -98, -250) };
+    return { opacity: raised ? 0 : 1, transform: svgTransform(16 - 6 * s, -98, -250) };
   }, [frame, pose], svgTransformAdapter);
   const armRightProps = useAnimatedProps<GProps>(() => {
     const s = strideFor(pose, frame.value.distanceM);
     const raised = expressionAt(frame.value.angleRad, frame.value.fallen) > 0;
     const coffee = pose === 'game' && frame.value.hasCoffee;
-    return { opacity: raised || coffee ? 0 : 1, transform: svgTransform(-6 + 20 * s, 100, -250) };
+    return { opacity: raised || coffee ? 0 : 1, transform: svgTransform(-16 + 8 * s, 100, -250) };
   }, [frame, pose], svgTransformAdapter);
   const coffeeProps = useAnimatedProps<GProps>(() => ({ opacity: pose === 'game' && frame.value.hasCoffee ? 1 : 0 }), [frame, pose]);
   const raisedLeftProps = useAnimatedProps<GProps>(() => ({
@@ -109,13 +112,13 @@ export function RookieSprite({ frame, reduceMotion, pose, tumble }: RookieSprite
         <Image href={PART.legNear} x={-48} y={-90} width={103} height={185} />
       </AnimatedG>
       <AnimatedG testID="rookie-arm-left" animatedProps={armLeftProps}>
-        <G transform="scale(-1.04 1.04)"><Image href={PART.armHang} x={-34} y={-26} width={68} height={156} /></G>
+        <G transform="scale(-1.04 1.04)"><Image href={PART.armHang} x={-34 - ARM_PAD} y={-26 - ARM_PAD} width={68 + 2 * ARM_PAD} height={156 + 2 * ARM_PAD} /></G>
       </AnimatedG>
       <AnimatedG testID="empty-hand" animatedProps={armRightProps}>
-        <G testID="rookie-arm-right" transform="scale(1.04)"><Image href={PART.armHang} x={-34} y={-26} width={68} height={156} /></G>
+        <G testID="rookie-arm-right" transform="scale(1.04)"><Image href={PART.armHang} x={-34 - ARM_PAD} y={-26 - ARM_PAD} width={68 + 2 * ARM_PAD} height={156 + 2 * ARM_PAD} /></G>
       </AnimatedG>
       <AnimatedG testID="cup-visibility" animatedProps={coffeeProps}>
-        <G testID="cup" transform="translate(88 -248) scale(1.04)"><Image href={PART.armCoffee} x={-30} y={-22} width={153} height={108} /></G>
+        <G testID="cup" transform="translate(88 -248) scale(1.04)"><Image href={PART.armCoffee} x={-30 - ARM_PAD} y={-22 - ARM_PAD} width={153 + 2 * ARM_PAD} height={108 + 2 * ARM_PAD} /></G>
       </AnimatedG>
       <Image testID="outfit-rookie" href={PART.torso} x={-112} y={-337} width={225} height={282} />
       <AnimatedG testID="plush-head" animatedProps={headProps}>
@@ -129,10 +132,10 @@ export function RookieSprite({ frame, reduceMotion, pose, tumble }: RookieSprite
         </G>
       </AnimatedG>
       <AnimatedG testID="raised-arm-left" animatedProps={raisedLeftProps}>
-        <G transform="translate(-96 -236) scale(0.936)"><Image href={PART.armUpLeft} x={-96} y={-76} width={114} height={95} /></G>
+        <G transform="translate(-96 -236) scale(0.936)"><Image href={PART.armUpLeft} x={-96 - ARM_PAD} y={-76 - ARM_PAD} width={114 + 2 * ARM_PAD} height={95 + 2 * ARM_PAD} /></G>
       </AnimatedG>
       <AnimatedG testID="raised-arm-right" animatedProps={raisedRightProps}>
-        <G transform="translate(98 -236) scale(0.936)"><Image href={PART.armUpRight} x={-22} y={-76} width={121} height={93} /></G>
+        <G transform="translate(98 -236) scale(0.936)"><Image href={PART.armUpRight} x={-22 - ARM_PAD} y={-76 - ARM_PAD} width={121 + 2 * ARM_PAD} height={93 + 2 * ARM_PAD} /></G>
       </AnimatedG>
     </G>
   );

@@ -106,13 +106,22 @@ test.each(['diligent', 'veteran'] as const)('reward %s keeps its previous flat s
   expect(opacityOf('cup-visibility')).toBe(1);
 });
 
+test.each([-1, 0, 1])('hanging arms stay splayed outward at stride %s so the paws never tuck behind the jacket', async stride => {
+  const quarter = NYANG_WALK.metersPerCycle / 4;
+  const distanceM = stride === 0 ? 0 : stride > 0 ? quarter : quarter * 3;
+  await render(<Svg><NyangCharacter frame={makeMutable<SceneFrame>({ ...initial, distanceM })} reduceMotion /></Svg>);
+  // The left arm is mirrored, so a positive angle opens it outward; the right arm opens with a negative one.
+  expect(matrixOf('rookie-arm-left')[1]).toBeGreaterThan(0);
+  expect(matrixOf('empty-hand')[1]).toBeLessThan(0);
+});
+
 test('arm swing follows a replaced shared frame and leaves the stale frame disconnected', async () => {
   const previous = makeMutable<SceneFrame>({ ...initial });
   const rendered = await render(<Svg><NyangCharacter frame={previous} reduceMotion /></Svg>);
   const replacement = makeMutable<SceneFrame>({ ...initial });
   await rendered.rerender(<Svg><NyangCharacter frame={replacement} reduceMotion /></Svg>);
   await act(() => { replacement.value = { ...initial, distanceM: NYANG_WALK.metersPerCycle / 4 }; });
-  await waitFor(() => expect(matrixOf('rookie-arm-left')[1]).toBeCloseTo(Math.sin(-4 * DEG)));
+  await waitFor(() => expect(matrixOf('rookie-arm-left')[1]).toBeCloseTo(Math.sin(10 * DEG)));
   const pose = [...matrixOf('rookie-arm-left')];
   await act(() => { previous.value = { ...initial, distanceM: NYANG_WALK.metersPerCycle * 3 / 4 }; });
   expect(matrixOf('rookie-arm-left')).toEqual(pose);
