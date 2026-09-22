@@ -1,6 +1,6 @@
 # Task: T01 익명 플레이어와 검증된 기록 API
 
-## Status: pending
+## Status: done
 
 ## Goal
 중복 가능한 닉네임·기기별 익명 플레이어·공통 순위표를 위한 스키마와 서버 API를 만들고, 클라이언트가 임의 점수를 직접 쓰지 못하게 검증 경로를 구현한다.
@@ -116,12 +116,21 @@
 - No cryptographic guarantee that a human generated valid inputs: scripted/bot play is outside this protection. Dev exports target staging. Browser source is public; do not claim `__DEV__` alone cryptographically attests production. Server runtime always enforces no revival and valid replay, production UI never submits its dev sessions.
 - Unit adapters use fake repository to test ownership/transactions expected methods; actual SQL/RLS proof is mandatory T03. All production repository methods and SQL calls have typed parameter sets matching schemas above.
 
+### Implementation refinements (2026-09-22)
+
+- `private.runs.finalized_at timestamptz nullable` separates seven-day final receipt retention from the unchanged last-chunk `expiresAt`; retries keep the original ack.
+- Service-only `rank_get_deletion_status(p_user_id uuid)` returns `{status: 'pending_auth_delete' | 'complete'} | null`. The DELETE-only signed-JWT fallback must find this existing tombstone before any deletion action; it cannot initiate deletion for a merely decoded subject.
+- Owner-only `private.rank_cleanup(p_jwt_max_lifetime_seconds integer)` defines run/receipt/rate/report retention. Scheduling and the actual JWT maximum lifetime are T03 operations, not enabled or verified by this migration. Pending deletion tombstones are never removed.
+- Local reproducible Deno2.9.6 is a pinned npm development dependency; `npm.cmd run test:server-api` or `npx.cmd --no-install deno test --config supabase/deno.json supabase/functions/_shared/__tests__` runs the specified Deno tests without a global install.
+- Added `npm.cmd run ranked:browser` (isolated actual Chromium numeric replay) and `npm.cmd run test:ranking-schema` (static SQL/RPC contract guards). Neither substitutes for real hosted PostgreSQL transactions/RLS or iPhone Hermes.
+- Jest covers nickname/request contracts and Node replay. Deno covers real Request/Auth/JWT/handler/repository adapters and replay. Repository fakes check boundary behavior, not database concurrency proof.
+
 ## Acceptance Criteria
-- [ ] Nonunique nicknames with private IDs, correct shared ranks/top100/me, monotonic best.
-- [ ] Server does not accept client-written score or unowned run; chunk limits/order/retry/finalization are defined and tested.
-- [ ] Canonical numeric physics matches Node/Deno golden fixtures and preserves previous gameplay behavior.
-- [ ] Delete/report/rate-limit paths operate on caller scope and do not expose secrets.
-- [ ] Hosted DB/RLS/runtime validation remains explicitly pending for T03.
+- [x] Nonunique nicknames with private IDs, shared ranks/top100/me and monotonic best implemented; SQL static/adapter checks only, real DB proof in T03.
+- [x] Server does not accept client-written score or unowned run; chunk limits/order/retry/finalization are defined and locally tested.
+- [x] Canonical numeric physics matches Node/Deno/Chromium golden fixtures and preserves previous gameplay regressions.
+- [x] Delete/report/rate-limit paths operate on caller scope and do not expose secrets in local adapter tests.
+- [x] Hosted DB/RLS/runtime validation remains explicitly pending for T03.
 
 ## Validation
 - `npm.cmd run ranked:sync` — generate server kernel/version from canonical modules; script `node scripts/sync-ranked-engine.mjs`.
@@ -145,6 +154,8 @@ Task: T01-ranking-backend
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료 (P02-T01 only; client connection/deployment not performed)
+- [x] 검증 통과: ranked sync/check; Jest ranking58/full431(29 suites); Deno check/tests45; static SQL21; HTTP server14; Chromium golden3; typecheck; production/fixture builds; actual UI26pass7skip0fail(159.5sec); staged diff check.
+- rulesVersion: `nyang-v1-2093a8b42d416f8a`
+- evidence/limitations: `docs/qa-report.md`, `docs/learning-notes.md`, `docs/development.md`; actual DB/Auth/network/Hermes validation remains pending.
 - commit: pending

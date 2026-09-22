@@ -281,7 +281,8 @@ describe('deterministic balance and immediate failure', () => {
     expect(result.state.screen).toBe('result');
     expect(creditedSeconds).toBeGreaterThan(0);
     expect(creditedSeconds).toBeLessThan(DT);
-    expect(run.distanceM - 60).toBeCloseTo(speedAt(60) * creditedSeconds, 10);
+    // Both distance and elapsed checkpoints are now rounded to 1e-9.
+    expect(run.distanceM - 60).toBeCloseTo(speedAt(60) * creditedSeconds, 8);
     expect(run.angleRad).toBeCloseTo(BALANCE.criticalAngleRad, 12);
     expect(result.effects.filter(effect => effect.type === 'fall')).toHaveLength(1);
   });
@@ -325,7 +326,7 @@ describe('distance milestones and effects', () => {
     expect(result.state.run!.distanceM).toBeGreaterThan(15);
     expect(result.state.run!.hasCoffee).toBe(true);
     expect(result.effects.filter(effect => effect.type === 'coffee')).toEqual([{ type: 'coffee', runId: 1 }]);
-    expect(result.state.run!.nextEventAt).toBeCloseTo(result.state.run!.elapsedSeconds + 6, 10);
+    expect(result.state.run!.nextEventAt).toBeCloseTo(result.state.run!.elapsedSeconds + 6, 8);
     expect(advance(result.state, 20).effects.some(effect => effect.type === 'coffee')).toBe(false);
   });
 
@@ -513,7 +514,7 @@ describe('pause, mock advertisements and one-time revival', () => {
     expect(ready.state.run).toEqual(complete.state.run);
     expect(ready.effects.some(effect => effect.type === 'revive')).toBe(false);
     const moved = tick(ready.state, NONE, DT, true);
-    expect(moved.state.run!.distanceM - original.run!.distanceM).toBeCloseTo(speedAt(original.run!.distanceM) * DT, 10);
+    expect(moved.state.run!.distanceM - original.run!.distanceM).toBeCloseTo(speedAt(original.run!.distanceM) * DT, 8);
     const nextFailure = tick({ ...moved.state, run: { ...moved.state.run!, protectionSeconds: 0, angleRad: BALANCE.criticalAngleRad } }, NONE, DT, true).state;
     expect(transition(nextFailure, { type: 'REQUEST_AD' }, MOCK_FLAGS)).toEqual({ state: nextFailure, effects: [] });
   });

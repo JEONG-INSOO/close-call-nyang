@@ -53,14 +53,19 @@ describe('initial difficulty tuning', () => {
   test.each([15, 50, 100, 200, 1000])('distance %s follows the documented formulas', (distance) => {
     const extra = Math.max(0, distance - 15);
     const level = Math.log1p(extra / 35);
-    expect(difficultyAt(distance)).toEqual({
+    const expected = {
       level,
       speedMps: BALANCE.baseSpeedMps * (1 + 0.7 * Math.log1p(extra / 85)),
       instability: 2.2 + 0.9 * level,
       disturbance: 0.12 + 0.16 * level,
       eventStrength: 0.8 + 0.5 * level,
       eventIntervalSeconds: Math.max(5, 10 / (1 + 0.2 * level)),
-    });
+    };
+    const actual = difficultyAt(distance);
+    // The explicit log series preserves tuning to floating-point precision.
+    for (const key of Object.keys(expected) as Array<keyof typeof expected>) {
+      expect(actual[key]).toBeCloseTo(expected[key], 12);
+    }
   });
 
   test('speed and force continue rising beyond 100 and 200 without a gameplay cap', () => {

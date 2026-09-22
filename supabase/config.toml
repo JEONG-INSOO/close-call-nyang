@@ -1,0 +1,9 @@
+project_id = "close-call-nyang"
+
+[functions.leaderboard-api]
+enabled = true
+# Public board reads and OPTIONS must reach the handler without a JWT.
+# Every protected route still verifies auth.getUser; never rely on CORS as auth.
+verify_jwt = false
+entrypoint = "./functions/leaderboard-api/index.ts"
+import_map = "./deno.json"

@@ -2,7 +2,7 @@
 
 ## 현재 구현 범위
 
-P01 로컬 게임을 구현했습니다. 균형 조작·횡스크롤·세 캐릭터·설정/최고 기록 저장·수집 보상·소리·공유·개발 전용 텍스트 광고가 연결돼 있습니다. 온라인 닉네임/랭킹은 다음 P02, GitHub Pages 공개 배포와 iPhone 검증은 P03입니다. 기존 스타터 README와 예시는 보존했습니다. 실제 검증 범위는 [QA 기록](./qa-report.md)을 확인하세요.
+P01 로컬 게임과 P02-T01 랭킹 서버 기반을 구현했습니다. 균형 조작·횡스크롤·세 캐릭터·설정/최고 기록 저장·수집 보상·소리·공유·개발 전용 텍스트 광고가 연결돼 있습니다. 서버 코드는 아직 게임 화면과 연결하거나 실제 Supabase에 배포하지 않았습니다. 닉네임/랭킹 화면은 P02-T02, 실제 서버 검증은 P02-T03, Pages 공개 배포와 iPhone 검증은 P03입니다. 기존 스타터 README와 예시는 보존했습니다. 실제 검증 범위는 [QA 기록](./qa-report.md)을 확인하세요.
 
 ## Windows 실행
 
@@ -57,9 +57,41 @@ npx.cmd expo install --check
 - 잠깐의 렌더 정체에도 게임이 자동 정지할 수 있으므로 브라우저 검사 중 CPU 부하를 피하세요. 이 보호 규칙을 테스트 통과 목적으로 끄지 않습니다.
 - CDP 멀티터치 검사는 lockfile의 Playwright/Chromium 조합 기준입니다. 브라우저 업그레이드 시 한 손가락 종료의 실제 동작을 다시 확인해야 합니다.
 
+## 랭킹 서버 로컬 검증 (P02-T01)
+
+Node와 Deno의 타입/패키지 경계를 분리합니다. Deno2.9.6은 프로젝트의 개발 의존성으로 고정했으며 전역 설치·PowerShell 실행 정책 변경은 필요 없습니다. 서버 SDK는 `supabase/deno.json`과 frozen lockfile로 고정하고 앱 DTO에는 SDK 타입을 넣지 않습니다.
+
+```powershell
+npm.cmd run ranked:sync
+npm.cmd run ranked:check
+npm.cmd run test:ranking
+npm.cmd run server:check
+npm.cmd run test:server-api
+npm.cmd run test:ranking-schema
+npm.cmd run ranked:browser
+npm.cmd run typecheck
+npm.cmd run test:ci
+```
+
+- `ranked:sync`는 순수 엔진6개 파일과 버전2개를 생성합니다. 서버 사본은 직접 수정하지 않습니다. `ranked:check`는 쓰지 않고 차이를 실패로 알립니다. 엔진을 변경하면 골든 재생 결과도 검토하고 앱/서버를 같은 버전으로 배포해야 합니다. 이번 버전은 `nyang-v1-2093a8b42d416f8a`입니다.
+- `test:ranking`은 Jest의 계약/닉네임/Node 재생, `test:server-api`는 Deno의 실제 Request·서명/JWT·서버 어댑터/재생 검사입니다. 외부 프로젝트·키 없이 실행하며 DB는 가짜 저장소입니다.
+- `test:ranking-schema`는 SQL 문자열과 RPC 파라미터/권한 계약의 정적 회귀 검사일 뿐 PostgreSQL에서 마이그레이션을 실행하지 않습니다.
+- `ranked:browser`는 Playwright Chromium에서 공통 골든3개를 재생합니다. 설치가 필요하면 위 Chromium 설치 명령을 사용합니다. 결과 `output/ranked-browser-report.json`은 합성 수치 검사이며 실제 플레이·iPhone 증거가 아닙니다.
+- API 기준 경로는 `/functions/v1/leaderboard-api`입니다. 공개 `GET /leaderboard?rulesVersion=...` 외에 프로필·판 발급/입력/확정·신고/탈퇴는 검증된 bearer가 필요합니다. client가 score/user_id를 보내는 계약은 없습니다.
+
+### 실제 연결 전에 반드시 확인할 것 (P02-T03)
+
+1. 이 마이그레이션은 배포하지 않았습니다. 실제 Supabase에서 private 테이블/RPC에 대한 anon·authenticated 접근 차단, service-role 호출, 다른 사람 판 접근, 두 요청의 경쟁·삭제 경합·시간 제한을 검증해야 합니다.
+2. 서버 환경변수 `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, 최소32자 비공개 `RANKING_RATE_LIMIT_SALT`가 필요합니다. 앱의 `EXPO_PUBLIC_*`나 GitHub Pages에 service role/salt를 넣지 않습니다. 현재 실제 값은 없습니다.
+3. production CORS는 `https://jeong-insoo.github.io`입니다. `RANKING_ALLOWED_ORIGINS`로 바꿀 수 있지만 localhost는 `RANKING_ENVIRONMENT=staging`일 때만 허용합니다. Origin 없는 native도 인증이 필요합니다. CORS는 공격자의 인증을 대체하지 않습니다.
+4. `verify_jwt=false`는 공개 순위 조회/OPTIONS를 Edge 함수까지 통과시키기 위한 설정입니다. 보호 경로는 함수에서 `auth.getUser`로 검증합니다. DELETE 재시도만 이미 존재하는 삭제 영수증과 서명 검증 JWT를 함께 사용할 수 있습니다. 이 fallback은 ES256/RS256 JWKS 기반이므로 실제 프로젝트의 비대칭 서명키 구성을 확인해야 합니다. HS256을 조용히 허용하지 않습니다.
+5. 게스트 제한은 마지막 `x-forwarded-for` 주소의 일별 HMAC만 저장합니다. 실제 Gateway가 그 마지막 항목을 신뢰할 수 있게 덮어쓰거나 추가하는지 검증해야 합니다. 확인 전에는 IP 위조 방어를 보장하지 않습니다. 주소 누락은 하나의 보수적인 공용 제한으로 묶습니다. 익명 계정 발급 제한도 운영에서 확인합니다.
+6. 만료 검사는 요청 때 즉시 적용하지만 물리 삭제 스케줄은 미설정입니다. 운영 소유자로 `private.rank_cleanup(실제_최대_JWT_초)`를 예약해야 합니다. 미완료 삭제는 보관, 완료 삭제는7일과 JWT 최대 수명 모두 경과 후 정리합니다. 입력 판24시간·완료 영수증7일·신고90일·rate bucket24시간의 정책을 개인정보 안내와 맞춥니다.
+7. Edge의 최대1,200틱 재생 CPU 비용/배포 import 경로/키 회전/네트워크 재시도는 실제 환경에서 검증합니다. Node·Deno·Chromium 일치는 Hermes의 결과나 봇 방지 보장이 아닙니다.
+
 ## 로컬 파일과 보안
 
-node_modules/dist/.expo/환경 파일/서명 자료/사용량 로그는 커밋하지 않습니다. `.env.example`만 추적합니다. 아직 서버 키나 온라인 API 설정은 없습니다.
+node_modules/dist/.expo/환경 파일/서명 자료/사용량 로그는 커밋하지 않습니다. `.env.example`만 추적합니다. 실제 서버 키나 프로젝트 접속값은 아직 설정하지 않았습니다.
 
 `npm audit`에 Expo → config-plugins → xcode → uuid 경로의 중간 등급 경고10개가 남아 있습니다. 이는 하위 취약점의 상위 영향 패키지를 포함한 수입니다. 자동 제안이 Expo46으로 하향하는 경로여서 `npm audit fix --force`는 실행하지 않았습니다. 이후 SDK 호환 패치 및 출시 전에 재검토해야 합니다. 경고를 숨기거나 보안 검사가 통과했다고 표시하지 않습니다.
 

@@ -86,3 +86,39 @@
 | WEB-09 | browser | not-run | 실제 iPhone Safari·공개 Pages URL에서 운영 QA |
 
 P02에서 온라인 실제 연결, P03에서 Pages workflow·EAS 빌드·실기기 검증을 수행합니다. 앱스토어 소개문구·이미지·최종 제출은 사용자에게 다시 확인받습니다. P01 완료는 전체 게임 출시 완료를 의미하지 않습니다.
+
+## 2026-09-22 · P02-T01 서버 기반 검증
+
+위 P01-T06 기록은 당시 결과입니다. 아래는 최종 `nyang-v1-2093a8b42d416f8a` 엔진/서버 코드의 새 실행 결과입니다. Node24.19.0, Deno2.9.6, Chromium153.0.8010.12를 사용했고 호스팅 프로젝트·실제 키는 사용하지 않았습니다.
+
+| 검사 | 결과 | 증거 범위 |
+| :--- | :--- | :--- |
+| `ranked:sync` / `ranked:check` | pass | 원본6개+버전2개 생성, 원본/서버 사본 드리프트 없음 |
+| `test:ranking` | 58/58 pass | 닉네임26·요청/오류 계약21·Node 재생11 |
+| `server:check` | pass | Deno 실제 엔트리포인트와 서버 의존성 타입 검사 |
+| `test:server-api` | 45/45 pass | Auth6·handler24·proof13·repository2; 최종471ms, DB/Auth 통신 경계는 모의 |
+| `test:ranking-schema` | 21/21 pass | SQL/RPC 시그니처·권한·잠금/재전송·삭제/보관의 정적 계약 검사 |
+| `ranked:browser` | 3/3 pass | 실제 Chromium 산술 실행의 합성 입력/최종 상태 지문 일치 |
+| `typecheck` / `test:ci` | pass / 431/431 | 전체29 suites, 타입 오류0, 기존 게임·입력·캐릭터·저장·광고 회귀 포함 |
+| `test:server` | 14/14 pass | 로컬 웹 서버 HTTP/파일 경계 회귀 |
+| production export / fixtures build | pass | Pages 하위 경로+WAV5개, mock ad 환경변수true로 빌드, 그림 fixture 별도 |
+| 실제 웹 E2E | 26 pass / 7 skip / 0 fail | 재시도0,159.5초. 앱 오류/경고0. 중복 fixture/해당 없는 desktop touch 등 기존 의도적 제외7개 |
+| staged `git diff --check` | pass | Git의 Windows LF→CRLF 안내는 있었지만 공백 오류는 없음 |
+
+### 구체적인 경계 검사
+
+- 같은 닉네임, NFC/공백/길이·허용 문자, 서버 금칙어, 임의 score/user_id/revive 필드 거절. 실제 HTTP Request의64KiB 스트림 한도 및 허위 Content-Length도 검사했습니다.
+- 실제 로컬 ES256 키로 JWT를 서명/검증했고 위조 서명·issuer/audience/만료/role/sub·HS256 fallback을 거절했습니다. 실제 Supabase getUser 네트워크/JWKS 다운로드는 모의 경계이므로 운영 인증 통과 증거는 아닙니다.
+- 호출자 소유권, 서버 seed와 카운트다운 초기 상태, 규칙 불일치, 입력 순서, 같은 입력의 RLE 정규화·재전송, 마지막 틱 낙하, 낙하 이후 틱 거절,503/429/Retry-After·오류 비공개 처리를 확인했습니다.
+- 상위100 밖의 내 순위/동점 정보는 handler가 fake repository의 결과를 공개 필드만 유지해 전달하는지를 검사했습니다. SQL의 rank 계산·최고값 경쟁·스냅샷·잠금·삭제 원자성은 정적 검사이며 실제 DB에서 입증하지 않았습니다.
+- 탈퇴 표식→DB 삭제→Auth 삭제→완료 순서, Auth 장애 후 재시도·기존 표식 없는 fallback 금지·일반 요청의 fallback 금지·신고 소유권을 검사했습니다.
+- Node/Deno/Chromium 골든3개는 무입력828틱/6%, 오른쪽82틱/0%, 사건7회·커피·사무실을 포함한10970틱/101%로 동일했습니다. Deno는137/1200틱 두 분할 방법으로 같은 결과를 냈습니다. 증거 `output/ranked-browser-report.json`에는 synthetic=true, actualPlayEvidence=false를 명시했습니다.
+- 전체 실제 웹 회귀는 새 production 번들로 실행해 두손 상쇄/부분 해제·키보드·정지/회전·저장·공유 실패·광고 비노출을 다시 확인했습니다. 새 디자인 육안 승인이나 iPhone 결과로 해석하지 않습니다. 생성된 `test-results/results.json`은 이전 결과를 교체하며 Git에는 넣지 않습니다.
+
+### 발견과 수정 / 운영 검증 대기
+
+반올림된0.70 각도와15% 거리의 같은 틱 상태/효과 불일치, API의 중복 addedTicks=0과 SQL의 검사 순서 불일치, rate bucket UPSERT/정리 경합 가능성을 보완했습니다. 설명과 코드는 [학습 노트](./learning-notes.md)에 있습니다. 모든 최종 명령은 통과했으며 초기 fixture/테스트 환경 실패는 학습 노트에 별도로 남겼습니다.
+
+**not-run (P02-T03):** 실제 PostgreSQL 마이그레이션 문법 실행, anon/authenticated RLS·EXECUTE 거부, 동시 start/chunk/finalize/delete/운영자 숨김 경쟁, 서버 벽시계 검증, 진짜 최고값/동점 top100과 내 순위, Auth 익명 가입·서명키/삭제·장애, Gateway IP 신뢰성, 호출 제한 부하와 provider CPU 예산, 물리 보관 정리 스케줄/실JWT 최대수명. 로컬 DB 실행기도 사용하지 않았습니다.
+
+**not-run (P02-T02/P03):** 앱 닉네임/리더보드 UI·세션·업로드 대기열 연결, iPhone Hermes 골든/Expo Go/TestFlight, 실제 장시간 조작감·오디오·성능, Pages/서버 공개 배포. 기존 Doctor/Expo 의존성 확인은 이번 재실행 결과가 아닙니다. Deno 의존성 설치의 npm 감사에는 기존 중간등급10개가 남았습니다. 푸시·클라우드 설정·비밀키 생성/배포는 하지 않았습니다.

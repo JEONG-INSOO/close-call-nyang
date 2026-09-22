@@ -14,7 +14,14 @@
     "e2e": "playwright test",
     "fixtures:build": "node scripts/build-scene-fixtures.mjs",
     "test:server": "node --test scripts/serve-web.test.mjs",
-    "assets:audio": "node scripts/generate-audio.mjs"
+    "assets:audio": "node scripts/generate-audio.mjs",
+    "ranked:sync": "node scripts/sync-ranked-engine.mjs",
+    "ranked:check": "node scripts/sync-ranked-engine.mjs --check",
+    "ranked:browser": "node scripts/verify-browser-replay.mjs",
+    "test:ranking": "jest --runInBand src/online/__tests__ src/game/__tests__/ranked-replay.test.ts",
+    "server:check": "deno check --config supabase/deno.json supabase/functions/leaderboard-api/index.ts",
+    "test:server-api": "deno test --config supabase/deno.json supabase/functions/_shared/__tests__",
+    "test:ranking-schema": "node --test scripts/leaderboard-schema.test.mjs"
   },
   "dependencies": {
     "@expo/metro-runtime": "~57.0.16",
@@ -42,6 +49,7 @@
     "@types/node": "24",
     "@types/react": "~19.2.4",
     "babel-preset-expo": "~57.0.0",
+    "deno": "2.9.6",
     "jest": "29.7.0",
     "jest-expo": "~57.0.5",
     "test-renderer": "1.2.0",

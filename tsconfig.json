@@ -6,5 +6,5 @@
     "types": ["react", "react-native", "jest", "node"]
   },
   "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules", "dist", "coverage", "examples", ".agents", ".codeburn"]
+  "exclude": ["node_modules", "dist", "coverage", "examples", ".agents", ".codeburn", "supabase"]
 }

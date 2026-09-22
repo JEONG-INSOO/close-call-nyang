@@ -286,6 +286,58 @@ await page.keyboard.up('ArrowRight');
 
 새로운 범위 밖 결함은 특이사항 없음입니다. 발견한 버튼 접근성 누락은 T06의 게임 동작 수정 범위 안에서 해결했습니다. 기존 Expo 하위 의존성 중간등급10개 경고는 여전히 출시 전 확인 대상입니다. 닉네임·온라인 랭킹은 다음 P02이고, 실기기 조작감 확인을 자동 테스트로 면제하지 않습니다.
 
+## 2026-09-22 · P02-T01 닉네임·랭킹 서버 기반
+
+### 무엇을, 왜 바꿨나
+
+- `src/online/contracts.ts`, `nickname.ts`: 화면과 서버가 공유할 요청/응답 모양을 정의했습니다. 닉네임은 NFC 정규화·공백 정리 후2~12글자의 한글/영문/숫자/내부 공백을 허용합니다. 제어문자·이메일·URL은 거절하고 같은 닉네임은 허용합니다. 닉네임과 비공개 인증ID는 서로 다릅니다. 아직 닉네임 화면이나 앱의 익명 로그인은 연결하지 않았습니다.
+- `supabase/migrations/202609210001_leaderboard.sql`: 플레이어·최고점수·진행 판·신고·삭제 영수증·호출 제한의6개 private 테이블을 정의했습니다. RLS와 접근권한을 함께 차단하고, 서버만 호출하는12개 RPC로 거래를 묶습니다. RPC는 여러 DB 동작을 하나의 요청/트랜잭션으로 수행하는 함수입니다. 개인별 잠금은 프로필이 생기기 전에도 삭제와 생성을 순서대로 처리합니다.
+- `leaderboard-api/handler.ts`, `_shared/{auth,validation,repository,rate-limit,api-error,nickname-blocklist}.ts`: bearer 인증→호출 제한→엄격한 입력 검사→재생/저장→공개 필드만 응답하는 경로를 만들었습니다. SDK의 `getUser`로 확인한 ID만 소유권에 사용합니다. [Supabase getUser](https://supabase.com/docs/reference/javascript/auth-getuser)는 인증 서버에 사용자 확인을 요청합니다. 게스트 순위 조회는 계정을 만들지 않습니다.
+- `src/game/deterministicMath.ts`, `difficulty.ts`, `engine.ts`: 기기별 수학 함수 오차를 줄이기 위해 sin/log1p를 명시된 산술식으로 계산하고 각도·각속도·거리·시간을1e-9 단위로 맞춥니다. 위험 각도0.70·15% 커피·51% 사무실·100% 약90초 및 캐릭터별 동일 물리는 유지합니다. 반올림으로 정확히 임계값에 도달하면 같은 틱에 넘어지거나 커피를 얻도록 맞췄습니다.
+- `scripts/sync-ranked-engine.mjs`, 서버 `_shared/game/`, `src/online/rulesVersion.ts`: 순수 엔진만 서버용으로 생성하고 원본 파일명/내용의 SHA-256으로 규칙 버전을 만듭니다. 최종 `nyang-v1-2093a8b42d416f8a`입니다. 생성 파일은 직접 편집하지 않습니다. `--check`는 파일을 고치지 않고 불일치를 찾아냅니다.
+- `_shared/verifyProof.ts`: 서버가 발급한 seed/판ID의 체크포인트에서 입력만 재생합니다. 한 요청 최대1,200틱(10초)이며 마지막 틱의 첫 낙하만 종료로 인정합니다. 점수·거리·부활·보호시간을 클라이언트가 정하는 필드는 없습니다. 원시 입력 전체를 영구 저장하지 않고 현재 상태·마지막 요청 지문만 남깁니다.
+- `supabase/deno.json`, lockfile, `config.toml`, `index.ts`, `package.json`, `tsconfig.json`: 서버 Deno와 앱 TypeScript 경계를 분리했습니다. [공식 Deno 설치 경로](https://docs.deno.com/runtime/getting_started/installation/)의 npm 배포판을 프로젝트 개발 의존성2.9.6으로 고정했습니다. 서버 SDK2.116.0/jose6.2.12는 Deno의 잠금 파일에만 두고 앱 번들에는 넣지 않습니다. 실제 키/프로젝트 연결값은 설정하지 않았습니다.
+- `src/online/__tests__/`, 게임 replay 검사, Deno의4개 테스트 파일, `scripts/leaderboard-schema.test.mjs`, `test-fixtures/ranked-replays.json`, `verify-browser-replay.mjs`: 요청 변조·인증·삭제·재전송 경계와 Node/Deno/Chromium 공통3개 재생 결과를 검사합니다. 브라우저 골든은 실제 Chromium의 계산이지만 합성 입력이며 사람의100% 완주 증거가 아닙니다.
+
+### 핵심 코드와 알아야 할 점
+
+```sql
+rank() over (order by b.score desc)
+-- 표시 정렬은 별도로 score DESC, achieved_at ASC, public_id ASC
+```
+
+[PostgreSQL rank](https://www.postgresql.org/docs/current/functions-window.html)는 같은 점수에 공동순위를 줍니다. 날짜까지 rank 조건에 넣으면 동점이 깨집니다. 전체 활성 플레이어를 먼저 순위 매기고 정확히100행만 자르며, 내 순위는 같은 스냅샷의 전체 목록에서 찾습니다. 최고 기록과 달성 시각은 엄격히 높은 점수일 때만 갱신합니다.
+
+```ts
+const verified = verifyChunk(checkpoint.state, chunk.spans);
+// 검증된 state/ticks만 RPC에 전달. 요청 body에는 score가 없다.
+```
+
+1. 한 판의 입력을 작게 나눠 보낼 때 `seq`가 순서를 나타냅니다. DB에서 소유권·만료·현재 seq·실제 지난 시간을 다시 확인하고 함께 저장합니다. 최신 seq와 같은 입력 지문의 재전송은 저장된 응답을 돌려주며 만료를 연장하지 않습니다. 다른 내용/옛 순서는409입니다. 종료 확정도 영수증을 재사용하므로 최고 기록을 두 번 갱신하지 않습니다.
+2. 서버 시간 제한은 `totalTicks / 120 <= max(0, now - issuedAt - 3초) + 2초`입니다. 카운트다운3초를 빼고 작은 오차만 허용합니다. 정지 중에는 입력 틱을 보내지 않습니다. 전체 게임 점수에 임의 상한을 만들지 않았으며 숫자 표현 한계를 넘으면 거절합니다.
+3. 탈퇴는 DB에서 즉시 순위/프로필/관련 신고를 지우고 tombstone(삭제 진행 표식)을 남긴 뒤 Auth 계정을 지웁니다. Auth 삭제 실패 시503과 pending 표식이 남아 안전하게 재시도합니다. 기존 표식이 있을 때만 DELETE 전용 서명 검증 fallback을 허용하며 일반 요청에 재사용하지 않습니다. ES256/RS256 키·issuer/audience/만료/role/sub를 검사합니다. 실제 프로젝트가 비대칭 키를 쓰는지는 T03 확인 대상입니다.
+4. `SECURITY DEFINER`는 함수 소유자 권한으로 실행하므로 빈 search_path와 완전한 테이블 이름, PUBLIC 실행권한 회수가 중요합니다. [PostgreSQL 보안 지침](https://www.postgresql.org/docs/current/sql-createfunction.html)을 따르되 이번 SQL 정적 검사는 실제 권한 검증을 대체하지 않습니다. service role은 앱·공개 환경변수에 넣지 않습니다.
+5. `verify_jwt=false` 자체는 보호 기능이 아닙니다. 공개 순위/OPTIONS를 통과시키되 보호 경로에서 직접 인증합니다. CORS는 Pages origin만 허용하고 localhost는 staging만 허용합니다. Origin 없는 native도 인증 규칙은 동일합니다. 64KiB 한도는 Content-Length뿐 아니라 실제 받은 바이트로 적용합니다.
+6. 게스트 호출 제한 키는 날짜+서버 비밀값으로 IP를 HMAC 처리한 값입니다. 원주소는 DB/앱 로그에 복사하지 않습니다. 다만 마지막 forwarded hop이 신뢰 가능한지는 배포 Gateway에서 검증해야 하며 현재 보장하지 않습니다. 데이터 정리 함수는 있지만 실행 스케줄은 아직 없으므로 운영 적용 전 물리 보관 기한이 작동한다고 주장하면 안 됩니다.
+7. 올바른 입력을 자동 생성하는 봇까지 막는 구조는 아닙니다. 클라이언트 소스/개발 플래그는 공개되므로 사람·정식앱을 암호학적으로 증명하지 못합니다. 서버는 유효한 규칙의 부활 없는 입력만 검증합니다. production 광고는 계속 꺼져 있습니다.
+
+### 실패·검토와 해결
+
+- 새 정밀도 규칙에 맞춰 기존 물리 검사에서 해당 수치의 허용 오차만 조정하고90초·즉시 낙하·캐릭터 동일성의 기존 회귀는 유지했습니다. 양자화 전 각도가 `.6999999998`이면 저장할 때 `.7`로 올라가지만 playing으로 남는 경계를 재현했습니다. 다음 틱의 진행0짜리 낙하를 서버가 거절하는 문제라, 해당 틱에 결과를 확정하도록 고쳤습니다.15% 거리 반올림의 커피1틱 지연도 함께 검사했습니다.
+- 최신 중복 입력을 handler는 `addedTicks=0`으로 보내는데 SQL이 중복 판정 전에1 이상을 요구하는 계약 불일치를 리뷰에서 발견했습니다. 중복 요청은 그대로 응답하고, 새 요청만1~1,200틱을 요구하도록 순서를 맞췄습니다. 정적 계약 검사에 이 순서를 넣었습니다.
+- 호출 제한에서 INSERT와 SELECT 사이에 오래된 행 정리가 끼어들 수 있어 단일 UPSERT RETURNING으로 기존 행 잠금을 확보했습니다. 실제 DB 경쟁 실행의 증거는 아직 아니며 T03의 필수 항목입니다.
+- Node 계약 테스트에 없는 TextEncoder/WebCrypto와 Deno 테스트용 즉시 임계 상태 때문에 초기 테스트가 실패했습니다. 테스트 환경 경계를 명시하고 실제로 임계점을 통과하는 마지막 틱 fixture로 수정했습니다. 검증기의 불법 상태 거절을 풀지 않았습니다.
+- Windows 제한 계정의 apply_patch/Git 소유권 경고는 승인된 작업 경로와 명령별 safe.directory로 처리했습니다. 전역 권한/전역 Git 예외는 바꾸지 않았습니다.
+- 마지막 점검에서 Windows Git 체크아웃의 CRLF를 소스 변조로 오인할 수 있음을 발견했습니다. 생성 파일 비교도 해시 계산과 같이 LF로 정규화하고, 파일을 다시 쓰지 않으면서 정상 줄바꿈은 통과·실제 코드 변경은 실패하는 회귀를 추가했습니다.
+
+### 검증 기록과 남은 범위
+
+상세 명령/결과는 [QA 기록](./qa-report.md)의 P02-T01 항목에 남깁니다. 닉네임·서버 API·재생 로컬 검증과 게임 회귀를 구분하며 실제 PostgreSQL/RLS/네트워크/운영 제한 성공으로 확대하지 않습니다. 다음 T02에서 앱의 닉네임/순위 화면·세션·입력 대기열을 연결하고 T03에서 실제 프로젝트 검증을 합니다. GitHub 푸시·Pages/서버 배포·iOS 실행은 이번에 하지 않았습니다.
+
+### 이번 범위 밖
+
+새로운 범위 밖 결함은 특이사항 없음입니다. 기존 Expo 하위 의존성 중간등급10개는 Deno 개발 의존성 설치 때도 남아 있으며 강제 SDK 하향으로 해결하지 않았습니다. Hermes·실기기 조작감/성능·청취와 운영 서버 검증은 예정 작업이며 자동 테스트 통과로 면제하지 않습니다. 사용자 스타터/스킬/사용량 파일은 그대로 보존했습니다.
+
 ## 요청 범위 밖 발견 사항
 
 위 하위 의존성 보안 경고 외 기존 사용자 파일의 결함은 발견하지 않았습니다. 이번 Task에서 기존 스타터 예시나 사용량 도구를 임의 수정하지 않았습니다.
