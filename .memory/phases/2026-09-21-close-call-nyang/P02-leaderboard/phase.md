@@ -6,11 +6,12 @@
 ## Tasks
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| T01 | `in_progress` | 데이터 모델·권한·닉네임/순위 API·서버 기록 검증 (active, 실행 대기) | [T01](./T01-ranking-backend.md) |
-| T02 | `pending` | 익명 세션·닉네임/순위 UI·입력 제출·오프라인 대응 | [T02](./T02-ranking-client.md) |
+| T01 | `done` | 데이터 모델·권한·API·서버 재생 구현/로컬 검증 완료 (`0f3e52d`); 실제 DB 검증은 T03 | [T01](./T01-ranking-backend.md) |
+| T02 | `in_progress` | 익명 세션·닉네임/순위 UI·입력 제출·오프라인 대응 (다음 active, 실행 대기) | [T02](./T02-ranking-client.md) |
 | T03 | `pending` | 실제 Supabase 설정·권한/통합 검증·운영 안내 | [T03](./T03-hosted-verification.md) |
 
 ## Progress
-- done: 0/3 (active: T01; P01 completed in7efcc8c, implementation not started)
+- done: 1/3 (active: T02; T01 source `0f3e52d`, T02 blueprint not read or implemented in T01)
 - next phase: [P03 release](../P03-release/phase.md)
-- external prerequisites: 사용자의 Supabase 계정·실제 프로젝트 설정은 T03에서 수행. 현재는 계획만 작성됨.
+- validation: Jest431/29suites, Deno45, SQL static21, web server14, Node/Deno/Chromium golden3, typecheck/builds and actual browser26pass7skip0fail passed. Actual hosted RLS/transactions/Auth/limits/cleanup and Hermes remain pending.
+- external prerequisites: 사용자의 Supabase 계정·실제 프로젝트 설정은 T03에서 수행. 현재 서버 코드는 로컬 검증만 완료했고 키 설정·배포·푸시하지 않음.

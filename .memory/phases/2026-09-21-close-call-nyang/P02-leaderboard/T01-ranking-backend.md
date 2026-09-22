@@ -158,4 +158,4 @@ Task: T01-ranking-backend
 - [x] 검증 통과: ranked sync/check; Jest ranking58/full431(29 suites); Deno check/tests45; static SQL21; HTTP server14; Chromium golden3; typecheck; production/fixture builds; actual UI26pass7skip0fail(159.5sec); staged diff check.
 - rulesVersion: `nyang-v1-2093a8b42d416f8a`
 - evidence/limitations: `docs/qa-report.md`, `docs/learning-notes.md`, `docs/development.md`; actual DB/Auth/network/Hermes validation remains pending.
-- commit: pending
+- commit: `0f3e52d` (source/blueprint; progress pointer synchronized in the following memory commit)
