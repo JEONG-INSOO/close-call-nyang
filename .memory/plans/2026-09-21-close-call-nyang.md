@@ -6,14 +6,14 @@ Windows에서 Expo SDK 57 + TypeScript + Reanimated + SVG로 한국어 가로 �
 - Decisions: [확정 결정](../decisions/2026-09-21-close-call-nyang.md)
 - Character amendment: [세 캐릭터·100% 달성 보상](../decisions/2026-09-21-character-collection.md). 기본rookie(2번), 첫 달성diligent(1번),10회veteran(3번). 외형 전용·기기별 수집이며 기존14개 Task에 통합한다.
 - Planning date: 2026-09-21
-- Implementation gate: 모델 변경 안내 후2026-09-21 사용자 실행 요청을 받아 P01-T01(e2d066a), P01-T02(f09b6d1), P01-T03(ce14e74), P01-T04(cab6500), P01-T05(646c188), P01-T06(7efcc8c), P02-T01(0f3e52d) 완료. 서버 기반 로컬 검증과 production Chromium 회귀를 통과했고 다음 active는 P02-T02이다. 실제 DB·iPhone·출시 검증은 미완료다.
-- Amendment: 닉네임·온라인 리더보드 결정을 반영해 P02-leaderboard 3개 Task를 추가하고 기존 출시 단계를 P03-release로 이동했다. 총14개 Task 중7개 구현 단계를 완료했다.
+- Implementation gate: 모델 변경 안내 후2026-09-21 사용자 실행 요청을 받아 P01-T01(e2d066a), P01-T02(f09b6d1), P01-T03(ce14e74), P01-T04(cab6500), P01-T05(646c188), P01-T06(7efcc8c), P02-T01(0f3e52d), P02-T02(ae82e14) 완료. 앱/서버 로컬 검증과 production Chromium·모의 API 회귀를 통과했고 다음 active는 P02-T03이다. 실제 DB·iPhone·출시 검증은 미완료다.
+- Amendment: 닉네임·온라인 리더보드 결정을 반영해 P02-leaderboard 3개 Task를 추가하고 기존 출시 단계를 P03-release로 이동했다. 총14개 Task 중8개 구현 단계를 완료했다.
 
 ## Phases
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
 | P01 | `done` | 로컬 게임6/6·실제 production 웹 QA 완료; iPhone/출시는 P03 | [P01](../phases/2026-09-21-close-call-nyang/P01-game/phase.md) |
-| P02 | `in_progress` | 서버 기반1/3 완료; T02 앱 연결 active, 실행 대기 | [P02](../phases/2026-09-21-close-call-nyang/P02-leaderboard/phase.md) |
+| P02 | `in_progress` | 서버 기반·앱 연결2/3 완료; T03 실제 서버 검증 active, 실행 대기 | [P02](../phases/2026-09-21-close-call-nyang/P02-leaderboard/phase.md) |
 | P03 | `pending` | Pages·스토어 준비, 외부 iOS 검증·심사 제출·학습노트 마감 | [P03](../phases/2026-09-21-close-call-nyang/P03-release/phase.md) |
 
 ## Task Map
@@ -90,7 +90,7 @@ P01은 로컬 게임 규칙과 화면, P02는 새로 추가된 서버·네트워
 - [Supabase anonymous users](https://supabase.com/docs/guides/auth/auth-anonymous), [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security), [function limits](https://supabase.com/docs/guides/functions/limits), [pricing](https://supabase.com/pricing)
 
 ## Progress
-- Tasks done: 7/14
-- Active: P02-T02 (P02-T01 source0f3e52d; Jest431/29suites, Deno45, SQL static21, web server14, typecheck, numeric golden3 across Node/Deno/Chromium, production+fixture exports, UI26pass7skip0fail passed. Hosted SQL/RLS/concurrency/Auth/retention and iPhone/Hermes remain pending. Rules nyang-v1-2093a8b42d416f8a. No push/deployment.)
+- Tasks done: 8/14
+- Active: P02-T03 (P02-T02 source ae82e14; Jest582/40suites, ranking184/UI21, web server14, typecheck/ranked check, Expo dependencies, 3exports, browser28pass11skip0fail166.207sec. T01 Deno45/SQLstatic21/golden3 are historical. Hosted SQL/RLS/concurrency/Auth/retention and iPhone/Hermes remain pending. Rules nyang-v1-2093a8b42d416f8a. No push/deployment.)
 - GitHub amendment2026-09-21: user explicitly authorized public repository creation/push for current work; authenticated account JEONG-INSOO, repository https://github.com/JEONG-INSOO/close-call-nyang. Earlier user-only remote creation restrictions do not block this expressly requested handoff. Pages activation/release deployment remain later Tasks.
 - Adjacent out-of-scope defects: 특이사항 없음. 기존 스타터 문서/예시는 보존한다.

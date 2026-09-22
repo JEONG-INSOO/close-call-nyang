@@ -7,11 +7,11 @@
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
 | T01 | `done` | 데이터 모델·권한·API·서버 재생 구현/로컬 검증 완료 (`0f3e52d`); 실제 DB 검증은 T03 | [T01](./T01-ranking-backend.md) |
-| T02 | `in_progress` | 익명 세션·닉네임/순위 UI·입력 제출·오프라인 대응 (다음 active, 실행 대기) | [T02](./T02-ranking-client.md) |
-| T03 | `pending` | 실제 Supabase 설정·권한/통합 검증·운영 안내 | [T03](./T03-hosted-verification.md) |
+| T02 | `done` | 익명 세션·닉네임/순위 UI·입력 제출·오프라인 대응 완료 (`ae82e14`); 모의 API/실제 Chromium 검증 | [T02](./T02-ranking-client.md) |
+| T03 | `in_progress` | 실제 Supabase 설정·권한/통합 검증·운영 안내 (다음 active, 실행 대기) | [T03](./T03-hosted-verification.md) |
 
 ## Progress
-- done: 1/3 (active: T02; T01 source `0f3e52d`, T02 blueprint not read or implemented in T01)
+- done: 2/3 (active: T03; T02 source `ae82e14`, T03 blueprint not read or implemented in T02)
 - next phase: [P03 release](../P03-release/phase.md)
-- validation: Jest431/29suites, Deno45, SQL static21, web server14, Node/Deno/Chromium golden3, typecheck/builds and actual browser26pass7skip0fail passed. Actual hosted RLS/transactions/Auth/limits/cleanup and Hermes remain pending.
-- external prerequisites: 사용자의 Supabase 계정·실제 프로젝트 설정은 T03에서 수행. 현재 서버 코드는 로컬 검증만 완료했고 키 설정·배포·푸시하지 않음.
+- validation: T02 Jest582/40suites(ranking184/UI21), typecheck/ranked check, web server14, Expo dependency check, 3web builds, browser28pass11skip0fail166.207sec. Production fixture/diagnostic absence confirmed. T01 Deno45/SQL static21/runtime golden3 are historical. Actual hosted RLS/transactions/Auth/limits/cleanup and Hermes remain pending.
+- external prerequisites: 사용자의 Supabase 계정·실제 프로젝트 설정은 T03에서 수행. 서버와 앱을 연결하는 코드는 있으나 실제 키 설정·배포·푸시하지 않음. 기본 앱은 미설정 로컬 게임.
