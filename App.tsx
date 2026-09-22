@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { DEFAULT_CHARACTER_ID, type CharacterId } from './src/characters/catalog';
 import { CountdownOverlay } from './src/components/CountdownOverlay';
@@ -19,6 +19,11 @@ import { CharacterSelectPanel } from './src/screens/CharacterSelectPanel';
 import { MockAdScreen } from './src/screens/MockAdScreen';
 import { SettingsPanel } from './src/screens/SettingsPanel';
 import { ShareFeedbackPanel } from './src/screens/ShareFeedbackPanel';
+import { NicknamePanel } from './src/screens/NicknamePanel';
+import { LeaderboardScreen } from './src/screens/LeaderboardScreen';
+import { PendingRankingPanel } from './src/screens/PendingRankingPanel';
+import { useOnlineProfile } from './src/online/useOnlineProfile';
+import { useRankedGame } from './src/online/useRankedGame';
 import { useGameAudio } from './src/services/audio';
 import { playHaptic } from './src/services/haptics';
 import { getRewardedAdAvailability } from './src/services/rewardedAds';
@@ -26,13 +31,18 @@ import { shareScore, type ShareResult } from './src/services/share';
 import { usePreferences } from './src/services/usePreferences';
 import { palette } from './src/theme/tokens';
 
-type Panel = 'settings' | 'characters' | 'share' | null;
+type Panel = 'settings' | 'characters' | 'share' | 'nickname' | 'leaderboard' | 'diagnostics' | null;
+let Diagnostics: (() => React.JSX.Element) | null = null;
+if (__DEV__ && process.env.EXPO_PUBLIC_REPLAY_DIAGNOSTICS === 'true') {
+  Diagnostics = require('./src/online/__dev__/RankedReplayDiagnostics').RankedReplayDiagnostics;
+}
 
 export default function App(): React.JSX.Element {
   const [flags] = useState(() => getFeatureFlags(__DEV__, process.env.EXPO_PUBLIC_ENABLE_MOCK_AD));
   const { controller, snapshot, frame } = useGameController(flags);
   const portraitBlocked = useWebPortraitGate();
   const preferences = usePreferences();
+  const online = useOnlineProfile();
   const audio = useGameAudio(preferences.value.settings);
   const [runCharacter, setRunCharacter] = useState<CharacterId>(DEFAULT_CHARACTER_ID);
   const [panel, setPanel] = useState<Panel>(null);
@@ -41,7 +51,6 @@ export default function App(): React.JSX.Element {
   const mounted = useRef(true);
   const sharing = useRef(false);
   const attempt = useRef<{ id: number; runId: number } | null>(null);
-  const nextRunId = useRef(0);
   const services = useRef({ preferences, audio });
   services.current = { preferences, audio };
   const changePanel = useCallback((next: Panel) => {
@@ -49,6 +58,14 @@ export default function App(): React.JSX.Element {
     setPanel(next);
   }, []);
   const closePanel = useCallback(() => changePanel(null), [changePanel]);
+  const ranking = useRankedGame({
+    controller, online, eligible: !__DEV__ && !flags.mockAdsEnabled,
+    canStart: () => !portraitBlocked && panelRef.current === null,
+    onAcceptedStart: runId => {
+      setRunCharacter(services.current.preferences.value.collection.selectedCharacter);
+      attempt.current = { id: services.current.preferences.beginAttempt(!flags.mockAdsEnabled), runId };
+    },
+  });
 
   useEffect(() => {
     mounted.current = true;
@@ -56,10 +73,11 @@ export default function App(): React.JSX.Element {
   }, []);
 
   const pause = useCallback(() => {
+    ranking.cancelStart();
     controller.clearInput();
     controller.resetFrameClock();
     controller.dispatch({ type: 'PAUSE' });
-  }, [controller]);
+  }, [controller, ranking.cancelStart]);
   useKeyboardInput(controller);
   useAppLifecycle(pause);
 
@@ -92,18 +110,10 @@ export default function App(): React.JSX.Element {
     if (portraitBlocked || panelRef.current !== null) return;
     const screen = controller.readState().screen;
     if (screen !== 'title' && screen !== 'result') return;
-    // Session identity and ambient randomness belong outside the pure rules.
-    const seed = (Math.floor(Math.random() * 0x100000000) ^ (Date.now() >>> 0)) >>> 0;
-    const runId = nextRunId.current + 1;
-    const selected = services.current.preferences.value.collection.selectedCharacter;
     services.current.audio.unlock();
-    controller.dispatch({ type: 'START', runId, seed });
-    if (controller.readState().run?.id !== runId || controller.readState().screen !== 'countdown') return;
-    nextRunId.current = runId;
-    setRunCharacter(selected);
-    attempt.current = { id: services.current.preferences.beginAttempt(!flags.mockAdsEnabled), runId };
-  }, [controller, flags.mockAdsEnabled, portraitBlocked]);
-  const home = useCallback(() => controller.dispatch({ type: 'HOME' }), [controller]);
+    void ranking.start();
+  }, [controller, ranking.start, portraitBlocked]);
+  const home = useCallback(() => { ranking.leaveRun(); controller.dispatch({ type: 'HOME' }); }, [controller, ranking.leaveRun]);
   const resume = useCallback(() => {
     if (!portraitBlocked && panelRef.current === null && controller.readState().screen === 'paused') {
       services.current.audio.unlock();
@@ -118,8 +128,13 @@ export default function App(): React.JSX.Element {
   const openCharacters = useCallback(() => {
     const current = controller.readState().screen;
     if (portraitBlocked || panelRef.current !== null || (current !== 'title' && current !== 'result')) return;
-    changePanel('characters');
-  }, [changePanel, controller, portraitBlocked]);
+    ranking.cancelStart(); changePanel('characters');
+  }, [changePanel, controller, portraitBlocked, ranking.cancelStart]);
+  const openOnline = useCallback((next: 'nickname' | 'leaderboard') => {
+    if (portraitBlocked) return;
+    pause(); changePanel(next);
+  }, [changePanel, pause, portraitBlocked]);
+  const deleteOnline = useCallback(() => ranking.deleteProfile(online.deleteProfile), [ranking.deleteProfile, online.deleteProfile]);
   const selectCharacter = useCallback((id: CharacterId) => {
     const current = controller.readState().screen;
     if (panelRef.current === 'characters' && (current === 'title' || current === 'result')) {
@@ -159,25 +174,49 @@ export default function App(): React.JSX.Element {
           <GameScreen frame={frame} snapshot={snapshot} controller={controller}
             characterId={runCharacter} reduceMotion={preferences.value.settings.reduceMotion} />
           {screen === 'title' && <TitleScreen bestScore={preferences.value.bestScore} onStart={start}
-            onSettings={openSettings} onCharacters={openCharacters} />}
+            onSettings={openSettings} onCharacters={openCharacters} startBusy={ranking.startBusy}
+            nickname={online.profile?.nickname} onNickname={() => openOnline('nickname')}
+            onLeaderboard={() => openOnline('leaderboard')}
+            onlineNotice={ranking.localNotice ?? (online.status === 'unconfigured' ? '랭킹 연결을 준비 중이에요. 지금은 기기에 기록됩니다.' : online.error)} />}
           {screen === 'countdown' && <CountdownOverlay seconds={snapshot.state.countdownSeconds} />}
           {screen === 'paused' && <PauseOverlay onResume={resume} onHome={home} onSettings={openSettings} />}
           {screen === 'ad' && <MockAdScreen secondsRemaining={snapshot.state.adSeconds} onCancel={cancelAd} />}
           {screen === 'result' && <ResultScreen score={snapshot.score}
             bestScore={Math.max(preferences.value.bestScore, snapshot.score)} canRevive={canRevive}
             onRetry={start} onHome={home} onShare={share} onRevive={revive} onSettings={openSettings}
-            onCharacters={openCharacters} newlyUnlocked={preferences.newlyUnlocked} />}
+            onCharacters={openCharacters} newlyUnlocked={preferences.newlyUnlocked}
+            onLeaderboard={() => openOnline('leaderboard')} onNickname={() => openOnline('nickname')}
+            startBusy={ranking.startBusy} submissionState={ranking.submissionState} receipt={ranking.receipt}
+            onRetrySubmission={() => { void ranking.retrySubmission(); }} />}
           {showStorageStatus && <View pointerEvents="none" style={styles.storageNotice}>
             <Text accessibilityLiveRegion="polite" style={styles.storageText}>
               {preferences.status === 'loading' ? ko.storageLoading : ko.storageMemoryOnly}
             </Text>
           </View>}
+          {Diagnostics && screen === 'title' && <Pressable testID="replay-diagnostics-open" accessibilityRole="button"
+            onPress={() => { ranking.cancelStart(); changePanel('diagnostics'); }} style={styles.diagnosticsButton}>
+            <Text>재현 검사 (개발용)</Text>
+          </Pressable>}
         </LandscapeGate>
         <SettingsPanel visible={panel === 'settings'} settings={preferences.value.settings}
-          onChange={preferences.setSettings} onClose={closePanel} />
+          onChange={preferences.setSettings} onClose={closePanel} nickname={online.profile?.nickname}
+          onEditNickname={() => openOnline('nickname')} onDeleteProfile={online.userId ? deleteOnline : undefined}
+          deleting={online.isBusy} onlineError={ranking.localNotice ?? online.error} />
         <CharacterSelectPanel visible={panel === 'characters'} collection={preferences.value.collection}
           onSelect={selectCharacter} onClose={closePanel} />
         <ShareFeedbackPanel result={panel === 'share' ? shareResult : null} onClose={closePanel} />
+        <NicknamePanel visible={panel === 'nickname'} profile={online.profile} onClose={closePanel}
+          onSave={online.saveNickname} busy={online.isBusy || online.deletionPending}
+          disabled={online.status === 'unconfigured'}
+          error={online.status === 'unconfigured' ? '랭킹 연결 전입니다. 닉네임 없이도 바로 플레이할 수 있어요.' : online.error} />
+        <LeaderboardScreen visible={panel === 'leaderboard'} api={online.api} myProfile={online.profile}
+          onClose={closePanel} refreshKey={ranking.refreshKey} />
+        <PendingRankingPanel visible={ranking.pendingChoice} busy={ranking.startBusy} error={ranking.pendingError}
+          onRetry={() => { void ranking.retryPending(); }} onStartLocal={ranking.startLocal}
+          onDiscardAndStart={() => { void ranking.discardAndStart(); }} onClose={ranking.closePending} />
+        {Diagnostics && <Modal visible={panel === 'diagnostics'} onRequestClose={closePanel}>
+          <Diagnostics /><Pressable accessibilityRole="button" onPress={closePanel}><Text>닫기</Text></Pressable>
+        </Modal>}
       </SafeAreaView>
     </SafeAreaProvider>
   );
@@ -189,4 +228,5 @@ const styles = StyleSheet.create({
   },
   storageNotice: { position: 'absolute', top: 4, left: '15%', right: '15%', alignItems: 'center', zIndex: 90 },
   storageText: { color: palette.ink, backgroundColor: palette.paper, padding: 6, borderRadius: 8, fontSize: 12, textAlign: 'center' },
+  diagnosticsButton: { position: 'absolute', left: 8, bottom: 8, padding: 12, backgroundColor: palette.paper, zIndex: 100 },
 });

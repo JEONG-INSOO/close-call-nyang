@@ -8,6 +8,13 @@ import type { GameAction, GameEffect, GameState } from './types';
 export type ControlAction = Exclude<GameAction, { type: 'TICK' }>;
 export type InputSource = 'touch' | 'keyboard';
 
+export interface PlayedTick {
+  runId: number;
+  tickIndex: number;
+  direction: -1 | 0 | 1;
+  terminal: boolean;
+}
+
 export interface ControllerSnapshot {
   state: GameState;
   score: number;
@@ -20,6 +27,7 @@ export interface GameController {
   subscribe(listener: () => void): () => void;
   subscribeFrame(listener: (frame: SceneFrame) => void): () => void;
   subscribeEffects(listener: (effects: GameEffect[], state: GameState) => void): () => void;
+  subscribeTicks(listener: (tick: PlayedTick) => void): () => void;
   dispatch(action: ControlAction): void;
   setInput(source: InputSource, id: string, direction: -1 | 1, down: boolean): void;
   clearInput(): void;
@@ -92,6 +100,7 @@ export function createGameController(flags: { mockAdsEnabled: boolean }): GameCo
   const listeners = new Set<() => void>();
   const frameListeners = new Set<(frame: SceneFrame) => void>();
   const effectListeners = new Set<(effects: GameEffect[], state: GameState) => void>();
+  const tickListeners = new Set<(tick: PlayedTick) => void>();
 
   function resetClock(): void {
     previousTimestamp = null;
@@ -128,6 +137,21 @@ export function createGameController(flags: { mockAdsEnabled: boolean }): GameCo
       const next = transition(previous, action, engineFlags);
       if (next.state === previous) return;
       state = next.state;
+      // Observe every authoritative fixed tick, including a partial falling tick,
+      // before publishing result snapshots. Reentrant controls remain queued.
+      if (action.type === 'TICK' && previous.screen === 'playing' && previous.run &&
+          state.run?.id === previous.run.id && state.run.stepIndex === previous.run.stepIndex + 1) {
+        const tick: PlayedTick = {
+          runId: state.run.id,
+          tickIndex: state.run.stepIndex,
+          direction: action.input.left === action.input.right ? 0 : action.input.left ? -1 : 1,
+          terminal: state.screen === 'result',
+        };
+        for (const listener of [...tickListeners]) {
+          if (disposed) break;
+          if (tickListeners.has(listener)) listener({ ...tick });
+        }
+      }
       if (isControlAction) {
         input.clear();
         resetClock();
@@ -244,6 +268,7 @@ export function createGameController(flags: { mockAdsEnabled: boolean }): GameCo
     subscribe: (listener) => subscribe(listeners, listener),
     subscribeFrame: (listener) => subscribe(frameListeners, listener),
     subscribeEffects: (listener) => subscribe(effectListeners, listener),
+    subscribeTicks: (listener) => subscribe(tickListeners, listener),
     dispatch,
     setInput(source, id, direction, down) {
       if (!disposed) input.set(source, id, direction, down);
@@ -260,6 +285,7 @@ export function createGameController(flags: { mockAdsEnabled: boolean }): GameCo
       listeners.clear();
       frameListeners.clear();
       effectListeners.clear();
+      tickListeners.clear();
     },
   };
 }

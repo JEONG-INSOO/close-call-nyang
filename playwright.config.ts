@@ -19,5 +19,7 @@ export default defineConfig({
       url: 'http://127.0.0.1:4173/close-call-nyang/', reuseExistingServer: false, timeout: 15000 },
     { command: 'node scripts/serve-web.mjs --port 4174 --base /fixtures --dir output/qa-fixtures',
       url: 'http://127.0.0.1:4174/fixtures/', reuseExistingServer: false, timeout: 15000 },
+    { command: 'node scripts/serve-web.mjs --port 4175 --base /close-call-nyang --dir output/online-web',
+      url: 'http://127.0.0.1:4175/close-call-nyang/', reuseExistingServer: false, timeout: 15000 },
   ],
 });

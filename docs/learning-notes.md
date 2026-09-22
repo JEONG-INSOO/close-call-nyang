@@ -338,6 +338,66 @@ const verified = verifyChunk(checkpoint.state, chunk.spans);
 
 새로운 범위 밖 결함은 특이사항 없음입니다. 기존 Expo 하위 의존성 중간등급10개는 Deno 개발 의존성 설치 때도 남아 있으며 강제 SDK 하향으로 해결하지 않았습니다. Hermes·실기기 조작감/성능·청취와 운영 서버 검증은 예정 작업이며 자동 테스트 통과로 면제하지 않습니다. 사용자 스타터/스킬/사용량 파일은 그대로 보존했습니다.
 
+## 2026-09-22 · P02-T02 닉네임·공통 랭킹 화면과 입력 제출
+
+### 무엇을, 왜 바꿨나
+
+- `src/online/{client,api,types,useOnlineProfile}.ts`: 공개 설정이 있는 경우만 Supabase 클라이언트를 만들고, 명시적 닉네임 저장 때 익명 가입합니다. 앱 실행이나 랭킹 열기는 가입하지 않습니다. 인증 갱신은 foreground에서만 하며, API 인스턴스를 사용자 ID에 묶어 이전 판이 새 계정의 인증으로 전송되지 않게 했습니다. 일반 요청은8초/판 발급 전체는2초 제한,401 갱신은 최대1회, 삭제는 기존 인증으로만 재시도합니다.
+- `src/screens/{NicknamePanel,LeaderboardScreen,PendingRankingPanel}.tsx`, `onlineStyles.ts`, `src/i18n/ko.ts`: 중복 가능한 닉네임 설정/편집, 공동 순위 top100와 별도 내 순위, 상태·재시도, 신고 사유·로컬 숨김, 이전 대기 기록의 선택 UI를 추가했습니다. 이름 없는 로컬 게임은 계속 가능합니다. 신고했다고 즉시 다른 사용자가 사라지는 것은 아닙니다.
+- `TitleScreen.tsx`, `ResultScreen.tsx`, `SettingsPanel.tsx`: 진입 버튼과 등록 상태/서버 영수증을 연결했습니다. 스크롤 가능한 공통 모달과 삭제 재확인으로 가로 화면에서도 작업하며, 서버 삭제 실패 상태와 버튼의 현재 처리 중 상태를 분리해 재시도 버튼이 영구 비활성화되지 않게 했습니다.
+- `blockedPlayers.ts`: 공개 플레이어 ID 최대200개만 별도 키에 저장합니다. 이름이 바뀌어도 숨김이 유지되며, 보이는 행만 다시1등부터 번호를 붙이지 않습니다. 로컬 숨김은 서버의 운영자 제재와 다릅니다.
+- `src/game/controller.ts`, `src/online/runRecorder.ts`: React 점수 갱신(최대10Hz) 대신 실제1/120초 playing 틱을 구독합니다. 낙하 마지막 틱까지 입력을 기록하고 같은 방향은 `{direction,ticks}`로 묶습니다. 이것이 RLE(같은 값의 연속 횟수로 압축)이며 한 청크는최대1,200틱입니다. controller 테스트는 프레임당 복수 틱·정지·마지막 부분 틱과 재진입도 검사합니다. 순수 물리/서버 사본/규칙 버전은 변경하지 않았습니다.
+- `proofQueue.ts`, `rankedSession.ts`: 한 판·1MiB 입력 대기열, 한 요청씩 전송, ACK 이후 제거, 같은 seq 재전송, foreground 재시도·만료·연속 실패 예산을 구현했습니다. `acknowledgedTicks/failureCount/retryAt`까지 저장하므로 재시작으로429 대기나 실패 횟수를 초기화하지 않습니다. 파일 읽기 실패를 빈 저장소라고 간주해 덮어쓰지 않습니다.
+- `useRankedGame.ts`, `App.tsx`: 서버 seed/판ID를 먼저 받은 후 기존 START를 실행하고, 실패 시 로컬 판으로 돌아갑니다. 취소/화면 변경/계정 변경 후 도착한 요청을 세대 번호로 무시합니다. 로컬 보상은 승인된 START에서만 한 번 시작하며 서버 영수증·재전송은 캐릭터 해금 횟수를 추가하지 않습니다. HOME은 미완료 판만 폐기하고 이미 끝난 대기 결과는 보존합니다.
+- `src/online/__dev__/RankedReplayDiagnostics.tsx`, `package.json`/lockfile: 공통 골든3개를 실제 실행 런타임에서 재생하고 `expo-crypto ~57.0.3`으로 SHA-256 상태 지문을 출력하는 개발용 도구를 추가했습니다. SDK2.116.0/URL polyfill4.0.0은 고정 버전, Expo Crypto는 SDK57 호환 범위입니다. production에는 진단 코드와 골든 fixture가 포함되지 않습니다.
+- `.env.example`, `scripts/export-{web,online-fixture}.mjs`, `playwright.config.ts`, `e2e/online.spec.ts`: 배포 가능한 `dist`와 가짜 API용 `output/online-web`을 분리했습니다. 모의 화면에 `SIMULATED API`를 표시하고 실제 네트워크·DB 성공과 구분합니다. 공개 변수의 Metro 캐시 재사용을 막기 위해 두 export는 `--clear`로 시작합니다. 사용자 스타터 README·스킬·사용량 자료는 수정하지 않았습니다.
+
+### 핵심 코드와 알아야 할 점
+
+```ts
+// App.tsx: 개발 판은 온라인 순위 제출 대상이 아니다.
+eligible: !__DEV__ && !flags.mockAdsEnabled
+// useRankedGame.ts: 오래된 요청으로 새 게임을 시작하지 않는다.
+if (!alive.current || request !== generation.current || currentSession.current !== session) return;
+```
+
+세대 번호는 요청을 취소한 이후의 결과를 무시하는 장치입니다. 이미 서버로 보낸 요청 자체를 되돌리는 것은 아니며, 사용하지 않은 서버 challenge는 만료됩니다. 직접 만든 앱/봇을 막는 암호학적 인증도 아닙니다. 서버의 입력 재생 검증은 여전히 필수입니다.
+
+```ts
+// proofQueue.ts: 이전 판의 늦은 정리가 새 판 데이터를 삭제하지 않게 한다.
+clear(expectedUserId: string, expectedRunId?: string | null)
+// expectedRunId=null: 소유한 판 없음 → 아무것도 지우지 않는다.
+// undefined: 읽을 수 없는 기록의 명시적 폐기 때만 사용한다.
+```
+
+1. ACK는 서버가 특정 청크를 받았다는 응답입니다. seq·누적 틱·terminal 경계를 검사하고 그 전까지 같은 payload를 보관합니다. 임의 점수·user_id를 API 본문에 넣지 않습니다. 대기열이 넘치거나 기록이 끊기면 그 판만 로컬 기록으로 남기고, 입력을 잘라서 검증 성공이라고 표시하지 않습니다.
+2. 전송은1/2/4/8/16/30초의 지연과 Retry-After, 연속 실패20회/서버 만료 한도를 적용합니다. 성공 ACK는 연속 실패 횟수를 초기화합니다. 완료된 대기 판은 앱 재시작 후 재전송하지만, 종료 전 중단한 판의 엔진 상태까지 복원하지는 않습니다. 새 온라인 판이 이전 결과를 조용히 덮어쓰지 않습니다.
+3. 저장 순서는 같은 JS 실행 환경에서 직렬화합니다. 사용자 ID+판 ID 정리 보호가 있어도 서로 다른 브라우저 탭의 원자적 쓰기까지 보장하지 않습니다. 현재 온라인 플레이는 한 탭을 권장하며 다중 탭 조정은 별도 작업입니다.
+4. 인증 세션/삭제 재시도 인증/입력 대기열/숨김/기존 Preferences는 각각 다른 키입니다. proof에는 토큰이 없습니다. `.online.deletion.v1`에는 응답 유실 시 동일 사용자 삭제를 재시도하기 위한 accessToken이 임시 저장됩니다. AsyncStorage/localStorage를 암호화 저장소라고 부르지 않으며 토큰을 로그·공개 이슈에 올리지 않습니다.
+5. 서버 삭제 성공 후 로컬 proof 정리만 실패한 경우에는 서버 실패와 다른 경고를 표시합니다. 기존 최고점·설정·캐릭터 보상은 삭제하지 않습니다. 삭제 재시도 JWT가 만료되면 닉네임만으로 소유권을 회복하거나 삭제 완료라고 가정하지 않습니다. 운영 복구 방식은 실제 서버 확인이 필요합니다.
+6. 인증 client의 세대를 바꾸고 저장 작업을 직렬화해, 계정 삭제 뒤 옛 SDK 콜백이 세션을 다시 쓰는 것을 차단했습니다. 닉네임 저장 응답도 현재 사용자와 맞는지 재확인합니다. 설치된 SDK의 lockless coordination에 deprecated `processLock`을 덧붙이지 않았습니다.
+7. 공개 환경변수는 JS 번들 안에 들어갑니다. `sb_publishable_`만 앱 설정으로 받고 service-role/secret/salt는 서버에만 둡니다. `output/online-web`의 가짜 주소·키·순위는 테스트 전용이며 절대 Pages에 배포하지 않습니다. production의 실제 광고/가상 부활 차단과 기존 캐릭터 동일 물리 규칙은 유지했습니다.
+8. Hermes 진단 패널은 합성 수치 검사일 뿐 실제 사람의101% 플레이 증거가 아닙니다. 이번 Jest는 Crypto 경계를 Node로 대체했으며 실제 iPhone/Hermes·Safari·소리·성능은 검사하지 않았습니다. 같은 닉네임으로 기기를 옮겨 기존 랭킹을 복구하는 기능도 없습니다.
+
+### 실패·검토와 해결
+
+- API 모의 빌드를 기본 빌드 뒤에 만들자 Metro가 이전 공개 환경변수를 재사용해 같은 JS 해시가 나왔고 닉네임 입력이 미설정 상태로 비활성화됐습니다. 캐시를 비우는 export로 수정한 후 별도 번들의 가짜 주소와 기본 dist에서의 부재를 검사했습니다.
+- 삭제 오류 안내가 제목과 설정 패널에 함께 표시되어 E2E의 전역 텍스트 선택자가 둘을 찾았습니다. 실제 열린 설정 모달로 선택 범위를 제한하고 삭제 실패→재시도→인증 제거/로컬 설정 유지까지 검사했습니다.
+- HOME 회귀의 첫 초안은 playing에서 HOME을 직접 허용한다고 가정해 실패했습니다. 기존 엔진은 정지 메뉴에서 HOME을 허용하므로 테스트를 PAUSE→HOME으로 고쳤습니다. 테스트 통과를 위해 엔진의 전환 규칙을 풀지 않았습니다.
+- 코드 감사에서 대기 기록 재시도의 늦은 완료가 취소 후 START할 수 있는 경계, HOME 뒤 미완료 proof가 남는 경계, 서버 삭제 성공/로컬 정리 실패를 함께 실패로 표시하는 경계를 보완하고 훅 회귀를 추가했습니다. 삭제 후 오래된 인증 쓰기·이전 판 cleanup·다른 계정의 proof 삭제도 회귀 검사로 보호합니다.
+- 마지막 감사에서는 손상 기록의 자동 삭제만 막고 새 판 시작을 허용하면 결국 다음 저장으로 덮어쓸 수 있음을 발견했습니다. 손상JSON/다른 사용자/만료/옛 규칙의4종 모두 명시적 폐기 전에는 prepareRun과 begin을 차단하고 선택창을 유지하도록 고쳤습니다. 서버 삭제 후 남은 이전 계정의 proof도 재참여 시 이 선택을 거칩니다.
+- Windows 제한 계정에서 그림 읽기 도구가 실패해 승인된 읽기 명령으로 캡처를 확인했습니다. 이는 앱 실패가 아닙니다. 844×390 랭킹은 순위/성공률/내 행과 닫기·문의 안내가 보이고, 결과의 아래 버튼은 기존처럼 내부 스크롤됩니다.
+
+### 검증과 남은 범위
+
+실행 명령과 최종 숫자는 [QA 기록](./qa-report.md)의 P02-T02 항목에 기록합니다. 모의 API로 닉네임 중복·상위100 밖 내 순위·신고·숨김·503 삭제 재시도·입력 제출·판 발급 실패 후 로컬 전환을 확인했습니다. 캡처의 서버 점수는 테스트 응답이며 로컬 점수와 일치하는 실제 서버 재생 증거가 아닙니다. 실제 Supabase 프로젝트/SQL/RLS/익명 가입/네트워크 경쟁·운영 제한은 다음 P02-T03입니다. GitHub 푸시·Pages/서버 배포·EAS/iOS 실행·스토어 문구 승인은 하지 않았습니다.
+
+### 이번 범위 밖
+
+기존 Expo 하위 의존성 중간등급10개 경고는 설치 때 그대로 남았고 강제 하향/숨김은 하지 않았습니다. 여러 탭의 동시 온라인 저장에 완전한 충돌 방지가 없는 점은 위 제한으로 남깁니다. 실서버/기기 검증과 다중 탭 조정을 임의로 완료 처리하지 않습니다. 그 외 기존 사용자 파일의 새로운 범위 밖 결함은 특이사항 없음입니다.
+
+참고: [Supabase React Native](https://supabase.com/docs/guides/auth/quickstarts/react-native), [익명 로그인 API](https://supabase.com/docs/reference/javascript/auth-signinanonymously), [Expo Crypto](https://docs.expo.dev/versions/latest/sdk/crypto/).
+
 ## 요청 범위 밖 발견 사항
 
 위 하위 의존성 보안 경고 외 기존 사용자 파일의 결함은 발견하지 않았습니다. 이번 Task에서 기존 스타터 예시나 사용량 도구를 임의 수정하지 않았습니다.

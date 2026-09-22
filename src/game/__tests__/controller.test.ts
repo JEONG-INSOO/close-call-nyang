@@ -1,5 +1,5 @@
 import { createGameController } from '../controller';
-import type { GameController } from '../controller';
+import type { GameController, PlayedTick } from '../controller';
 import { BALANCE } from '../balance';
 import { transition } from '../engine';
 import type { GameEffect, GameState } from '../types';
@@ -424,5 +424,45 @@ describe('mock-ad clock isolation', () => {
     clock.step(360);
     expect(clock.controller.readState().screen).toBe('playing');
     expect(effects.filter((effect) => effect.type === 'revive')).toHaveLength(1);
+  });
+});
+
+describe('authoritative playing tick subscriptions', () => {
+  test('observes every fixed tick, not render frames or countdown, including neutral simultaneous input', () => {
+    const clock = harness(); const ticks: PlayedTick[] = [];
+    clock.controller.subscribeTicks((tick) => ticks.push(tick));
+    clock.start(); clock.step(360);
+    expect(ticks).toEqual([]);
+    clock.controller.setInput('touch', 'left', -1, true);
+    clock.controller.setInput('touch', 'right', 1, true);
+    clock.jump(100);
+    expect(ticks).toEqual(Array.from({ length: 12 }, (_, index) => ({ runId: 1, tickIndex: index + 1, direction: 0, terminal: false })));
+    clock.controller.dispatch({ type: 'PAUSE' }); clock.step(20);
+    expect(ticks).toHaveLength(12);
+  });
+  test('publishes the final partial fall tick before the result snapshot and does not log result time', () => {
+    const clock = playing(); const ticks: PlayedTick[] = []; const order: string[] = [];
+    clock.controller.subscribeTicks((tick) => { ticks.push(tick); if (tick.terminal) order.push('terminal'); });
+    clock.controller.subscribe(() => { if (clock.controller.getSnapshot().state.screen === 'result') order.push('result'); });
+    fallWithLegalInputs(clock);
+    expect(order).toEqual(['terminal', 'result']);
+    expect(ticks.at(-1)).toMatchObject({ tickIndex: clock.controller.readState().run!.stepIndex, terminal: true, direction: 1 });
+    const count = ticks.length; clock.step(20); expect(ticks).toHaveLength(count);
+  });
+  test('tick reentrancy pauses remaining frame steps and subscriber mutation cannot corrupt other observers', () => {
+    const clock = playing(); const observed: PlayedTick[] = [];
+    clock.controller.subscribeTicks((tick) => { tick.direction = 1; clock.controller.dispatch({ type: 'PAUSE' }); });
+    clock.controller.subscribeTicks((tick) => observed.push(tick));
+    clock.jump(100);
+    expect(observed).toEqual([{ runId: 1, tickIndex: 1, direction: 0, terminal: false }]);
+    expect(clock.controller.readState().screen).toBe('paused');
+    clock.controller.dispatch({ type: 'HOME' }); clock.start(8); clock.step(360); clock.step();
+    expect(observed.at(-1)).toMatchObject({ runId: 8, tickIndex: 1 });
+  });
+  test('unsubscribe and disposal prevent later notifications', () => {
+    const clock = playing(); const listener = jest.fn(); const stop = clock.controller.subscribeTicks(listener);
+    stop(); stop(); clock.step(); expect(listener).not.toHaveBeenCalled();
+    clock.controller.subscribeTicks(listener); clock.controller.dispose(); clock.step();
+    expect(listener).not.toHaveBeenCalled();
   });
 });

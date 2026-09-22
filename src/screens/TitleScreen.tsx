@@ -2,9 +2,13 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ko } from '../i18n/ko';
 import { palette } from '../theme/tokens';
 
-export interface TitleScreenProps { bestScore: number; onStart(): void; onSettings(): void; onCharacters?(): void }
+export interface TitleScreenProps {
+  bestScore: number; onStart(): void; onSettings(): void; onCharacters?(): void;
+  nickname?: string; onNickname?(): void; onLeaderboard?(): void; startBusy?: boolean; onlineNotice?: string | null;
+}
 
-export function TitleScreen({ bestScore, onStart, onSettings, onCharacters }: TitleScreenProps) {
+export function TitleScreen({ bestScore, onStart, onSettings, onCharacters, nickname, onNickname, onLeaderboard,
+  startBusy = false, onlineNotice }: TitleScreenProps) {
   const best = Number.isFinite(bestScore) ? Math.max(0, Math.floor(bestScore)) : 0;
   return (
     <View testID="title-screen" style={styles.root}>
@@ -18,11 +22,20 @@ export function TitleScreen({ bestScore, onStart, onSettings, onCharacters }: Ti
           <Text testID="title-best" style={styles.recordValue}>{best}%</Text>
         </View>
         <Pressable testID="start-button" accessibilityRole="button" accessibilityLabel={ko.start} onPress={onStart}
-          style={({ pressed }) => [styles.start, pressed && styles.pressed]}>
-          <Text style={styles.startText}>{ko.start}</Text>
+          disabled={startBusy} accessibilityState={{ disabled: startBusy, busy: startBusy }}
+          style={({ pressed }) => [styles.start, startBusy && styles.pressed, pressed && styles.pressed]}>
+          <Text style={styles.startText}>{startBusy ? ko.starting : ko.start}</Text>
           <Text style={styles.arrow} accessibilityElementsHidden>→</Text>
         </Pressable>
         <View style={styles.services}>
+          {onNickname && <Pressable testID="title-nickname" accessibilityRole="button" accessibilityLabel={nickname ? `${ko.nicknameEdit}: ${nickname}` : ko.nicknameSet}
+            onPress={onNickname} style={({ pressed }) => [styles.serviceButton, pressed && styles.pressed]}>
+            <Text style={styles.serviceText}>{nickname || ko.nicknameSet}</Text>
+          </Pressable>}
+          {onLeaderboard && <Pressable testID="title-leaderboard" accessibilityRole="button" accessibilityLabel={ko.leaderboard}
+            onPress={onLeaderboard} style={({ pressed }) => [styles.serviceButton, pressed && styles.pressed]}>
+            <Text style={styles.serviceText}>{ko.leaderboard}</Text>
+          </Pressable>}
           {onCharacters && <Pressable testID="title-characters" accessibilityRole="button" accessibilityLabel={ko.characters}
             onPress={onCharacters} style={({ pressed }) => [styles.serviceButton, pressed && styles.pressed]}>
             <Text style={styles.serviceText}>{ko.characters}</Text>
@@ -32,6 +45,7 @@ export function TitleScreen({ bestScore, onStart, onSettings, onCharacters }: Ti
             <Text style={styles.serviceText}>{ko.settings}</Text>
           </Pressable>
         </View>
+        {onlineNotice && <Text accessibilityLiveRegion="polite" style={styles.onlineNotice}>{onlineNotice}</Text>}
         </ScrollView>
       </View>
     </View>
@@ -52,8 +66,9 @@ const styles = StyleSheet.create({
   start: { minHeight: 54, borderRadius: 17, backgroundColor: palette.mint, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20 },
   startText: { color: palette.ink, fontSize: 18, fontWeight: '800' },
   arrow: { color: palette.ink, fontSize: 25 },
-  services: { flexDirection: 'row', gap: 10, marginTop: 10 },
-  serviceButton: { flex: 1, minHeight: 44, justifyContent: 'center', alignItems: 'center', borderRadius: 14, borderWidth: 1, borderColor: palette.border },
-  serviceText: { color: palette.ink, fontSize: 14, fontWeight: '600' },
+  services: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 10 },
+  serviceButton: { flexGrow: 1, flexBasis: '40%', minHeight: 44, padding: 8, justifyContent: 'center', alignItems: 'center', borderRadius: 14, borderWidth: 1, borderColor: palette.border },
+  serviceText: { color: palette.ink, fontSize: 14, lineHeight: 21, fontWeight: '600', textAlign: 'center' },
+  onlineNotice: { color: palette.muted, fontSize: 12, lineHeight: 19, marginTop: 10 },
   pressed: { opacity: 0.7 },
 });

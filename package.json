@@ -21,15 +21,18 @@
     "test:ranking": "jest --runInBand src/online/__tests__ src/game/__tests__/ranked-replay.test.ts",
     "server:check": "deno check --config supabase/deno.json supabase/functions/leaderboard-api/index.ts",
     "test:server-api": "deno test --config supabase/deno.json supabase/functions/_shared/__tests__",
-    "test:ranking-schema": "node --test scripts/leaderboard-schema.test.mjs"
+    "test:ranking-schema": "node --test scripts/leaderboard-schema.test.mjs",
+    "online-fixtures:build": "node scripts/export-online-fixture.mjs"
   },
   "dependencies": {
     "@expo/metro-runtime": "~57.0.16",
     "@react-native-async-storage/async-storage": "2.2.0",
+    "@supabase/supabase-js": "2.116.0",
     "expo": "~57.0.24",
     "expo-asset": "~57.0.18",
     "expo-audio": "~57.0.5",
     "expo-clipboard": "~57.0.2",
+    "expo-crypto": "~57.0.3",
     "expo-haptics": "~57.0.3",
     "expo-screen-orientation": "~57.0.2",
     "expo-status-bar": "~57.0.1",
@@ -39,6 +42,7 @@
     "react-native-reanimated": "4.5.1",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-svg": "15.15.4",
+    "react-native-url-polyfill": "4.0.0",
     "react-native-web": "^0.21.2",
     "react-native-worklets": "0.10.1"
   },

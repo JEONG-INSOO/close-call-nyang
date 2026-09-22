@@ -122,3 +122,40 @@ P02에서 온라인 실제 연결, P03에서 Pages workflow·EAS 빌드·실기�
 **not-run (P02-T03):** 실제 PostgreSQL 마이그레이션 문법 실행, anon/authenticated RLS·EXECUTE 거부, 동시 start/chunk/finalize/delete/운영자 숨김 경쟁, 서버 벽시계 검증, 진짜 최고값/동점 top100과 내 순위, Auth 익명 가입·서명키/삭제·장애, Gateway IP 신뢰성, 호출 제한 부하와 provider CPU 예산, 물리 보관 정리 스케줄/실JWT 최대수명. 로컬 DB 실행기도 사용하지 않았습니다.
 
 **not-run (P02-T02/P03):** 앱 닉네임/리더보드 UI·세션·업로드 대기열 연결, iPhone Hermes 골든/Expo Go/TestFlight, 실제 장시간 조작감·오디오·성능, Pages/서버 공개 배포. 기존 Doctor/Expo 의존성 확인은 이번 재실행 결과가 아닙니다. Deno 의존성 설치의 npm 감사에는 기존 중간등급10개가 남았습니다. 푸시·클라우드 설정·비밀키 생성/배포는 하지 않았습니다.
+
+## 2026-09-22 · P02-T02 앱 온라인 연결 검증
+
+앞의 T01 항목은 당시 기록입니다. 이번에는 닉네임/순위 화면·인증·입력 대기열을 연결하고, 실제 production-shaped 앱의 브라우저 조작을 **모의 API**로 검사했습니다. 실제 Supabase 프로젝트·사용자 자격증명은 사용하지 않았습니다. 엔진 규칙은 `nyang-v1-2093a8b42d416f8a` 그대로입니다.
+
+| 검사 | 결과 | 증거 범위 |
+| :--- | :--- | :--- |
+| `typecheck` | pass | 앱·신규 훅/화면/테스트 타입 오류0 |
+| `test:ranking` | 184/184,12 suites pass | 기존58 포함, 인증/HTTP 경계·프로필·RLE·대기열·취소/삭제/손상·개발 진단 |
+| 닉네임/리더보드 화면 지정 Jest | 21/21,2 suites pass | 중복 이름·편집·공동 순위·내 순위·오류/신고/숨김·삭제 확인 |
+| `test:ci` | 582/582,40 suites pass | 최종55.697초; 기존 게임/캐릭터/입력/서비스 회귀 포함 |
+| `ranked:check` | pass | 서버 생성8파일과 규칙 버전 변경 없음 |
+| `test:server` | 14/14 pass | 로컬 정적 서버의 HTTP/경로/파일 경계 |
+| `expo install --check` | pass | 설치된 SDK57 의존성 호환; 실제 iPhone 실행 증거 아님 |
+| 세 웹 빌드 | pass | `dist`, 별도 그림 fixture, 별도 모의 API 앱. 최종 기본 번들 `index-a5fa9ce5ff84a02cb3c667ad35e421f3.js` |
+| production 제외 검사 | pass | 가짜 API 주소/키·진단 화면/골든 marker 미포함, envtrue에서도 광고 차단 |
+| 전체 실제 Chromium E2E | 28pass/11의도적skip/0fail | 최종 새 빌드166.207초, retries0/flaky0; 중복 프로젝트/기존 비해당 검사11개 제외 |
+| staged diff/자격증명 점검 | pass | 실제 키/토큰/생성 캡처를 커밋하지 않음 |
+
+기본 앱의 browser-log 첨부는 errors/warnings 모두0입니다. 모의 온라인 흐름은 pageerror0이며 의도적으로 만든503 응답은 장애 테스트 입력입니다. 이 오류 응답까지 네트워크 오류0이라고 주장하지 않습니다. Playwright 종료 후4173/4174/4175에 listening 서버가 남아 있지 않음을 확인했습니다.
+
+### 검사한 경계
+
+- 앱 실행/공개 board 조회는 익명 가입0회, 명시적 닉네임 저장만1회. 사용자 고정 API/인증 갱신 최대1회/시작2초/일반8초, 삭제 후 늦은 SDK 저장 차단, 같은 인증으로 삭제 재시도, 프로필 응답과 현재 사용자 일치 검사를 단위 테스트했습니다.
+- 실제 고정playing틱/동시입력0방향/마지막 부분 낙하·정지 제외,1200틱 RLE분할, 누락/다른판 거절, ACK 일치/재전송·용량·만료·foreground·429 지연/실패 예산을 검사했습니다. proof에는 토큰을 넣지 않습니다. 판 ID를 비교해 옛 정리가 새 proof를 지우지 않게 했습니다.
+- 훅17개에는 이전 요청 취소/닫기/사용자 변경 후 자동 START 금지, 미완료 HOME만 폐기·완료pending 보존, 서버 삭제 성공/로컬 정리 실패 구분을 포함합니다. 손상 JSON/외부 사용자/만료/옛규칙의4종은 명시적 폐기 전 prepareRun/begin을 거절하고 원래 raw를 보존합니다.
+- 실제 Chromium844×390의 온라인 UI는 중복 닉네임, 동점1위 두 행, 별도 내101위, opaque publicID 신고·한 행 숨김,503삭제 재시도 후 세션 삭제/기존 로컬 설정 유지, 실제 키보드 입력 청크 전송과 모의 영수증 표시,503시작 실패→로컬 게임을 검사합니다. 서버 점수/순위는 테스트 응답이므로 실제 DB 계산·재생 증거가 아닙니다.
+- 기본 앱은 Supabase 공개 변수가 빈 상태, 모의 앱은 가짜 `.invalid` 주소/키만 별도 번들에 들어갑니다. 둘 다 production 컴파일이며 mock-ad/diagnostic envtrue에서도 가상 광고·진단 UI가 노출되지 않습니다. 전체 검사에는 이전 멀티터치·회전/정지·저장·공유 실패·5판 listener 회귀도 유지합니다.
+- 새 캡처 `test-results/online-simulated-API-guest-33624-ort-hide-and-deletion-retry-phone-landscape/simulated-ranking.png`, `online-simulated-API-genui-f3272--outage-falls-back-to-local-phone-landscape/simulated-submission.png`를 육안으로 확인했습니다. `SIMULATED API — 실제 서버/iPhone 증거 아님` 표시가 있습니다. 랭킹의 내 행 강조/순위/성공률/닫기 버튼이 읽히며 결과 하단 버튼은 내부 스크롤로 접근합니다. 생성물은 Git에 넣지 않습니다.
+
+### 실패·미검증을 구분한 기록
+
+Metro가 이전 공개 환경변수를 재사용한 실패는 두 export의 `--clear`로 해결했습니다. 삭제 오류의 E2E strict locator는 설정 모달에 한정했고, HOME 단위 검사 초안은 기존 PAUSE→HOME 규칙에 맞췄습니다. 마지막 손상 proof 감사에서는 자동삭제 차단만으로는 덮어쓰기를 막지 못해 새 판 발급/시작도 명시적 폐기 전 차단했습니다. 상세 설명은 학습노트에 있습니다. 빌드 중 캐시 재생성·NO_COLOR/FORCE_COLOR 안내는 도구 메시지이며 앱 경고와 구분합니다.
+
+**not-run:** 실제 Supabase SQL/RLS/권한·원자성·Auth/익명 가입·서명키·삭제 응답 유실·실서버 속도 제한/CPU/보관 정리, 공개 Pages 배포, iPhone Hermes 진단/Expo Go/Safari/TestFlight·성능·소리·실제100% 사람 완주. Deno45·SQL정적21·별도 Node/Deno/Chromium 골든의 T01 기록은 역사적 결과이며 이번에 서버 수정 없이 재실행했다고 주장하지 않습니다. 신규 dev 진단의 SHA 경계는 Jest에서 Node로 모의했으므로 Hermes 통과가 아닙니다.
+
+여러 브라우저 탭 간 원자적 proof 쓰기는 보장하지 않아 온라인 게임은 한 탭에서 사용하도록 기록했습니다. 만료된 삭제 재시도 JWT의 운영 복구는 T03 확인 대상입니다. npm 설치 감사의 기존 중간등급10개는 그대로이며 이번 Expo Doctor/별도 audit 재실행은 없습니다. GitHub 푸시·실서버/Pages/EAS 배포·스토어 문구 확인은 수행하지 않았습니다.

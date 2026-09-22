@@ -6,7 +6,8 @@ const require = createRequire(import.meta.url);
 
 try {
   const cli = require.resolve('expo/bin/cli');
-  const child = spawn(process.execPath, [cli, 'export', '--platform', 'web'], {
+  // Public environment is compiled into JS; never reuse a different fixture env's transform cache.
+  const child = spawn(process.execPath, [cli, 'export', '--platform', 'web', '--clear'], {
     cwd: fileURLToPath(new URL('../', import.meta.url)),
     env: { ...process.env, GITHUB_PAGES: 'true' },
     stdio: 'inherit',

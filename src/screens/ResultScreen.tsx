@@ -1,16 +1,21 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { CHARACTERS, type CharacterId } from '../characters/catalog';
 import { ko } from '../i18n/ko';
+import type { SubmitResult } from '../online/contracts';
+import type { RankSubmissionState } from '../online/types';
 import { palette, ui } from '../theme/tokens';
 
 export interface ResultScreenProps {
   score: number; bestScore: number; canRevive: boolean;
   onRetry(): void; onHome(): void; onShare(): void; onRevive(): void;
   onSettings?(): void; onCharacters?(): void; newlyUnlocked?: readonly CharacterId[];
+  onLeaderboard?(): void; onNickname?(): void; startBusy?: boolean;
+  submissionState?: RankSubmissionState; receipt?: SubmitResult | null; onRetrySubmission?(): void;
 }
 
 export function ResultScreen({ score, bestScore, canRevive, onRetry, onHome, onShare, onRevive,
-  onSettings, onCharacters, newlyUnlocked = [] }: ResultScreenProps) {
+  onSettings, onCharacters, newlyUnlocked = [], onLeaderboard, onNickname, startBusy = false,
+  submissionState, receipt, onRetrySubmission }: ResultScreenProps) {
   const result = Number.isFinite(score) ? Math.max(0, Math.floor(score)) : 0;
   const best = Math.max(result, Number.isFinite(bestScore) ? Math.max(0, Math.floor(bestScore)) : 0);
   const awardedNames = CHARACTERS.filter(character => newlyUnlocked.includes(character.id)).map(character => ko[character.nameKey]);
@@ -32,8 +37,9 @@ export function ResultScreen({ score, bestScore, canRevive, onRetry, onHome, onS
             <Text style={styles.secondaryText}>{ko.home}</Text>
           </Pressable>
           <Pressable testID="retry-button" accessibilityRole="button" accessibilityLabel={ko.retry} onPress={onRetry}
-            style={({ pressed }) => [styles.primary, pressed && styles.pressed]}>
-            <Text style={styles.primaryText}>{ko.retry}</Text>
+            disabled={startBusy} accessibilityState={{ disabled: startBusy, busy: startBusy }}
+            style={({ pressed }) => [styles.primary, startBusy && styles.pressed, pressed && styles.pressed]}>
+            <Text style={styles.primaryText}>{startBusy ? ko.starting : ko.retry}</Text>
           </Pressable>
         </View>
         {canRevive && <Pressable testID="revive-button" accessibilityRole="button" accessibilityLabel={ko.revive} onPress={onRevive}
@@ -43,7 +49,26 @@ export function ResultScreen({ score, bestScore, canRevive, onRetry, onHome, onS
         {awardedNames.length > 0 && <View testID="character-unlock-notice" style={styles.notice}>
           <Text accessibilityLiveRegion="polite" style={styles.noticeText}>{ko.characterUnlocked}: {awardedNames.join(', ')}</Text>
         </View>}
+        {submissionState && <View testID="ranking-submission-status" style={styles.notice}>
+          <Text accessibilityLiveRegion="polite" style={styles.noticeText}>{submissionState === 'submitted' && receipt
+            ? ko.rankingSubmitted : submissionState === 'pending' || submissionState === 'recording' ? ko.rankingPending : ko.rankingLocal}</Text>
+          {submissionState === 'submitted' && receipt && <Text testID="ranking-receipt" style={styles.noticeText}>
+            {ko.rankingVerifiedScore} {receipt.score}% · {ko.rankingBestScore} {receipt.bestScore}%{receipt.rank === null ? '' : ` · ${receipt.rank}위`}
+          </Text>}
+          {submissionState === 'pending' && onRetrySubmission && <Pressable testID="retry-ranking-submission" accessibilityRole="button"
+            accessibilityLabel={ko.retrySubmission} onPress={onRetrySubmission} style={({ pressed }) => [styles.serviceButton, pressed && styles.pressed]}>
+            <Text style={styles.serviceText}>{ko.retrySubmission}</Text>
+          </Pressable>}
+        </View>}
         <View style={styles.services}>
+          {onLeaderboard && <Pressable testID="result-leaderboard" accessibilityRole="button" accessibilityLabel={ko.leaderboard}
+            onPress={onLeaderboard} style={({ pressed }) => [styles.serviceButton, pressed && styles.pressed]}>
+            <Text style={styles.serviceText}>{ko.leaderboard}</Text>
+          </Pressable>}
+          {onNickname && <Pressable testID="result-nickname" accessibilityRole="button" accessibilityLabel={ko.nicknameSet}
+            onPress={onNickname} style={({ pressed }) => [styles.serviceButton, pressed && styles.pressed]}>
+            <Text style={styles.serviceText}>{ko.nicknameSet}</Text>
+          </Pressable>}
           <Pressable testID="result-share" accessibilityRole="button" accessibilityLabel={ko.share} onPress={onShare}
             style={({ pressed }) => [styles.serviceButton, pressed && styles.pressed]}>
             <Text style={styles.serviceText}>{ko.share}</Text>

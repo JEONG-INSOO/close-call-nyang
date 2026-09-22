@@ -1,25 +1,28 @@
-import type { ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ko } from '../i18n/ko';
 import type { Settings } from '../services/preferences';
 import { palette, ui } from '../theme/tokens';
+import { onlineStyles as online } from './onlineStyles';
 
 export interface SettingsPanelProps {
   visible: boolean; settings: Settings;
   onChange(patch: Partial<Settings>): void; onClose(): void;
+  nickname?: string | null; onEditNickname?(): void; onDeleteProfile?(): Promise<boolean | void>;
+  deleting?: boolean; onlineError?: string | null;
 }
 
 interface PanelFrameProps {
   visible: boolean; title: string; testID: string; onClose(): void;
-  children: ReactNode; maxWidth?: number;
+  children: ReactNode; maxWidth?: number; closeDisabled?: boolean;
 }
 
 /** Native Modal and RN-web's focus-trapped Modal share one scrollable dialog shell. */
-export function ServicePanelFrame({ visible, title, testID, onClose, children, maxWidth = 540 }: PanelFrameProps) {
+export function ServicePanelFrame({ visible, title, testID, onClose, children, maxWidth = 540, closeDisabled = false }: PanelFrameProps) {
   if (!visible) return null;
   return (
-    <Modal visible transparent animationType="none" onRequestClose={onClose}
+    <Modal visible transparent animationType="none" onRequestClose={() => { if (!closeDisabled) onClose(); }}
       supportedOrientations={['landscape', 'landscape-left', 'landscape-right']}>
       <SafeAreaView style={styles.backdrop}>
         <View testID={testID} role="dialog" aria-modal accessibilityViewIsModal
@@ -27,7 +30,8 @@ export function ServicePanelFrame({ visible, title, testID, onClose, children, m
           <View style={styles.header}>
             <Text accessibilityRole="header" style={styles.heading}>{title}</Text>
             <Pressable testID={`${testID}-close`} accessibilityRole="button" accessibilityLabel={ko.close}
-              onPress={onClose} style={({ pressed }) => [styles.close, pressed && styles.pressed]}>
+              disabled={closeDisabled} accessibilityState={{ disabled: closeDisabled }}
+              onPress={onClose} style={({ pressed }) => [styles.close, closeDisabled && online.disabled, pressed && styles.pressed]}>
               <Text style={styles.closeText}>{ko.close}</Text>
             </Pressable>
           </View>
@@ -48,9 +52,36 @@ const SETTING_ROWS: readonly { key: keyof Settings; title: string; description: 
   { key: 'reduceMotion', title: ko.reduceMotion, description: ko.reduceMotionDescription },
 ];
 
-export function SettingsPanel({ visible, settings, onChange, onClose }: SettingsPanelProps) {
+export function SettingsPanel({ visible, settings, onChange, onClose, nickname, onEditNickname, onDeleteProfile,
+  deleting = false, onlineError }: SettingsPanelProps) {
+  const [confirming, setConfirming] = useState(false); const [localBusy, setLocalBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null); const locked = useRef(false);
+  const active = useRef(false); const generation = useRef(0);
+  useEffect(() => {
+    active.current = visible;
+    if (!visible) { generation.current += 1; setConfirming(false); setDeleteError(null); setLocalBusy(false); }
+    return () => { active.current = false; };
+  }, [visible]);
+  const busy = deleting || localBusy;
+  const remove = async () => {
+    if (!onDeleteProfile || locked.current || busy) return;
+    locked.current = true; setLocalBusy(true); setDeleteError(null);
+    const operation = generation.current;
+    try {
+      const result = await onDeleteProfile();
+      if (active.current && operation === generation.current) {
+        if (result !== false) setConfirming(false);
+        else setDeleteError(ko.deleteOnlineRetry);
+      }
+    } catch {
+      if (active.current && operation === generation.current) setDeleteError(ko.deleteOnlineRetry);
+    } finally {
+      locked.current = false;
+      if (active.current && operation === generation.current) setLocalBusy(false);
+    }
+  };
   return (
-    <ServicePanelFrame visible={visible} title={ko.settings} testID="settings-panel" onClose={onClose}>
+    <ServicePanelFrame visible={visible} title={ko.settings} testID="settings-panel" onClose={onClose} closeDisabled={busy}>
       {SETTING_ROWS.map(row => (
         <View key={row.key} style={styles.settingRow}>
           <View style={styles.settingCopy}>
@@ -64,6 +95,35 @@ export function SettingsPanel({ visible, settings, onChange, onClose }: Settings
         </View>
       ))}
       <Text style={styles.hint}>{ko.settingsHint}</Text>
+      {(onEditNickname || onDeleteProfile || onlineError) && <View style={styles.onlineSection}>
+        <Text accessibilityRole="header" style={online.label}>{ko.onlineProfile}</Text>
+        {nickname && <Text testID="settings-nickname" style={online.copy}>{nickname}</Text>}
+        {onlineError && <Text accessibilityRole="alert" style={online.error}>{onlineError}</Text>}
+        {onEditNickname && !confirming && <Pressable testID="settings-nickname-edit" accessibilityRole="button"
+          accessibilityLabel={nickname ? ko.nicknameEdit : ko.nicknameSet} disabled={busy}
+          onPress={onEditNickname} style={({ pressed }) => [online.button, busy && online.disabled, pressed && online.pressed]}>
+          <Text style={online.buttonText}>{nickname ? ko.nicknameEdit : ko.nicknameSet}</Text>
+        </Pressable>}
+        {onDeleteProfile && !confirming && <Pressable testID="settings-delete-online" accessibilityRole="button"
+          accessibilityLabel={ko.deleteOnlineProfile} disabled={busy} onPress={() => { setConfirming(true); setDeleteError(null); }}
+          style={({ pressed }) => [online.button, busy && online.disabled, pressed && online.pressed]}>
+          <Text style={online.buttonText}>{ko.deleteOnlineProfile}</Text>
+        </Pressable>}
+        {confirming && <View testID="delete-online-confirmation" style={styles.onlineSection}>
+          <Text accessibilityRole="header" style={online.label}>{ko.deleteOnlineConfirm}</Text>
+          <Text style={online.notice}>{ko.deleteOnlineDescription}</Text>
+          {deleteError && <Text accessibilityRole="alert" style={online.error}>{deleteError}</Text>}
+          <Pressable testID="confirm-delete-online" accessibilityRole="button" accessibilityLabel={ko.deleteOnlineAction}
+            disabled={busy} accessibilityState={{ disabled: busy, busy }} onPress={() => { void remove(); }}
+            style={({ pressed }) => [online.button, online.destructive, busy && online.disabled, pressed && online.pressed]}>
+            <Text style={online.buttonText}>{busy ? ko.deletingOnline : ko.deleteOnlineAction}</Text>
+          </Pressable>
+          <Pressable accessibilityRole="button" accessibilityLabel={ko.cancel} disabled={busy}
+            onPress={() => { setConfirming(false); setDeleteError(null); }} style={[online.button, busy && online.disabled]}>
+            <Text style={online.buttonText}>{ko.cancel}</Text>
+          </Pressable>
+        </View>}
+      </View>}
     </ServicePanelFrame>
   );
 }
@@ -83,5 +143,6 @@ const styles = StyleSheet.create({
   settingDescription: { color: palette.muted, fontSize: 12, lineHeight: 18, marginTop: 3 },
   switch: { minHeight: ui.minTapSize, minWidth: 52 },
   hint: { color: palette.muted, fontSize: 12, lineHeight: 19, marginTop: 4 },
+  onlineSection: { gap: 10, marginTop: 6 },
   pressed: { opacity: 0.7 },
 });

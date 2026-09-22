@@ -1,6 +1,6 @@
 # Task: T02 닉네임·리더보드와 온라인 판 연결
 
-## Status: pending
+## Status: done
 
 ## Goal
 iPhone/웹에서 가입 화면 없이 닉네임을 정하고 공통 순위표와 내 순위를 보며, 정상 플레이 기록을 안전하게 제출한다. 통신 실패가 게임 자체를 멈추지 않게 한다.
@@ -36,7 +36,7 @@ iPhone/웹에서 가입 화면 없이 닉네임을 정하고 공통 순위표와
     finalizeRun(runId: string): Promise<SubmitResult>;
     reportNickname(publicId: string, reason: 'inappropriate' | 'impersonation' | 'other'): Promise<void>;
   }
-  export function createRankingApi(): RankingApi | null;
+  export function createRankingApi(expectedUserId?: string): RankingApi | null;
   export function ensureGuestSession(): Promise<void>;
   export interface NicknamePanelProps { visible: boolean; profile: PlayerProfile | null; onClose(): void }
   export interface LeaderboardScreenProps { onClose(): void; myProfile: PlayerProfile | null }
@@ -84,6 +84,7 @@ iPhone/웹에서 가입 화면 없이 닉네임을 정하고 공통 순위표와
     schemaVersion: 1; userId: string; run: RankedRun;
     chunks: ProofChunk[]; nextSeq: number; terminalRecorded: boolean;
     updatedAt: string; submissionState: RankSubmissionState;
+    acknowledgedTicks: number; failureCount: number; retryAt: string | null;
   }
   // Development diagnostics module only; never part of production UI:
   export interface ReplayDiagnostic {
@@ -104,12 +105,20 @@ iPhone/웹에서 가입 화면 없이 닉네임을 정하고 공통 순위표와
 - Finalize immutable receipt server score,bestScore displayed as `랭킹 등록 완료`; local best remains local even if server rejects. Show `등록 대기` for retryable state, `이번 기록은 기기에만 저장돼요` for unranked. Refresh board after actual success. Dev/fixture placeholder board clearly test-only, never shipped.
 - Cross-runtime numeric proof fixtures: same fixture data from T01 in browser and Hermes dev test harness, output only hash/fall tick for QA (no session/whole input data); developer harness gated __DEV__ and absent from export. If mismatch, fix canonical kernel then update server generated version, never loosen backend to accept arbitrary client numbers.
 
+## Implementation Notes (2026-09-22)
+- Actual additional paths: `src/online/useRankedGame.ts` (App/controller orchestration), `blockedPlayers.ts`, `src/screens/{PendingRankingPanel,onlineStyles}.tsx/ts`, `scripts/export-online-fixture.mjs`, `e2e/online.spec.ts`, `playwright.config.ts`, `docs/qa-report.md`; matching tests are included. `useGameController.ts` itself needs no change because controller exposes the new subscription.
+- Authentication state adds separate `isBusy` and `deletionPending`; deletion retry does not permanently disable its own button. Auth-only `close-call-nyang.online.deletion.v1` stores userId/accessToken before DELETE, retained on lost response and removed after confirmed deletion. Native AsyncStorage/web localStorage are not encrypted storage. Expired deletion JWT needs later operator flow, no automatic rejoin/assumed success. Client generation and serialized writes prevent obsolete SDK callbacks resurrecting deleted sessions.
+- API instance binds expected identity, general timeout8sec/start total2sec, auth refresh once except deletion, board cache30sec per identity with HTTP cache bypass. Config accepts only `sb_publishable_` key. SDK2.116.0 and URL polyfill4.0.0; Expo Crypto~57.0.3 for development diagnostics. All development gameplay is local-only; optional staging dev submission is not implemented.
+- Queue persists acknowledgedTicks/failureCount/retryAt; max20 consecutive failures, reset after ACK; retry respects server delay after reload. Same-JS storage operations are serialized. Cleanup checks user and run ID. Multi-tab atomic storage/write coordination is NOT guaranteed; document single-tab online use. Restore retries completed terminal proofs but abandons interrupted playing/countdown proofs because engine restore is not implemented.
+- Pending retry/discard cancellation and identity changes cannot auto-START later. HOME abandons unfinished active proof only; completed pending proof remains. Server deletion success plus disk cleanup failure returns success with separate local warning. Local collection/best/settings stay independent.
+- Isolated production-shaped online fixture build lives only in ignored `output/online-web` on4175, never dist. API responses are intercepted, fake ranking/receipt explicitly labelled simulated, not actual server proof. Basic offline app4173 and scene fixtures4174 remain. Both export scripts clear Metro cache because stale public-env transforms were observed. Development diagnostic module/goldens excluded from production even with envtrue.
+
 ## Acceptance Criteria
-- [ ] Nickname duplicate/edit and top100+my rank display work with API state fixtures; real hosted check T03.
-- [ ] No nickname/login requirement blocks local gameplay, no fake public ranking shown offline.
-- [ ] Every authoritative playing tick is captured including final fall; pause/resume and rapid retry cannot mix runs.
-- [ ] Upload queue is bounded, retry idempotent, stale challenge ignored, dev/boosted runs cannot be submitted to production by app.
-- [ ] Own profile deletion/report/hide UX works and identities/tokens stay separate from public profile.
+- [x] Nickname duplicate/edit and top100+my rank display work with API state fixtures; real hosted check T03.
+- [x] No nickname/login requirement blocks local gameplay, no fake public ranking shown offline.
+- [x] Every authoritative playing tick is captured including final fall; pause/resume and rapid retry cannot mix runs.
+- [x] Upload queue is bounded, retry idempotent, stale challenge ignored, dev/boosted runs cannot be submitted to production by app.
+- [x] Own profile deletion/report/hide UX works and identities/tokens stay separate from public profile.
 
 ## Validation
 - `npm.cmd run test:ranking` — extend globs to all src/online tests, nickname/session/recorder/network queue tests pass.
@@ -117,6 +126,13 @@ iPhone/웹에서 가입 화면 없이 닉네임을 정하고 공통 순위표와
 - `npm.cmd run ranked:check` / `npm.cmd run typecheck` / `npm.cmd run test:ci` — deterministic kernel and all old game rules pass.
 - `npm.cmd run web:export` / `npm.cmd run e2e` — real build retains offline play; add routed fixture API tests for name/rank/failure, label these simulated not hosted evidence.
 - `git diff --check` — clean; no service keys or session dumps in staged files.
+
+## Validation Results (2026-09-22)
+- typecheck/ranked:check passed; rules unchanged `nyang-v1-2093a8b42d416f8a`.
+- Ranking184/12suites; specified UI21/2suites; complete Jest582/40suites passed. Web server14 and Expo dependency compatibility passed.
+- Fresh production and isolated online export, scene fixtures passed. Production fake-host/key/diagnostic/golden markers absent even diagnostic/mock envtrue.
+- Actual Chromium28pass/11intentional skips/0fail/0flaky,166.207sec. Basic app error/warning logs empty; simulated online pageerrors0, deliberate503 responses expected. No hidden reruns in Playwright (retries0).
+- Staged diff check and credential/output separation inspected. Learning notes, development guide and QA report updated. Hosted Supabase/SQL/RLS, Hermes/iPhone and deployment NOT performed. Historical T01 Deno/SQL numbers are not new executions.
 
 ## Commit Message
 ```text
@@ -131,6 +147,6 @@ Task: T02-ranking-client
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending
