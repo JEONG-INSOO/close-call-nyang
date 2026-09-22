@@ -5,17 +5,22 @@ import Svg from 'react-native-svg';
 import { NyangCharacter, type EmployeePose } from './NyangCharacter';
 import type { SceneFrame } from './types';
 
+// Each card is the actual game renderer fed a fixed synthetic frame.
 const POSES = [
-  { id: 'walk', label: '활기찬 출근' }, { id: 'water', label: '물 한 모금' },
-  { id: 'run', label: '신입의 질주' }, { id: 'notes', label: '꼼꼼한 메모' },
+  { id: 'walk', label: '활기찬 출근', pose: 'walk', angleRad: 0, hasCoffee: false },
+  { id: 'run', label: '신입의 질주', pose: 'run', angleRad: 0.16, hasCoffee: false },
+  { id: 'coffee', label: '커피 한 잔', pose: 'game', angleRad: 0, hasCoffee: true },
+  { id: 'alarm', label: '어어어?!', pose: 'game', angleRad: 0.8, hasCoffee: false },
 ] as const;
 
-const EmployeePoseCard = memo(function EmployeePoseCard({ pose, label }: { pose: EmployeePose; label: string }) {
+const EmployeePoseCard = memo(function EmployeePoseCard({ id, label, pose, angleRad, hasCoffee }: {
+  id: string; label: string; pose: EmployeePose; angleRad: number; hasCoffee: boolean;
+}) {
   const frame = useSharedValue<SceneFrame>({ distanceM: 0, elapsedSeconds: 0,
-    angleRad: pose === 'run' ? 0.16 : 0, angularVelocity: 0, hasCoffee: false,
+    angleRad, angularVelocity: 0, hasCoffee,
     protectionSeconds: 0, playing: false, fallen: false, seed: 1 });
-  return <View testID={`employee-pose-${pose}`} style={styles.card}>
-    <Svg width={240} height={240} viewBox="-130 -220 260 250">
+  return <View testID={`employee-pose-${id}`} style={styles.card}>
+    <Svg width={240} height={208} viewBox="-160 -250 380 330">
       <NyangCharacter frame={frame} reduceMotion characterId="rookie" pose={pose} />
     </Svg>
     <Text style={styles.label}>{label}</Text>
@@ -25,7 +30,7 @@ const EmployeePoseCard = memo(function EmployeePoseCard({ pose, label }: { pose:
 /** Art-only sheet of the actual game renderer. No engine, timers, unlocks or score. */
 export function EmployeeCharacterSheet() {
   return <View testID="employee-sheet" style={styles.sheet}>
-    {POSES.map(({ id, label }) => <EmployeePoseCard key={id} pose={id} label={label} />)}
+    {POSES.map(card => <EmployeePoseCard key={card.id} {...card} />)}
   </View>;
 }
 const styles = StyleSheet.create({

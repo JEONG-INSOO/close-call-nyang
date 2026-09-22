@@ -40,13 +40,11 @@ for (const phone of PHONES) {
     await page.goto('http://127.0.0.1:4174/fixtures/');
     await expect(page.getByTestId('fixture-disclaimer')).toHaveText(NOTICE);
     const employeeSheet = page.getByTestId('employee-sheet');
-    for (const id of ['walk', 'water', 'run', 'notes']) {
+    for (const id of ['walk', 'run', 'coffee', 'alarm']) {
       const card = employeeSheet.getByTestId(`employee-pose-${id}`);
-      await expect(card.getByTestId('badge-text')).toHaveText('ID: 001');
-      await expect(card.getByTestId('grey-tabby-bright-eyes')).toHaveCount(1);
-      await expect(card.getByTestId('water-bottle')).toHaveCount(id === 'water' ? 1 : 0);
-      await expect(card.getByTestId('note-pad')).toHaveCount(id === 'notes' ? 1 : 0);
-      await expect.poll(() => svgOpacity(card.getByTestId('cup-visibility'))).toBe(0);
+      await expect(card.getByTestId('rookie-sprite')).toHaveCount(1);
+      await expect.poll(() => svgOpacity(card.getByTestId('cup-visibility'))).toBe(id === 'coffee' ? 1 : 0);
+      await expect.poll(() => svgOpacity(card.getByTestId('face-alarm'))).toBe(id === 'alarm' ? 1 : 0);
       const fits = await card.locator('svg').evaluate(element => {
         const svg = element as SVGSVGElement;
         const root = svg.querySelector('[data-testid="nyang-root"]') as SVGGraphicsElement;
@@ -103,11 +101,11 @@ for (const phone of PHONES) {
           await expect(pose).toContainText(`${coffee ? '커피 있음' : '커피 없음'} · angle ${angle.toFixed(2)} rad`);
           await expect.poll(() => svgOpacity(pose.getByTestId('cup-visibility'))).toBe(coffee ? 1 : 0);
           if (id === 'rookie') {
-            const fallen = spec.id.startsWith('fallen-');
-            const leftSole = fallen ? 1 : spec.id === 'walk-left' ? 0.82 : 0;
-            const rightSole = fallen ? 1 : spec.id === 'walk-right' ? 0.82 : 0;
-            await expect.poll(() => svgOpacity(pose.getByTestId('paw-pads-left'))).toBeCloseTo(leftSole, 4);
-            await expect.poll(() => svgOpacity(pose.getByTestId('paw-pads-right'))).toBeCloseTo(rightSole, 4);
+            // Calm below 40 degrees, alarmed at the steep 60-degree poses, hurt once fallen.
+            const expected = spec.id.startsWith('fallen-') ? 'hurt' : spec.id.startsWith('steep-') ? 'alarm' : 'calm';
+            for (const mood of ['calm', 'alarm', 'hurt']) {
+              await expect.poll(() => svgOpacity(pose.getByTestId(`face-${mood}`))).toBe(mood === expected ? 1 : 0);
+            }
           }
           await expect.poll(() => pose.getByTestId('nyang-root').evaluate(element => {
             const matrix = (element as unknown as SVGGraphicsElement).transform.baseVal.consolidate()?.matrix;

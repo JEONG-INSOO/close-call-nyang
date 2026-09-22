@@ -77,4 +77,4 @@ Task: T01-connected-gait
 ## Progress
 - [x] 구현 완료
 - [x] 검증 통과
-- commit: pending
+- commit: 7f6173f

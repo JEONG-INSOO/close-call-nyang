@@ -1,4 +1,4 @@
-import { mkdirSync, statSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -29,6 +29,11 @@ if (result.status !== 0) process.exit(result.status ?? 1);
 if (!statSync(bundleFile).isFile() || statSync(bundleFile).size === 0) {
   throw new Error('Fixture export did not create a non-empty JavaScript bundle.');
 }
+// export:embed registers images at root-absolute "/assets/..." but writes them under
+// --assets-dest; point them at that folder relative to the fixture page (served under /fixtures/).
+const bundle = readFileSync(bundleFile, 'utf8');
+const relocated = bundle.split('uri:"/assets/').join('uri:"./assets/assets/');
+writeFileSync(bundleFile, relocated, 'utf8');
 
 const html = `<!doctype html>
 <html lang="ko"><head><meta charset="utf-8">

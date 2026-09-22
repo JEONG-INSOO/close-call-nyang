@@ -20,6 +20,7 @@ const INITIAL: Readonly<SceneFrame> = Object.freeze({
   hasCoffee: false, protectionSeconds: 0, playing: true, fallen: false, seed: 7,
 });
 const hidden = { includeHiddenElements: true };
+const ROOKIE_CUP = 'translate(88 -248) scale(1.04)';
 const byId = (id: string) => screen.getByTestId(id, hidden);
 
 function frame(overrides: Partial<SceneFrame> = {}) {
@@ -119,34 +120,21 @@ describe('GameScene contracts', () => {
     for (const value of [-1, NaN, Infinity]) expect(walkPhaseAt(value)).toBe(0);
   });
 
-  it.each([NYANG_WALK.metersPerCycle / 4, NYANG_WALK.metersPerCycle * 3 / 4])('uses the rookie eighteen-degree, three-unit step and eight-unit lift at %sm', async distanceM => {
+  it.each([
+    { distanceM: NYANG_WALK.metersPerCycle / 4, stride: 1 },
+    { distanceM: NYANG_WALK.metersPerCycle * 3 / 4, stride: -1 },
+  ])('walks the rookie rightward with alternating 22-degree hip swings ($distanceM m)', async ({ distanceM, stride }) => {
     await mountScene(frame({ distanceM }));
-    const stride = Math.sin(walkPhaseAt(distanceM));
-    for (const [id, direction, baseX] of [['leg-left', stride, -25], ['leg-right', -stride, 25]] as const) {
+    // leg-left is the far leg, leg-right the near leg; +x is the walking direction.
+    for (const [id, degrees, hipX, lift] of [
+      ['leg-left', 22 * stride, -22, Math.max(0, stride) * 8],
+      ['leg-right', -22 * stride, 26, Math.max(0, -stride) * 8],
+    ] as const) {
       const props = byId(id).props.jestAnimatedProps.value;
       const matrix = props.matrix ?? props.transform;
-      expect(matrix[0]).toBeCloseTo(Math.cos(direction * 18 * Math.PI / 180));
-      expect(matrix[1]).toBeCloseTo(Math.sin(direction * 18 * Math.PI / 180));
-      expect(matrix[4]).toBeCloseTo(baseX + direction * 3);
-      expect(matrix[5]).toBeCloseTo(-18 - Math.max(0, direction) * 8);
-    }
-  });
-
-  it.each([
-    { distanceM: 0, fallen: false, left: 0, right: 0 },
-    { distanceM: NYANG_WALK.metersPerCycle / 4, fallen: false, left: 0.82, right: 0 },
-    { distanceM: NYANG_WALK.metersPerCycle * 3 / 4, fallen: false, left: 0, right: 0.82 },
-    { distanceM: 0, fallen: true, left: 1, right: 1 },
-  ])('reveals only the lifted rookie sole, or both after falling ($distanceM, $fallen)', async ({ distanceM, fallen, left, right }) => {
-    await render(<Svg><NyangCharacter frame={frame({ distanceM, fallen })} reduceMotion /></Svg>);
-    for (const [side, reveal] of [['left', left], ['right', right]] as const) {
-      const props = byId(`paw-pads-${side}`).props.jestAnimatedProps.value;
-      const matrix = props.matrix ?? props.transform;
-      expect(matrix[0]).toBe(1);
-      expect(matrix[3]).toBeCloseTo(0.55 + reveal * 0.45);
-      expect(matrix[5]).toBeCloseTo(4 * (1 - reveal));
-      expect(props.opacity).toBeCloseTo(reveal);
-      expect(byId(`paw-sole-${side}`)).toBeTruthy();
+      expect(matrix[1]).toBeCloseTo(Math.sin(degrees * Math.PI / 180));
+      expect(matrix[4]).toBe(hipX);
+      expect(matrix[5]).toBeCloseTo(-95 - lift);
     }
   });
 
@@ -163,7 +151,7 @@ describe('GameScene contracts', () => {
     const sample = frame({ distanceM: hasCoffee ? 14.9 : 15, hasCoffee });
     await mountScene(sample);
     expect(byId('cup-visibility')).toHaveAnimatedProps({ opacity: hasCoffee ? 1 : 0 });
-    expect(byId('cup').props.transform).toBe('translate(64 -60)');
+    expect(byId('cup').props.transform).toBe(ROOKIE_CUP);
     expect(byId('empty-hand')).toHaveAnimatedProps({ opacity: hasCoffee ? 0 : 1 });
   });
 
@@ -222,7 +210,7 @@ describe('GameScene contracts', () => {
       await render(<Svg><NyangCharacter frame={sample} characterId={id} reduceMotion={true} /></Svg>);
       expect(byId(`face-${id}`)).toBeTruthy();
       expect(byId(`outfit-${id}`)).toBeTruthy();
-      expect(byId('cup').props.transform).toBe('translate(64 -60)');
+      expect(byId('cup').props.transform).toBe(id === 'rookie' ? ROOKIE_CUP : 'translate(64 -60)');
       expect(byId('cup-visibility')).toHaveAnimatedProps({ opacity: hasCoffee ? 1 : 0 });
       const root = byId('nyang-root').props.jestAnimatedProps.value;
       expect((root.matrix ?? root.transform).slice(4)).toEqual([0, 0]);
@@ -263,7 +251,7 @@ describe('GameScene contracts', () => {
       const root = byId('nyang-root').props.jestAnimatedProps.value;
       expect((root.matrix ?? root.transform)[1]).toBeCloseTo(Math.sin(Math.PI / 3));
       const left = byId('leg-left').props.jestAnimatedProps.value;
-      expect((left.matrix ?? left.transform)[4]).toBeCloseTo(-25 + Math.sin(walkPhaseAt(52)) * 3);
+      expect((left.matrix ?? left.transform)[1]).toBeCloseTo(Math.sin(22 * Math.sin(walkPhaseAt(52)) * Math.PI / 180));
     });
     const cafe = byId('cafe').props.jestAnimatedProps.value;
     const root = byId('nyang-root').props.jestAnimatedProps.value;
