@@ -8,7 +8,7 @@
 | Phase | Status | Summary | Blueprint |
 | --- | --- | --- | --- |
 | P01 | done | rookie 옆모습 포즈 시트 승인 → 게임 연결 + 표정 | [P01](../phases/2026-09-22-side-view-walk/P01-rookie-side/phase.md) |
-| P02 | in_progress | 같은 옆모습 리그로 diligent/veteran 적용 + 전체 검증 | [P02](../phases/2026-09-22-side-view-walk/P02-reward-cats/phase.md) |
+| P02 | deferred | 같은 옆모습 리그로 diligent/veteran 적용 + 전체 검증 (사용자: 보상 캐릭터는 추후 공개, 2026-09-22) | [P02](../phases/2026-09-22-side-view-walk/P02-reward-cats/phase.md) |
 
 ## Return
 완료 후 기존 미완료 [P02-T03](../phases/2026-09-21-close-call-nyang/P02-leaderboard/T03-hosted-verification.md)로 복귀.

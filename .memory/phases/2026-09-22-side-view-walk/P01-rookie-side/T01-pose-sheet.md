@@ -31,4 +31,4 @@ Task: T01-pose-sheet
 ## Progress
 - [x] 시안 제작
 - [x] 사용자 승인
-- commit: (this commit) — 시안 v1~v5 폐기 후 생성 이미지 부품 조립본 승인
+- commit: 5cf570d — 시안 v1~v5 폐기 후 생성 이미지 부품 조립본 승인

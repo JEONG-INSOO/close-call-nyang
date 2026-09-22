@@ -1,6 +1,6 @@
 # Task: T01 Reward Cats Side View
 
-## Status: pending
+## Status: deferred (사용자 요청: 보상 캐릭터는 추후 공개)
 
 ## Implementation
 - rookie 측면 리그를 공용화하고 diligent/veteran은 기존 크림 팔레트(`NYANG_COLORS`)·넥타이+사원증·각자 얼굴 특징(diligent 웃는 눈, veteran 윙크)을 측면 3단계 표정으로 옮긴다.
