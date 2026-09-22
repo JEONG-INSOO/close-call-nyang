@@ -1,4 +1,4 @@
-import { getSceneModel, getScrollOffset, getViewport } from '../layout';
+import { getSceneModel, getScrollOffset, getViewport, PIXELS_PER_METER } from '../layout';
 
 describe('contained game viewport', () => {
   it('matches the design dimensions without letterboxing', () => {
@@ -23,16 +23,16 @@ describe('contained game viewport', () => {
 
 describe('distance-based story landmarks', () => {
   it('aligns the cafe with the character at exactly 15 meters', () => {
-    expect(getSceneModel(14.9).cafeX).toBeCloseTo(274);
+    expect(getSceneModel(14.9).cafeX).toBeCloseTo(282);
     expect(getSceneModel(15).cafeX).toBe(270);
-    expect(getSceneModel(16).cafeX).toBe(230);
+    expect(getSceneModel(16).cafeX).toBe(150);
   });
 
   it.each([
-    [50, 290, 0, 'street'],
+    [50, 330, 0, 'street'],
     [50.5, 270, 0.5, 'street'],
-    [51, 250, 1, 'office'],
-    [10000, -397710, 1, 'office'],
+    [51, 210, 1, 'office'],
+    [10000, -1193670, 1, 'office'],
   ])('keeps the doorway and office boundary exact at %sm', (distance, entranceX, officeBlend, stage) => {
     expect(getSceneModel(distance as number)).toMatchObject({ entranceX, officeBlend, stage });
   });
@@ -51,10 +51,19 @@ describe('distance-based story landmarks', () => {
 });
 
 describe('bounded repeated scenery', () => {
-  it('scales physical meters by 40 pixels and the layer parallax', () => {
-    expect(getScrollOffset(25, 0.2, 960)).toBe(200);
-    expect(getScrollOffset(25, 1, 960)).toBe(40);
+  it('scales scored meters by 120 display pixels without changing the distance', () => {
+    expect(PIXELS_PER_METER).toBe(120);
+    expect(getScrollOffset(25, 0.2, 960)).toBe(600);
+    expect(getScrollOffset(25, 1, 960)).toBe(120);
     expect(getScrollOffset(24, 1, 960)).toBe(0);
+  });
+
+  it('moves all layers three times the former distance while preserving depth', () => {
+    for (const parallax of [0.18, 0.7, 0.72, 1]) {
+      const movement = getScrollOffset(1.1, parallax, 1200) - getScrollOffset(1, parallax, 1200);
+      expect(movement).toBeCloseTo(0.1 * 40 * parallax * 3, 10);
+    }
+    expect(getScrollOffset(1, 0.18, 960)).toBeLessThan(getScrollOffset(1, 0.7, 640));
   });
 
   it.each([0, 15, 51, 10000, Number.MAX_SAFE_INTEGER, Number.MAX_VALUE])('bounds scroll after %sm', (distance) => {

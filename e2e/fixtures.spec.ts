@@ -8,6 +8,7 @@ const PHONES = [{ width: 844, height: 390 }, { width: 667, height: 375 }] as con
 const POSES = [
   { id: 'left', angle: -0.55 }, { id: 'right', angle: 0.55 },
   { id: 'neutral', angle: 0 },
+  { id: 'walk-left', angle: 0 }, { id: 'walk-right', angle: 0 },
   { id: 'steep-left', angle: -Math.PI / 3 }, { id: 'steep-right', angle: Math.PI / 3 },
   { id: 'fallen-left', angle: -1.134464014, renderedAngle: -82 * Math.PI / 180 },
   { id: 'fallen-right', angle: 1.134464014, renderedAngle: 82 * Math.PI / 180 },
@@ -32,7 +33,7 @@ async function saveFixture(locator: Locator, info: TestInfo, name: string) {
 }
 
 for (const phone of PHONES) {
-  test(`synthetic scene and 42 plush pose fixtures at ${phone.width}x${phone.height}`, async ({ cleanPage: page }, info) => {
+  test(`synthetic scene and 54 flat chibi poses at ${phone.width}x${phone.height}`, async ({ cleanPage: page }, info) => {
     test.skip(info.project.name !== 'desktop', 'Separate labeled art fixtures run once per size in the desktop project.');
     test.setTimeout(90000);
     await page.setViewportSize({ width: 1280, height: 900 });
@@ -64,14 +65,14 @@ for (const phone of PHONES) {
       // Shared-value updates can land after React labels: inspect actual SVG output.
       await expect.poll(() => svgOpacity(scene.getByTestId('cup-visibility'))).toBe(coffee ? 1 : 0);
       await expect.poll(() => svgOpacity(scene.getByTestId('office-scene'))).toBe(blend);
-      await expect.poll(() => svgTranslateX(scene.getByTestId('cafe'))).toBeCloseTo(270 + (15 - distance) * 40, 4);
-      await expect.poll(() => svgTranslateX(scene.getByTestId('company-entrance'))).toBeCloseTo(270 + (50.5 - distance) * 40, 4);
+      await expect.poll(() => svgTranslateX(scene.getByTestId('cafe'))).toBeCloseTo(270 + (15 - distance) * 120, 4);
+      await expect.poll(() => svgTranslateX(scene.getByTestId('company-entrance'))).toBeCloseTo(270 + (50.5 - distance) * 120, 4);
       await expect(scene.getByTestId('face-rookie')).toHaveCount(1);
       await saveFixture(scene, info, `fixture-${phone.width}x${phone.height}-distance-${distance}`);
     }
 
     const grid = page.getByTestId('fixture-pose-grid');
-    await expect(grid.locator('[data-testid^="fixture-pose-"]')).toHaveCount(42);
+    await expect(grid.locator('[data-testid^="fixture-pose-"]')).toHaveCount(54);
     for (const id of CHARACTERS) {
       for (const coffee of [false, true]) {
         for (const spec of POSES) {
@@ -87,8 +88,8 @@ for (const phone of PHONES) {
             return matrix ? Math.atan2(matrix.b, matrix.a) : Number.NaN;
           })).toBeCloseTo('renderedAngle' in spec ? spec.renderedAngle : angle, 4);
           const poseSvg = pose.locator('svg');
-          await expect.poll(async () => (await poseSvg.boundingBox())?.width).toBeCloseTo(440 * scale, 1);
-          await expect.poll(async () => (await poseSvg.boundingBox())?.height).toBeCloseTo(320 * scale, 1);
+          await expect.poll(async () => (await poseSvg.boundingBox())?.width).toBeCloseTo(480 * scale, 1);
+          await expect.poll(async () => (await poseSvg.boundingBox())?.height).toBeCloseTo(350 * scale, 1);
           // Compare actual SVG bounds, not just the React label, at extreme poses.
           const bounds = await pose.getByTestId('nyang-root').evaluate(element => {
             const node = element as unknown as SVGGraphicsElement;
@@ -100,21 +101,21 @@ for (const phone of PHONES) {
                 y: matrix.b * x + matrix.d * y + matrix.f }));
           });
           for (const point of bounds) {
-            expect(point.x).toBeGreaterThanOrEqual(-220);
-            expect(point.x).toBeLessThanOrEqual(220);
+            expect(point.x).toBeGreaterThanOrEqual(-240);
+            expect(point.x).toBeLessThanOrEqual(240);
             expect(point.y).toBeGreaterThanOrEqual(-235);
-            expect(point.y).toBeLessThanOrEqual(85);
+            expect(point.y).toBeLessThanOrEqual(115);
           }
           // Individual labeled crops preserve all poses even when a tall grid scrolls.
           await saveFixture(pose, info, `fixture-${phone.width}x${phone.height}-pose-${poseId}`);
         }
       }
     }
-    await saveFixture(grid, info, `fixture-${phone.width}x${phone.height}-42-pose-grid`);
+    await saveFixture(grid, info, `fixture-${phone.width}x${phone.height}-54-pose-grid`);
     await info.attach('fixture-evidence-scope', {
       body: JSON.stringify({ synthetic: true, iosScreenshot: false, actualPlayEvidence: false,
         browserViewport: { width: 1280, height: 900 }, phoneCanvas: phone,
-        characterScale: scale, distances: DISTANCES, poseCount: 42 }, null, 2),
+        characterScale: scale, distances: DISTANCES, poseCount: 54 }, null, 2),
       contentType: 'application/json',
     });
   });

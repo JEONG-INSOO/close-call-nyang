@@ -323,12 +323,12 @@ describe('deterministic balance and immediate failure', () => {
 });
 
 describe('distance milestones and effects', () => {
-  test('crossing 15 gives coffee once and schedules the first warning six seconds later', () => {
+  test('crossing 15 gives coffee once and schedules the first warning two seconds later', () => {
     const result = tick(playing({ distanceM: 14.999999 }));
     expect(result.state.run!.distanceM).toBeGreaterThan(15);
     expect(result.state.run!.hasCoffee).toBe(true);
     expect(result.effects.filter(effect => effect.type === 'coffee')).toEqual([{ type: 'coffee', runId: 1 }]);
-    expect(result.state.run!.nextEventAt).toBeCloseTo(result.state.run!.elapsedSeconds + 6, 8);
+    expect(result.state.run!.nextEventAt).toBeCloseTo(result.state.run!.elapsedSeconds + 2, 8);
     expect(advance(result.state, 20).effects.some(effect => effect.type === 'coffee')).toBe(false);
   });
 
@@ -509,7 +509,7 @@ describe('pause, mock advertisements and one-time revival', () => {
       event: null,
       protectionSeconds: 1.5,
     });
-    expect(complete.state.run!.nextEventAt).toBeCloseTo(original.run!.elapsedSeconds + 6, 10);
+    expect(complete.state.run!.nextEventAt).toBeCloseTo(original.run!.elapsedSeconds + 2, 10);
     expect(complete.effects).toEqual([{ type: 'revive', runId: 1 }]);
     const ready = advance(complete.state, 360, NONE, true);
     expect(ready.state.screen).toBe('playing');

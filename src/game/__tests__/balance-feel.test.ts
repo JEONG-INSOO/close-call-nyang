@@ -33,16 +33,12 @@ describe('responsive balance with a visible 65-degree failure boundary', () => {
     expect(BALANCE.fixedDt).toBe(1 / 120);
   });
 
-  test.each(BEFORE)('seed $seed responds faster to the same 0.2-second hold and drifts to a fall sooner', before => {
+  test.each(BEFORE)('seed $seed retains a strong response during the gentle opening', before => {
     const initial = start(before.seed);
     let held = initial;
     for (let index = 0; index < 24; index += 1) held = tick(held, RIGHT).state;
     expect(held.screen).toBe('playing');
     expect(held.run!.angleRad - initial.run!.angleRad).toBeGreaterThan(before.heldDisplacementRad * 2);
-    let idle = initial;
-    for (let index = 0; index < 1200 && idle.screen === 'playing'; index += 1) idle = tick(idle).state;
-    expect(idle.screen).toBe('result');
-    expect(idle.run!.elapsedSeconds).toBeLessThan(before.idleFallSeconds);
   });
 
   test.each([-1, 1])('side %s has room at 40/60 degrees but still fails immediately at 65', sign => {

@@ -1,7 +1,7 @@
 import fixtures from '../../../../test-fixtures/ranked-replays.json' with { type: 'json' };
 import { BALANCE } from '../game/balance.ts';
 import { createInitialState, transition } from '../game/engine.ts';
-import { difficultyAt } from '../game/difficulty.ts';
+import { balanceDrift, difficultyAt } from '../game/difficulty.ts';
 import { stableSin } from '../game/deterministicMath.ts';
 import { RULES_VERSION } from '../game/rulesVersion.ts';
 import type { GameState } from '../game/types.ts';
@@ -121,9 +121,7 @@ Deno.test('a valid tick landing on the rounded critical angle can be finalized',
   const angleRad = BALANCE.criticalAngleRad - 0.01;
   const target = BALANCE.criticalAngleRad - 2e-10;
   const difficulty = difficultyAt(0);
-  const phase = 42 / 1000;
-  const accelerationWithoutDamping = difficulty.instability * stableSin(angleRad)
-    + difficulty.disturbance * (stableSin(phase) + 0.35 * stableSin(phase));
+  const accelerationWithoutDamping = 2.2 * stableSin(angleRad) + 0.18 * balanceDrift(0, 42);
   const angularVelocity = ((target - angleRad) / BALANCE.fixedDt
     - accelerationWithoutDamping * BALANCE.fixedDt) / (1 - BALANCE.damping * BALANCE.fixedDt);
   const checkpoint = { ...state, run: { ...state.run!, angleRad, angularVelocity,
@@ -145,7 +143,7 @@ Deno.test('rounded cafe checkpoint grants coffee on the same proof tick', () => 
   equal(result.terminal, false);
   equal(result.state.run!.distanceM, 15);
   equal(result.state.run!.hasCoffee, true);
-  equal(result.state.run!.nextEventAt, result.state.run!.elapsedSeconds + 6);
+  equal(result.state.run!.nextEventAt, result.state.run!.elapsedSeconds + 2);
 });
 
 Deno.test('ranked checkpoints never accept protection, revival, malformed state or numeric exhaustion', () => {

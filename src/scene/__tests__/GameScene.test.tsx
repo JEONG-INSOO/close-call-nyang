@@ -3,9 +3,9 @@ import { makeMutable } from 'react-native-reanimated';
 import Svg from 'react-native-svg';
 
 import { CHARACTERS, type CharacterId } from '../../characters/catalog';
-import { palette } from '../../theme/tokens';
+import { BALANCE } from '../../game/balance';
 import { GameScene } from '../GameScene';
-import { NyangCharacter, NYANG_RIG } from '../NyangCharacter';
+import { NyangCharacter, NYANG_COLORS, NYANG_RIG, NYANG_WALK, walkPhaseAt } from '../NyangCharacter';
 import type { SceneFrame } from '../types';
 
 // Reanimated's supplied SVG host mock retains animated props for structural tests.
@@ -69,38 +69,83 @@ describe('GameScene contracts', () => {
 
   it('keeps the agreed shared proportions, feet pivot and cup grip', () => {
     expect(NYANG_RIG).toMatchObject({
-      height: 186, headHeight: 118, torsoHeight: 50, legHeight: 18,
-      pivotX: 0, pivotY: 0, legLeftX: -23, legRightX: 23, cupX: 62, cupY: -39,
+      height: 200, headHeight: 104, torsoHeight: 78, legHeight: 18,
+      pivotX: 0, pivotY: 0, legLeftX: -25, legRightX: 25, cupX: 64, cupY: -60,
     });
   });
 
-  it.each(CHARACTERS.map(character => character.id))('gives %s a cream plush body and two short round paws, not human shoes', async id => {
-    await mountScene(frame(), id);
-    expect(byId('plush-head').props.transform).toBe('translate(0 19)');
-    expect(byId('plush-body').props.fill).toBe(palette.cream);
-    expect(byId('paw-left').props.fill).toBe(palette.cream);
-    expect(byId('paw-right').props.fill).toBe(palette.cream);
+  it.each(CHARACTERS.map(character => character.id))('redraws %s as a flat cat wearing only a tie and badge', async id => {
+    const rendered = await render(<Svg><NyangCharacter frame={frame()} characterId={id} reduceMotion={false} /></Svg>);
+    expect(byId('plush-head').props.transform).toBeUndefined();
+    expect(byId('nyang-root').props.stroke).toBe(NYANG_COLORS.outline);
+    expect(byId('nyang-root').props.strokeWidth).toBe(4.5);
+    expect(byId('head-contour').props.fill).toBe(NYANG_COLORS.fur);
+    expect(byId('plush-body').props).toMatchObject({ fill: NYANG_COLORS.fur, rx: 52, ry: 39 });
+    expect(byId('white-belly').props.fill).toBe(NYANG_COLORS.white);
+    expect(byId('white-muzzle').props).toMatchObject({ fill: NYANG_COLORS.white, cx: 0 });
+    expect(byId('paw-left').props.fill).toBe(NYANG_COLORS.fur);
+    expect(byId('paw-right').props.fill).toBe(NYANG_COLORS.fur);
     expect(byId('paw-left').props.d).toBe(byId('paw-right').props.d);
     const left = byId('leg-left').props.jestAnimatedProps.value;
     const right = byId('leg-right').props.jestAnimatedProps.value;
-    expect(left.matrix ?? left.transform).toEqual([1, 0, -0, 1, -23, -18]);
-    expect(right.matrix ?? right.transform).toEqual([1, -0, 0, 1, 23, -18]);
-    expect(byId('front-paw-left').props.rx).toBe(10);
-    expect(byId('front-paw-right').props.ry).toBe(10);
-    expect(byId('coffee-grip').props.cx).toBe(52);
-    expect(byId('coffee-grip').props.cy).toBe(-35);
+    expect(left.matrix ?? left.transform).toEqual([1, 0, -0, 1, -25, -18]);
+    expect(right.matrix ?? right.transform).toEqual([1, -0, 0, 1, 25, -18]);
+    expect(byId('front-paw-left').props).toMatchObject({ rx: 11, ry: 13, fill: NYANG_COLORS.fur });
+    expect(byId('front-paw-right').props).toMatchObject({ rx: 11, ry: 13, fill: NYANG_COLORS.fur });
+    expect(byId('coffee-grip').props).toMatchObject({ cx: 53, cy: -55, fill: NYANG_COLORS.fur });
+    expect(byId(`outfit-${id}`).children).toHaveLength(2);
+    expect(byId(`tie-${id}`)).toBeTruthy();
+    expect(byId(`employee-badge-${id}`)).toBeTruthy();
+    for (const side of ['left', 'right']) {
+      expect(byId(`paw-pad-${side}`).props).toMatchObject({ cx: 0, cy: 12, rx: 6, ry: 4 });
+      expect(screen.getAllByTestId(new RegExp(`^paw-bean-${side}-`), hidden)).toHaveLength(3);
+    }
+    // These were the old jacket/lapel/pocket/shadow/forehead-highlight paths.
+    const drawing = JSON.stringify(rendered.toJSON());
+    for (const removedColor of ['#354A68', '#66758D', '#8B99AD', '#E1C7A9', '#FFFFFF']) {
+      expect(drawing).not.toContain(removedColor);
+    }
   });
 
-  it.each([Math.PI / 10, 3 * Math.PI / 10])('uses an eight-degree, two-unit short step with a three-unit lift at phase %s', async distanceM => {
+  it('matches the initial .30-second alternating footstep cadence with a bounded distance-only phase', () => {
+    expect(NYANG_WALK.metersPerCycle / (2 * BALANCE.baseSpeedMps)).toBeCloseTo(0.30);
+    expect(walkPhaseAt(0)).toBe(0);
+    expect(walkPhaseAt(NYANG_WALK.metersPerCycle / 4)).toBeCloseTo(Math.PI / 2);
+    expect(walkPhaseAt(NYANG_WALK.metersPerCycle)).toBeCloseTo(0);
+    for (const distance of [100, 10000, Number.MAX_VALUE]) {
+      expect(walkPhaseAt(distance)).toBeGreaterThanOrEqual(0);
+      expect(walkPhaseAt(distance)).toBeLessThan(Math.PI * 2);
+    }
+    for (const value of [-1, NaN, Infinity]) expect(walkPhaseAt(value)).toBe(0);
+  });
+
+  it.each([NYANG_WALK.metersPerCycle / 4, NYANG_WALK.metersPerCycle * 3 / 4])('uses an eleven-degree, two-unit short step and five-unit lift at %sm', async distanceM => {
     await mountScene(frame({ distanceM }));
-    const stride = Math.sin(distanceM * 5);
-    for (const [id, direction, baseX] of [['leg-left', stride, -23], ['leg-right', -stride, 23]] as const) {
+    const stride = Math.sin(walkPhaseAt(distanceM));
+    for (const [id, direction, baseX] of [['leg-left', stride, -25], ['leg-right', -stride, 25]] as const) {
       const props = byId(id).props.jestAnimatedProps.value;
       const matrix = props.matrix ?? props.transform;
-      expect(matrix[0]).toBeCloseTo(Math.cos(direction * 8 * Math.PI / 180));
-      expect(matrix[1]).toBeCloseTo(Math.sin(direction * 8 * Math.PI / 180));
+      expect(matrix[0]).toBeCloseTo(Math.cos(direction * 11 * Math.PI / 180));
+      expect(matrix[1]).toBeCloseTo(Math.sin(direction * 11 * Math.PI / 180));
       expect(matrix[4]).toBeCloseTo(baseX + direction * 2);
-      expect(matrix[5]).toBeCloseTo(-18 - Math.max(0, direction) * 3);
+      expect(matrix[5]).toBeCloseTo(-18 - Math.max(0, direction) * 5);
+    }
+  });
+
+  it.each([
+    { distanceM: 0, fallen: false, left: 0.62, right: 0.62 },
+    { distanceM: NYANG_WALK.metersPerCycle / 4, fallen: false, left: 1, right: 0.62 },
+    { distanceM: NYANG_WALK.metersPerCycle * 3 / 4, fallen: false, left: 0.62, right: 1 },
+    { distanceM: 0, fallen: true, left: 1, right: 1 },
+  ])('exposes flat pink sole geometry with the lifted or fallen foot ($distanceM, $fallen)', async ({ distanceM, fallen, left, right }) => {
+    await render(<Svg><NyangCharacter frame={frame({ distanceM, fallen })} reduceMotion /></Svg>);
+    for (const [side, scale] of [['left', left], ['right', right]] as const) {
+      const props = byId(`paw-pads-${side}`).props.jestAnimatedProps.value;
+      const matrix = props.matrix ?? props.transform;
+      expect(matrix[0]).toBe(1);
+      expect(matrix[3]).toBeCloseTo(scale);
+      expect(matrix[5]).toBeCloseTo(9 * (1 - scale));
+      expect(props.opacity).toBeUndefined();
     }
   });
 
@@ -108,7 +153,7 @@ describe('GameScene contracts', () => {
     const sample = frame({ distanceM: hasCoffee ? 14.9 : 15, hasCoffee });
     await mountScene(sample);
     expect(byId('cup-visibility')).toHaveAnimatedProps({ opacity: hasCoffee ? 1 : 0 });
-    expect(byId('cup').props.transform).toBe('translate(62 -39)');
+    expect(byId('cup').props.transform).toBe('translate(64 -60)');
     expect(byId('empty-hand')).toHaveAnimatedProps({ opacity: hasCoffee ? 0 : 1 });
   });
 
@@ -167,7 +212,7 @@ describe('GameScene contracts', () => {
       await render(<Svg><NyangCharacter frame={sample} characterId={id} reduceMotion={true} /></Svg>);
       expect(byId(`face-${id}`)).toBeTruthy();
       expect(byId(`outfit-${id}`)).toBeTruthy();
-      expect(byId('cup').props.transform).toBe('translate(62 -39)');
+      expect(byId('cup').props.transform).toBe('translate(64 -60)');
       expect(byId('cup-visibility')).toHaveAnimatedProps({ opacity: hasCoffee ? 1 : 0 });
       const root = byId('nyang-root').props.jestAnimatedProps.value;
       expect((root.matrix ?? root.transform).slice(4)).toEqual([0, 0]);
@@ -199,8 +244,8 @@ describe('GameScene contracts', () => {
     await waitFor(() => {
       const cafe = byId('cafe').props.jestAnimatedProps.value;
       const entrance = byId('company-entrance').props.jestAnimatedProps.value;
-      expect((cafe.matrix ?? cafe.transform)[4]).toBe(270 + (15 - 52) * 40);
-      expect((entrance.matrix ?? entrance.transform)[4]).toBe(270 + (50.5 - 52) * 40);
+      expect((cafe.matrix ?? cafe.transform)[4]).toBe(270 + (15 - 52) * 120);
+      expect((entrance.matrix ?? entrance.transform)[4]).toBe(270 + (50.5 - 52) * 120);
       expect(byId('office-scene')).toHaveAnimatedProps({ opacity: 1 });
       expect(byId('cup-visibility')).toHaveAnimatedProps({ opacity: 1 });
       expect(byId('empty-hand')).toHaveAnimatedProps({ opacity: 0 });
@@ -208,7 +253,7 @@ describe('GameScene contracts', () => {
       const root = byId('nyang-root').props.jestAnimatedProps.value;
       expect((root.matrix ?? root.transform)[1]).toBeCloseTo(Math.sin(Math.PI / 3));
       const left = byId('leg-left').props.jestAnimatedProps.value;
-      expect((left.matrix ?? left.transform)[4]).toBeCloseTo(-23 + Math.sin(52 * 5) * 2);
+      expect((left.matrix ?? left.transform)[4]).toBeCloseTo(-25 + Math.sin(walkPhaseAt(52)) * 2);
     });
     const cafe = byId('cafe').props.jestAnimatedProps.value;
     const root = byId('nyang-root').props.jestAnimatedProps.value;

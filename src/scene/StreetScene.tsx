@@ -72,14 +72,14 @@ export const StreetScene = memo(function StreetScene({ frame }: ScrollingProps) 
     <Rect width={960} height={540} fill={palette.sky} />
     <Circle cx={793} cy={98} r={32} fill={palette.background} />
     <Path d="M72 115Q77 93 99 99Q115 73 137 99Q165 96 170 115Z M515 78Q520 60 538 65Q551 42 572 65Q596 64 600 78Z" fill={palette.white} opacity={0.8} />
-    <AnimatedG animatedProps={farProps}>{CITY_TILES.map((x) => <G key={x} transform={`translate(${x} 0)`}><Skyline /></G>)}</AnimatedG>
+    <AnimatedG testID="street-skyline" animatedProps={farProps}>{CITY_TILES.map((x) => <G key={x} transform={`translate(${x} 0)`}><Skyline /></G>)}</AnimatedG>
     <Rect y={373} width={960} height={52} fill={palette.mint} />
-    <AnimatedG animatedProps={nearProps}>{STREET_TILES.map((x) => <G key={x} transform={`translate(${x} 0)`}><StreetTile /></G>)}</AnimatedG>
+    <AnimatedG testID="street-buildings" animatedProps={nearProps}>{STREET_TILES.map((x) => <G key={x} transform={`translate(${x} 0)`}><StreetTile /></G>)}</AnimatedG>
     <AnimatedG testID="cafe" animatedProps={cafeProps}><CafeArtwork /></AnimatedG>
     <Rect y={412} width={960} height={128} fill={palette.background} />
     <Line x1={0} y1={425} x2={960} y2={425} stroke={palette.ink} strokeWidth={3} />
     <Line x1={0} y1={454} x2={960} y2={454} stroke={palette.peach} strokeWidth={2} />
-    <AnimatedG animatedProps={sidewalkProps} stroke={palette.peach} strokeWidth={2}>
+    <AnimatedG testID="street-sidewalk" animatedProps={sidewalkProps} stroke={palette.peach} strokeWidth={2}>
       <Path d="M0 426V454 M160 426V454 M320 426V454 M480 426V454 M640 426V454 M800 426V454 M960 426V454 M1120 426V454" />
     </AnimatedG>
   </G>;

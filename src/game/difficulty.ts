@@ -1,5 +1,6 @@
 import { BALANCE } from './balance';
 import { stableLog1p } from './deterministicMath';
+import { nextRandom } from './random';
 import type { Difficulty, Stage } from './types';
 
 function safeDistance(distanceM: number): number {
@@ -25,9 +26,43 @@ export function difficultyAt(distanceM: number): Difficulty {
   return {
     level,
     speedMps: speedAt(distance),
-    instability: 4.8 + 0.9 * level,
-    disturbance: 0.22 + 0.16 * level,
-    eventStrength: 0.8 + 0.5 * level,
-    eventIntervalSeconds: Math.max(5, 10 / (1 + 0.2 * level)),
+    instability: 7.6 + 0.9 * level,
+    disturbance: 1.8 + 0.22 * level,
+    eventStrength: 1.6 + 0.5 * level,
+    eventIntervalSeconds: Math.max(4, 6 / (1 + 0.2 * level)),
   };
+}
+
+function smoothstep(value: number): number {
+  return value * value * (3 - 2 * value);
+}
+
+/** First three active seconds are gentle; full pressure arrives continuously at five. */
+export function adaptationAt(elapsedSeconds: number): number {
+  const time = Number.isFinite(elapsedSeconds) ? Math.max(0, elapsedSeconds) : 0;
+  return smoothstep(Math.max(0, Math.min(1, (time - 3) / 2)));
+}
+
+function signedSample(seed: number, index: number, salt: number): number {
+  const mixed = (seed >>> 0) ^ Math.imul(index, 0x9e3779b9) ^ salt;
+  return nextRandom(nextRandom(mixed).state ^ 0x85ebca6b).value * 2 - 1;
+}
+
+function noiseAt(time: number, seed: number, period: number, salt: number): number {
+  const position = time / period;
+  const index = Math.floor(position);
+  // Past the representable clock range the engine retains its last finite checkpoint.
+  if (!Number.isSafeInteger(index)) return 0;
+  const fraction = smoothstep(position - index);
+  const left = signedSample(seed, index, salt);
+  const right = signedSample(seed, index + 1, salt);
+  return left + (right - left) * fraction;
+}
+
+/** Stateless bounded drift: it never consumes the separate event RNG stream. */
+export function balanceDrift(elapsedSeconds: number, seed: number): number {
+  const time = Number.isFinite(elapsedSeconds) ? Math.max(0, elapsedSeconds) : 0;
+  const normalizedSeed = Number.isFinite(seed) ? seed >>> 0 : 1;
+  return 0.65 * noiseAt(time, normalizedSeed, 0.8, 0x243f6a88)
+    + 0.35 * noiseAt(time, normalizedSeed, 1.15, 0xb7e15162);
 }

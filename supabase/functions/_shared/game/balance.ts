@@ -6,7 +6,7 @@ export const BALANCE = Object.freeze({
   timerEpsilon: 1e-9,
   criticalAngleRad: 1.134464014, // 65 degrees, aligned to the 1e-9 replay grid.
   controlAcceleration: 9.6,
-  damping: 2.4,
+  damping: 1.8,
   countdownSeconds: 3,
   mockAdSeconds: 5,
   protectionSeconds: 1.5,
@@ -15,7 +15,7 @@ export const BALANCE = Object.freeze({
   activeEventSeconds: 0.7,
   wobbleCooldownSeconds: 1.5,
   baseSpeedMps: 0.9193552309022899,
-  footstepBaseSeconds: 0.45,
-  minFootstepSeconds: 0.18,
-  firstEventDelaySeconds: 6,
+  footstepBaseSeconds: 0.3,
+  minFootstepSeconds: 0.12,
+  firstEventDelaySeconds: 2,
 });

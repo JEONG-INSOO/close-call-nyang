@@ -1,5 +1,5 @@
 import { BALANCE } from './balance';
-import { difficultyAt, stageOf } from './difficulty';
+import { adaptationAt, balanceDrift, difficultyAt, stageOf } from './difficulty';
 import { quantize, stableSin } from './deterministicMath';
 import { nextRandom } from './random';
 import type {
@@ -134,7 +134,6 @@ function playingTick(state: GameState, dt: number, input: InputState): Transitio
 
   const difficulty = difficultyAt(run.distanceM);
   const signedInput = Number(input.right) - Number(input.left);
-  const seedPhase = (run.seed % 6283) / 1000;
   let remaining = dt;
 
   // Split only at timer boundaries: a warning's remaining part never applies force.
@@ -151,12 +150,13 @@ function playingTick(state: GameState, dt: number, input: InputState): Transitio
     if (!Number.isFinite(step) || step <= 0) return numericFailure(state, run, effects);
 
     const time = run.elapsedSeconds;
-    const disturbance = difficulty.disturbance * (
-      stableSin(1.7 * time + seedPhase) + 0.35 * stableSin(3.11 * time + seedPhase)
-    );
+    const pressure = adaptationAt(time);
+    const instability = 2.2 + pressure * (difficulty.instability - 2.2);
+    const disturbanceAmplitude = 0.18 + pressure * (difficulty.disturbance - 0.18);
+    const disturbance = disturbanceAmplitude * balanceDrift(time, run.seed);
     const eventForce = !protectedNow && run.event?.phase === 'active'
       ? run.event.direction * run.event.strength : 0;
-    const acceleration = difficulty.instability * stableSin(run.angleRad)
+    const acceleration = instability * stableSin(run.angleRad)
       - BALANCE.damping * run.angularVelocity
       + BALANCE.controlAcceleration * signedInput + disturbance + eventForce;
     let velocity = run.angularVelocity + acceleration * step;

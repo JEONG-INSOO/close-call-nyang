@@ -3,7 +3,8 @@ import type { SceneModel, Viewport } from './types';
 const DESIGN_WIDTH = 960;
 const DESIGN_HEIGHT = 540;
 const CHARACTER_X = 270;
-const PIXELS_PER_METER = 40;
+// Presentation only: 3x the former scenery travel, without changing scored speed.
+export const PIXELS_PER_METER = 120;
 
 function nonNegativeFinite(value: number): number {
   'worklet';

@@ -8,7 +8,7 @@ import { RULES_VERSION } from '../../online/rulesVersion';
 import { BALANCE } from '../balance';
 import { quantize, stableLog1p, stableSin } from '../deterministicMath';
 import { createInitialState, transition } from '../engine';
-import { difficultyAt, scoreOf, stageOf } from '../difficulty';
+import { balanceDrift, difficultyAt, scoreOf, stageOf } from '../difficulty';
 
 const FLAGS = { mockAdsEnabled: false };
 
@@ -45,9 +45,8 @@ describe('fixed arithmetic primitives', () => {
     const angleRad = BALANCE.criticalAngleRad - 0.01;
     const target = BALANCE.criticalAngleRad - 2e-10;
     const difficulty = difficultyAt(0);
-    const phase = 42 / 1000;
-    const accelerationWithoutDamping = difficulty.instability * stableSin(angleRad)
-      + difficulty.disturbance * (stableSin(phase) + 0.35 * stableSin(phase));
+    // At t=0 the ordinary (non-protected) gentle coefficients are 2.2 and .18.
+    const accelerationWithoutDamping = 2.2 * stableSin(angleRad) + 0.18 * balanceDrift(0, 42);
     const angularVelocity = ((target - angleRad) / BALANCE.fixedDt
       - accelerationWithoutDamping * BALANCE.fixedDt) / (1 - BALANCE.damping * BALANCE.fixedDt);
     const state = { ...started, screen: 'playing' as const, countdownSeconds: 0,
@@ -75,7 +74,7 @@ describe('fixed arithmetic primitives', () => {
     expect(next.state.screen).toBe('playing');
     expect(next.state.run!.distanceM).toBe(15);
     expect(next.state.run!.hasCoffee).toBe(true);
-    expect(next.state.run!.nextEventAt).toBe(next.state.run!.elapsedSeconds + 6);
+    expect(next.state.run!.nextEventAt).toBe(next.state.run!.elapsedSeconds + 2);
     expect(next.effects.filter(effect => effect.type === 'coffee')).toHaveLength(1);
     expect(transition(next.state, action, FLAGS).effects.some(effect => effect.type === 'coffee')).toBe(false);
   });

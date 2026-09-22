@@ -38,10 +38,10 @@ describe('initial difficulty tuning', () => {
     const initial = {
       level: 0,
       speedMps: BALANCE.baseSpeedMps,
-      instability: 4.8,
-      disturbance: 0.22,
-      eventStrength: 0.8,
-      eventIntervalSeconds: 10,
+      instability: 7.6,
+      disturbance: 1.8,
+      eventStrength: 1.6,
+      eventIntervalSeconds: 6,
     };
     for (const distance of [0, 14.999999, 15]) {
       expect(difficultyAt(distance)).toEqual(initial);
@@ -56,10 +56,10 @@ describe('initial difficulty tuning', () => {
     const expected = {
       level,
       speedMps: BALANCE.baseSpeedMps * (1 + 0.7 * Math.log1p(extra / 85)),
-      instability: 4.8 + 0.9 * level,
-      disturbance: 0.22 + 0.16 * level,
-      eventStrength: 0.8 + 0.5 * level,
-      eventIntervalSeconds: Math.max(5, 10 / (1 + 0.2 * level)),
+      instability: 7.6 + 0.9 * level,
+      disturbance: 1.8 + 0.22 * level,
+      eventStrength: 1.6 + 0.5 * level,
+      eventIntervalSeconds: Math.max(4, 6 / (1 + 0.2 * level)),
     };
     const actual = difficultyAt(distance);
     // The explicit log series preserves tuning to floating-point precision.
@@ -77,10 +77,10 @@ describe('initial difficulty tuning', () => {
         expect(current[key]).toBeGreaterThan(previous[key]);
       }
       expect(current.eventIntervalSeconds).toBeLessThanOrEqual(previous.eventIntervalSeconds);
-      expect(current.eventIntervalSeconds).toBeGreaterThanOrEqual(5);
+      expect(current.eventIntervalSeconds).toBeGreaterThanOrEqual(4);
       expect(Object.values(current).every(Number.isFinite)).toBe(true);
     }
-    expect(points[points.length - 1].eventIntervalSeconds).toBe(5);
+    expect(points[points.length - 1].eventIntervalSeconds).toBe(4);
   });
 
   test('speed-only fixed-step integration reaches 100 meters in 90 ± 0.5 active seconds', () => {

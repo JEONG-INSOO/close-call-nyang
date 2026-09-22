@@ -175,8 +175,8 @@ describe('whole-run fixed-time and production regressions', () => {
     expect(time.effects.filter(item => item.effect.type === 'coffee')).toHaveLength(1);
     const steps = time.effects.filter(item => item.effect.type === 'footstep');
     expect(steps.length).toBeGreaterThan(100);
-    expect(steps.length).toBeLessThanOrEqual(Math.ceil(game.readState().run!.elapsedSeconds / 0.18));
-    for (let index = 1; index < steps.length; index += 1) expect(steps[index].at - steps[index - 1].at).toBeGreaterThanOrEqual(0.18 - 1e-8);
+    expect(steps.length).toBeLessThanOrEqual(Math.ceil(game.readState().run!.elapsedSeconds / BALANCE.minFootstepSeconds));
+    for (let index = 1; index < steps.length; index += 1) expect(steps[index].at - steps[index - 1].at).toBeGreaterThanOrEqual(BALANCE.minFootstepSeconds - 1e-8);
     expect(time.effects.every(item => ['footstep', 'coffee', 'wobble', 'eventWarning'].includes(item.effect.type))).toBe(true);
     game.dispose();
   });
@@ -187,7 +187,7 @@ describe('isolated 1000 m fixture stability (not production gameplay evidence)',
     const started = transition(createInitialState(), { type: 'START', runId: 7, seed: 98765 }, RELEASE).state;
     const fixture: GameState = { ...started, screen: 'playing', countdownSeconds: 0,
       run: { ...started.run!, distanceM: 1000, elapsedSeconds: 400, hasCoffee: true,
-        stepIndex: 48000, nextFootstepAt: 400.18, lastWobbleAt: 398.5, nextEventAt: 401 } };
+        stepIndex: 48000, nextFootstepAt: 400 + BALANCE.minFootstepSeconds, lastWobbleAt: 398.5, nextEventAt: 401 } };
     let first = fixture;
     let second: GameState = { ...fixture, run: { ...fixture.run! } };
     let warnings = 0;
@@ -227,6 +227,6 @@ describe('isolated 1000 m fixture stability (not production gameplay evidence)',
     expect(forceChecks).toBeGreaterThanOrEqual(3);
     expect(scoreOf(first.run!.distanceM)).toBeGreaterThan(1000);
     expect(stageOf(first.run!.distanceM)).toBe('office');
-    for (let index = 1; index < footsteps.length; index += 1) expect(footsteps[index] - footsteps[index - 1]).toBeGreaterThanOrEqual(0.18 - 1e-8);
+    for (let index = 1; index < footsteps.length; index += 1) expect(footsteps[index] - footsteps[index - 1]).toBeGreaterThanOrEqual(BALANCE.minFootstepSeconds - 1e-8);
   });
 });
