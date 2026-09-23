@@ -1,5 +1,9 @@
 # 우당탕탕 냥대리 QA 기록
 
+## 2026-09-23 최신: 상위 30명 staging 계약 검증
+
+새 migration `202609230002_leaderboard_top30.sql`과 top-30 Edge Function을 staging에 적용했다. 31명 전용 rollback fixture가 공동순위 1·1·3, 공개 `entries` 30개, 31위 `me`, `rollbackCompleted=true`, `intentGucsCleared=true`로 통과했다. 후속 실제 smoke는 14개 통과·0개 실패·정리 대상 0개였다. 기존 101명 fixture는 이전 top-100 계약의 역사적 증거로 남기며 새 요구사항의 통과 기준으로 사용하지 않는다.
+
 ## 2026-09-23 최신: staging 규칙 동기화 후 실제 smoke 재검증
 
 로컬 규칙 버전이 `nyang-v1-bc732af6f2a7ea66`으로 변경된 뒤 staging 함수가 이전 버전을 사용해 첫 요청이 `RULES_MISMATCH`로 거절됐다. production은 건드리지 않고 staging `leaderboard-api`만 현재 소스로 재배포했다. 재실행한 실제 smoke 보고서는 Git 제외 `output/ranking-staging-87271deb-8290-4f21-93c2-4dc1fb4c8ee3.json`이며 14개 통과·0개 실패·정리 대상 0개, `smokePassed=true`, `taskComplete=false`다. 수동 8개 항목(동시 판 최고값/만료·운영/한도·cron·실제 웹 복구·Hermes)은 여전히 별도 검증이 필요하다.

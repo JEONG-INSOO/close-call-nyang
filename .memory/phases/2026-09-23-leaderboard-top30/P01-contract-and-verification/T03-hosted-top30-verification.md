@@ -1,6 +1,6 @@
 # Task: T03 staging top-30 및 운영 검증
 
-## Status: pending
+## Status: in_progress
 
 ## Goal
 
@@ -37,6 +37,6 @@ Task: T03-hosted-top30-verification
 
 ## Progress
 
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] top-30 migration/API 배포 및 rollback fixture 통과
+- [x] 실제 smoke 14개 통과
 - commit: pending
