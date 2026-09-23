@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
   cancel: { minWidth: 52, minHeight: ui.minTapSize, justifyContent: 'center', alignItems: 'center', backgroundColor: palette.background, borderRadius: 13 },
   cancelText: { color: palette.ink, fontSize: 14, fontWeight: '600' },
   scroll: { flexShrink: 1 },
-  content: { padding: 20, alignItems: 'center', gap: 10 },
+  content: { paddingHorizontal: 20, paddingTop: 28, paddingBottom: 28, alignItems: 'center', gap: 10 },
   brand: { color: palette.ink, fontSize: 28, lineHeight: 36, fontWeight: '800' },
   copy: { color: palette.muted, fontSize: 13, lineHeight: 21, textAlign: 'center' },
   seconds: { color: palette.scoreSuccess, fontSize: 22, lineHeight: 30, fontWeight: '800', fontVariant: ['tabular-nums'], marginTop: 3 },

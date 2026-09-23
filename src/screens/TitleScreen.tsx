@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
   root: { ...StyleSheet.absoluteFill, justifyContent: 'center', alignItems: 'flex-end', padding: 16, zIndex: 4 },
   card: { width: '100%', maxWidth: 352, maxHeight: '100%', backgroundColor: palette.paper, borderRadius: 28, borderWidth: 1, borderColor: palette.border, overflow: 'hidden' },
   scroll: { flexShrink: 1 },
-  content: { padding: 20 },
+  content: { paddingHorizontal: 20, paddingTop: 28, paddingBottom: 28 },
   accent: { width: 34, height: 6, borderRadius: 3, backgroundColor: palette.lavender, marginBottom: 9 },
   title: { fontSize: 31, lineHeight: 42, fontWeight: '900', color: palette.ink, letterSpacing: -1.2 },
   description: { fontSize: 14, lineHeight: 22, color: palette.muted, marginTop: 5 },

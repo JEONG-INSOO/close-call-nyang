@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
   close: { minHeight: ui.minTapSize, minWidth: 52, alignItems: 'center', justifyContent: 'center', borderRadius: 14, backgroundColor: palette.background, paddingHorizontal: 12 },
   closeText: { color: palette.ink, fontSize: 14, fontWeight: '600' },
   scroll: { flexShrink: 1 },
-  content: { padding: 18, gap: 10 },
+  content: { paddingHorizontal: 18, paddingTop: 28, paddingBottom: 28, gap: 10 },
   settingRow: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 60, borderBottomWidth: 1, borderColor: palette.border, paddingBottom: 10 },
   settingCopy: { flex: 1 },
   settingTitle: { color: palette.ink, fontSize: 16, lineHeight: 23, fontWeight: '700' },
