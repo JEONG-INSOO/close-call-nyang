@@ -24,10 +24,12 @@ AppState background / 일시정지 / 홈
 
 저장 서비스 테스트와 화면 테스트를 추가했다. TypeScript typecheck, ranked:check, 전체 Jest 44 suites / 659 tests를 통과했다. 처음 전체 테스트에서는 ranked 생성 동기화가 먼저 필요해 1건이 실패했고, `npm run ranked:sync` 후 재실행해 모두 통과했다.
 
+Expo Go 실기기에서도 플레이 중 백그라운드 전환 후 진행 상태가 유지되고, 앱을 다시 열었을 때 이어하기가 가능한 것을 확인했다.
+
 ## 다음 연습
 
 저장 데이터에 만료 정책을 추가하고, 오래된 checkpoint를 안전하게 무시하는 테스트를 직접 작성해 본다.
 
 ## 알아야 할 점 / 범위 밖
 
-저장 데이터는 한 기기·한 앱 설치에 한정된다. 실제 iPhone 강제 종료 직후와 Hermes의 AsyncStorage 동작은 Expo Go 실기기에서 확인해야 한다. 서버 운영 검증은 이번 Task에서 변경하지 않았다.
+저장 데이터는 한 기기·한 앱 설치에 한정된다. 이번 확인은 Expo Go 실행 환경 기준이며, App Store 빌드와 Hermes 네이티브 릴리스 빌드는 별도 출시 QA가 필요하다. 서버 운영 검증은 이번 Task에서 변경하지 않았다.
