@@ -14,6 +14,8 @@ limit 30
 
 31명 rollback fixture에서 공동 순위 `1, 1, 3`, 공개 목록 30명, 내 순위 31위, rollback과 transaction-local 검증 표식 정리를 확인했다. 실제 익명 replay smoke도 14개 통과·0개 실패였고 임시 사용자 정리 대상은 0개였다.
 
+SQL 권한도 실제 staging에서 확인했다. 역할을 `SET LOCAL ROLE`로 바꿔 6개 private 테이블에 대한 72개 0행 접근과 12개 public RPC에 대한 24개 호출을 시도하고, 전부 `42501 insufficient_privilege`인지 검사했다. 마지막에 트랜잭션을 `ROLLBACK`하고 검증용 설정값도 비워야 하므로, 권한 거부만 보고 끝내지 않고 `rollbackCompleted`와 `intentGucsCleared`를 함께 확인했다.
+
 ## 배운 점
 
 - 화면에서만 30개를 자르면 네트워크와 DB는 여전히 100개를 처리하므로 서버·API·파서를 함께 제한해야 한다.

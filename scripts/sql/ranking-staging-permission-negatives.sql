@@ -17,7 +17,8 @@
 -- Unexpected non-internal table triggers block even these zero-row statements.
 -- A failing batch aborts its transaction; caller must rollback/release on error.
 begin;
--- CALLER_VERIFIED_STAGING_CONTEXT
+set local nyang.verification_environment = 'staging';
+set local nyang.verified_project_ref = 'tadokcpealpwjfyjovuy';
 
 do $nyang_permission_negatives$
 declare

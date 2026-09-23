@@ -39,4 +39,6 @@ Task: T03-hosted-top30-verification
 
 - [x] top-30 migration/API 배포 및 rollback fixture 통과
 - [x] 실제 smoke 14개 통과
+- [x] staging SQL 권한 거부 96개와 rollback/GUC 정리 통과
+- [x] hosted catalog audit과 migration 202609230002 존재 확인
 - commit: pending

@@ -63,7 +63,7 @@ npx.cmd --yes supabase@2.117.0 functions deploy leaderboard-api --project-ref $n
 
 migration202609210001과 leaderboard-api가 배포됐다. 빈 DELETE 스트림 수정 후 실제 smoke14개가 통과했으며 익명Auth/JWKS와 legacy 서버 키가 정상 동작했다. 서버 환경은 staging, 허용origin은 http://127.0.0.1:4173 및 http://localhost:4173, Auth JWT3600초·익명 가입30회/시간·CAPTCHA false다. 기존 CAPTCHA를 끈 것이 아니며 봇방지 완료로 설명하지 않는다.
 
-`scripts/sql/ranking-hosted-audit.sql`은 실제6테이블/12RPC/8helper 권한을 읽기 전용 확인했다. staging 전용 `ranking-staging-permission-negatives.sql`은 실제 역할별96개 거부, `ranking-staging-fixtures.sql`은101명 합성 공동순위/top100/내101위를 검증했다. 두 파일은 승인된 정확한 staging ref를 확인하고 context마커를 메모리에서 치환해 **전체 단일 배치**로 실행한다. 사용자 정의 트리거가 있으면 중단하며 production에는 실행하지 않는다. 마지막 ROLLBACK 뒤의 JSON assertion과 intentGucsCleared를 확인한다. SELECT 보고서만 따로 실행하면 거짓 증거가 된다.
+`scripts/sql/ranking-hosted-audit.sql`은 실제6테이블/12RPC/8helper 권한을 읽기 전용 확인했다. staging 전용 `ranking-staging-permission-negatives.sql`은 실제 역할별96개 거부를 실행했고, 마지막 ROLLBACK 뒤 `assertionsPassed=true`, `rollbackCompleted=true`, `intentGucsCleared=true`를 확인했다. `ranking-staging-fixtures-top30.sql`은31명 합성 공동순위/top30/내31위를 검증한다(기존 `ranking-staging-fixtures.sql`의101명/top100은 역사적 증거). 두 파일은 승인된 정확한 staging ref를 확인하고 **전체 단일 배치**로 실행한다. 사용자 정의 트리거가 있으면 중단하며 production에는 실행하지 않는다. SELECT 보고서만 따로 실행하면 거짓 증거가 된다.
 
 Windows npx.cmd의 다중행 위치 인수는 빈 결과를 반환해 통과로 인정하지 않았다. 공식 [SQL 실행 API](https://supabase.com/docs/reference/api/v1-run-a-query)에 UTF-8 JSON 단일 배치로 보내 실제 결과를 받았다. 인증은 기존 CLI 자격증명을 메모리에서만 사용했으며 파일/출력으로 복사하지 않았다. SQL 파일을 임의로 COMMIT하거나 스키마 노출을 늘려 검사하지 않는다.
 

@@ -4,6 +4,8 @@
 
 새 migration `202609230002_leaderboard_top30.sql`과 top-30 Edge Function을 staging에 적용했다. 31명 전용 rollback fixture가 공동순위 1·1·3, 공개 `entries` 30개, 31위 `me`, `rollbackCompleted=true`, `intentGucsCleared=true`로 통과했다. 후속 실제 smoke는 14개 통과·0개 실패·정리 대상 0개였다. 기존 101명 fixture는 이전 top-100 계약의 역사적 증거로 남기며 새 요구사항의 통과 기준으로 사용하지 않는다.
 
+추가로 staging 전용 단일 배치 권한 검증을 실행했다. `ranking-staging-permission-negatives.sql`이 `anon`·`authenticated`·`service_role`의 6개 private 테이블 72개 접근과 `anon`·`authenticated`의 12개 public RPC 24개 실행을 모두 SQLSTATE `42501`로 거부했고, 실제 행 변경 없이 `rollbackCompleted=true`, `intentGucsCleared=true`를 확인했다. 검증 대상은 staging ref로 고정했으며 production에는 실행하지 않았다.
+
 ## 2026-09-23 최신: staging 규칙 동기화 후 실제 smoke 재검증
 
 로컬 규칙 버전이 `nyang-v1-bc732af6f2a7ea66`으로 변경된 뒤 staging 함수가 이전 버전을 사용해 첫 요청이 `RULES_MISMATCH`로 거절됐다. production은 건드리지 않고 staging `leaderboard-api`만 현재 소스로 재배포했다. 재실행한 실제 smoke 보고서는 Git 제외 `output/ranking-staging-87271deb-8290-4f21-93c2-4dc1fb4c8ee3.json`이며 14개 통과·0개 실패·정리 대상 0개, `smokePassed=true`, `taskComplete=false`다. 수동 8개 항목(동시 판 최고값/만료·운영/한도·cron·실제 웹 복구·Hermes)은 여전히 별도 검증이 필요하다.
@@ -32,7 +34,7 @@
 | 실제 HTTP smoke | 최신14passed/0failed, 정상 시간 proof·소유권·중복 ACK/동시 finalize·중복닉네임·개명·신고·자기삭제·같은JWT 삭제재시도 |
 | 실제 직접 REST | anon/B의 A점수 INSERT/PATCH4요청 모두406/PGRST106. private스키마 비노출 증거이지 단독 RLS 증거가 아님 |
 | 실제 직접 RPC |3개 기존 RPC×anon/B6요청 모두 정확42501(401/403).404를 통과로 계산하지 않음 |
-| 실제 SQL 역할 검사 | anon/authenticated/service_role의6테이블×4종0행 요청72개, anon/authenticated의12RPC24개 모두42501; 총96개 |
+| 실제 SQL 역할 검사 | anon/authenticated/service_role의6테이블×4종0행 요청72개, anon/authenticated의12RPC24개 모두42501; 총96개, rollback·GUC 정리 확인 |
 | 실제 SQL 순위 fixture |101명 전용UUID/고유규칙, 공동1·1·3/top100/내101위/동점시간순/비공개ID 미노출 통과; 전부ROLLBACK |
 | 최종 임시 데이터 정리 | Auth/players/best_scores/runs/reports 모두0, pending삭제0. 완료 삭제표식4는 보관정책에 따라 유지 |
 | 최신 로컬 검사 | typecheck/ranked/server 통과, ranking184/Deno50/tools64/SQLstatic22/Chromium골든3 통과 |
@@ -47,7 +49,7 @@
 - Windows npx.cmd 위치 인자로 다중행 SQL을 넘긴 실행은 exit0여도 rows[]만 반환했다. 통과 증거로 인정하지 않았으며 공식 Management API에 UTF-8 JSON의 단일 배치로 다시 보내 assertionsPassed/rollbackCompleted/intentGucsCleared를 확인했다. SQL 파일의 SELECT만 떼어 실행하면 검증이 아니다.
 - 전체 Jest의 커피 표시 opacity 간헐 실패는 단독/전체 재실행에서 재현되지 않았다. 테스트 타이밍 문제로 확정하지 않았고, 애니메이션·물리 코드를 바꾸거나 기대값을 완화하지 않았다. 원인이 해결됐다고 주장하지 않는다.
 
-**남은 검증:** 서로 다른 판의 최대값/동점시간 및 개명·삭제·운영자 변경 경쟁, 만료·보관정리 cron/백업·복구, 실제 Gateway forwarded 신뢰/호출한도·CPU, 실제 설정으로 빌드한 웹의 오프라인/재연결 UI, production 배포·smoke, iPhone/Hermes. 이번 새 웹 export/전체E2E/Doctor/audit는 미실행이다. 로그 보관은 실제 Free entitlement1일이며 서버 로그 없음으로 표현하지 않는다. T03 완료 커밋·P03 이동·푸시는 하지 않았다.
+**남은 검증:** 서로 다른 판의 최대값/동점시간 및 개명·삭제·운영자 변경 경쟁, 만료·보관정리 cron/백업·복구, 실제 Gateway forwarded 신뢰/호출한도·CPU, 실제 설정으로 빌드한 웹의 오프라인/재연결 UI, production 배포·smoke, iPhone/Hermes. 이번 새 웹 export/전체E2E/Doctor는 미실행이며 read-only hosted catalog audit과 staging permission batch는 실행 완료했다. 로그 보관은 실제 Free entitlement1일이며 서버 로그 없음으로 표현하지 않는다. T03 완료 커밋·P03 이동·푸시는 하지 않았다.
 
 ## 이전 상태 · 2026-09-22 Supabase CLI 인증 확인
 

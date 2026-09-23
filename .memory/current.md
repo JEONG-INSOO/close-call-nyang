@@ -37,10 +37,11 @@
 ## Status
 - T01 서버 top-30 계약 완료
 - T02 클라이언트 top-30 계약 완료
-- 이전 staging smoke 14개 통과와 남은 수동 운영 검증은 보존됨
+- staging migration/API, 31명 top-30 fixture, hosted catalog audit, SQL 권한 거부 96개와 rollback/GUC 정리, 기존 smoke 14개 통과를 보존함
+- 실제 경쟁/만료·운영 변경, Gateway/한도, cron·백업, 브라우저 오프라인 복구, production, iPhone/Hermes는 아직 미검증
 
 ## Next Step (IMPORTANT)
-T03 청사진을 읽고 staging migration/API를 배포한 뒤 31명 top-30 fixture와 남은 운영 검증을 실행한다.
+T03의 남은 운영 검증 중 안전한 읽기/롤백 범위를 계속 실행한다. 실제 경쟁·Gateway 부하·cron/백업·브라우저 오프라인·native/production은 별도 운영 승인과 실제 환경이 필요하므로 결과를 not_run으로 구분해 기록한다.
 
 ## Resume Existing T03 After Requested Change
 P02-T03을 유지한다. 가입/선택/프로젝트 생성/기본smoke/권한/101순위 검사는 끝났다. 다음은 staging의 서로 다른 판 최고값·동점시간/만료·운영자 상태변경 경쟁, 실제 Gateway/한도, JWT3600초를 반영한 정리 cron, 실제 공개 설정으로 빌드한 웹의 연결·오프라인 복구 검증이다. scripts/sql의 역할/101fixture는 전체 단일 배치+ROLLBACK용이며 production 실행 금지. 다중행 SQL을 Windows npx.cmd 위치 인자로 넘긴 결과 rows[]는 증거로 인정하지 않았고 공식 Management API JSON 단일 배치에서 최종 assertionsPassed/intentGucsCleared를 확인했다. 운영 프로젝트 fgojrxmpxpzdiwsktjsx는 생성만 완료했으므로 남은 staging 검증 전 스키마/API 배포 금지. Windows Credential Manager의 전용 production DB 비밀번호는 덮어쓰지 않는다. 추가 과금/유료리전/추가프로젝트 생성은 승인하지 않았다. 실제 완료 전 완료커밋/P03 전진/자동푸시는 하지 않는다.
