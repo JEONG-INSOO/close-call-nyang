@@ -103,7 +103,7 @@ export const ko = {
   home: '처음으로',
   share: '기록 공유',
   revive: '광고 보고 일어서기',
-  titleDescription: '오늘도, 아슬아슬한 한 걸음.',
+  titleDescription: '오늘도 쉽지 않은 냥대리 출근길',
   resultTitle: '오늘의 업무 기록',
   pausedTitle: '잠시 쉬는 중',
   pausedDescription: '냥대리도 잠깐 숨을 고르고 있어요.',
