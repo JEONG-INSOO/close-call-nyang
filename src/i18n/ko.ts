@@ -40,7 +40,7 @@ export const ko = {
   rankRefresh: '새로고침',
   rankRetry: '랭킹 다시 불러오기',
   rankUpdated: '마지막 갱신',
-  rankHint: '플레이어별 최고 기록 · 상위 100명과 내 순위 · 같은 성공률은 공동 순위예요.',
+  rankHint: '플레이어별 최고 기록 · 상위 30명과 내 순위 · 같은 성공률은 공동 순위예요.',
   rankCacheHint: '최근 30초 안의 랭킹이 표시될 수 있어요.',
   rankRowActions: '닉네임 메뉴',
   nicknameReport: '닉네임 신고',

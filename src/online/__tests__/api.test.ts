@@ -132,6 +132,16 @@ test('board is cached 30 seconds only within the same identity and retains tied 
   await api.getLeaderboard();
   expect(fetchMock).toHaveBeenCalledTimes(3);
 });
+test('accepts exactly 30 public rows and keeps a 31st-place personal rank', async () => {
+  const entries = Array.from({ length: 30 }, (_, index) => ({ ...entry,
+    publicId: `10000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
+    rank: index + 1, isMe: false,
+  }));
+  fetchMock.mockResolvedValue(response({ ...board, entries, me: { ...entry, rank: 31, score: 1, isMe: true } }));
+  const value = await createRankingApi()!.getLeaderboard();
+  expect(value.entries).toHaveLength(30);
+  expect(value.me?.rank).toBe(31);
+});
 test('save and finalize invalidate an existing board cache without overwriting local best', async () => {
   const api = createRankingApi()!;
   fetchMock.mockResolvedValueOnce(response(board)).mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(board));
@@ -179,7 +189,7 @@ test('report payload uses public ID only and accepts confirmed report without pr
   expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({ targetPublicId: publicId, reason: 'inappropriate' });
 });
 test('malformed/oversized server data is not a fabricated successful response', async () => {
-  fetchMock.mockResolvedValueOnce(response({ ...board, entries: new Array(101).fill(entry) }));
+  fetchMock.mockResolvedValueOnce(response({ ...board, entries: new Array(31).fill(entry) }));
   await expect(createRankingApi()!.getLeaderboard()).rejects.toMatchObject({ code: 'UNAVAILABLE' });
   fetchMock.mockResolvedValueOnce({ ...response(null), text: async () => '<html>maintenance</html>' });
   await expect(createRankingApi()!.getProfile()).rejects.toMatchObject({ code: 'UNAVAILABLE' });

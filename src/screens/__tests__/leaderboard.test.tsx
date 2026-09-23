@@ -24,7 +24,7 @@ const shell = (content: React.ReactNode) => <SafeAreaProvider>{content}</SafeAre
 beforeEach(async () => { await AsyncStorage.clear(); jest.clearAllMocks(); });
 
 describe('simulated shared leaderboard UI (not hosted evidence)', () => {
-  it('preserves tied server ranks and duplicate names, including own rank outside the top 100', async () => {
+  it('preserves tied server ranks and duplicate names, including own rank outside the top 30', async () => {
     const api = fakeApi();
     await render(shell(<LeaderboardScreen api={api} myProfile={profile} onClose={jest.fn()} />));
     expect(screen.getAllByText('같은 이름')).toHaveLength(3);

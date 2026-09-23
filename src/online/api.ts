@@ -28,7 +28,7 @@ function parseEntry(value: unknown): LeaderboardEntry {
 }
 function parseBoard(value: unknown): LeaderboardResponse {
   const data = object(value);
-  required(Array.isArray(data.entries) && data.entries.length <= 100 && timestamp(data.fetchedAt));
+  required(Array.isArray(data.entries) && data.entries.length <= 30 && timestamp(data.fetchedAt));
   if (data.rulesVersion !== RULES_VERSION) throw new OnlineApiError('RULES_MISMATCH', 409);
   return { entries: data.entries.map(parseEntry), me: data.me === null ? null : parseEntry(data.me), rulesVersion: RULES_VERSION, fetchedAt: data.fetchedAt };
 }
