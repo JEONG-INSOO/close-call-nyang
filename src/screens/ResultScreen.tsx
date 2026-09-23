@@ -31,6 +31,10 @@ export function ResultScreen({ score, bestScore, canRevive, onRetry, onHome, onS
         <View style={styles.record} accessible accessibilityLabel={`${ko.bestLabel} ${best}%`}>
           <Text style={styles.label}>{ko.bestLabel}</Text><Text testID="result-best" style={styles.best}>{best}%</Text>
         </View>
+        {canRevive && <Pressable testID="revive-button" accessibilityRole="button" accessibilityLabel={ko.revive} onPress={onRevive}
+          style={({ pressed }) => [styles.revive, pressed && styles.pressed]}>
+          <Text style={styles.secondaryText}>{ko.revive}</Text>
+        </Pressable>}
         <View style={styles.actions}>
           <Pressable accessibilityRole="button" accessibilityLabel={ko.home} onPress={onHome}
             style={({ pressed }) => [styles.secondary, pressed && styles.pressed]}>
@@ -42,10 +46,6 @@ export function ResultScreen({ score, bestScore, canRevive, onRetry, onHome, onS
             <Text style={styles.primaryText}>{startBusy ? ko.starting : ko.retry}</Text>
           </Pressable>
         </View>
-        {canRevive && <Pressable testID="revive-button" accessibilityRole="button" accessibilityLabel={ko.revive} onPress={onRevive}
-          style={({ pressed }) => [styles.revive, pressed && styles.pressed]}>
-          <Text style={styles.secondaryText}>{ko.revive}</Text>
-        </Pressable>}
         {awardedNames.length > 0 && <View testID="character-unlock-notice" style={styles.notice}>
           <Text accessibilityLiveRegion="polite" style={styles.noticeText}>{ko.characterUnlocked}: {awardedNames.join(', ')}</Text>
         </View>}
