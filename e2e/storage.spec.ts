@@ -41,5 +41,5 @@ test('clipboard rejection displays selectable fallback rather than copied succes
   await page.getByTestId('result-share').click();
   await expect(page.getByRole('heading', { name: '복사해서 공유해 주세요' })).toBeVisible();
   await expect(page.getByText('공유할 기록을 복사했어요.', { exact: true })).toHaveCount(0);
-  await expect(page.getByText(/아슬아슬 냥대리 프로젝트 성공률 \d+%!/)).toBeVisible();
+  await expect(page.getByText(/우당탕탕 냥대리 프로젝트 성공률 \d+%!/)).toBeVisible();
 });

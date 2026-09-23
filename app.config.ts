@@ -3,7 +3,7 @@ import type { ExpoConfig } from 'expo/config';
 // Expo evaluates this file before Metro's TypeScript module resolver.
 // Keep identifiers self-contained; tests check them against the shared constants.
 const config: ExpoConfig = {
-  name: '아슬아슬 냥대리',
+  name: '우당탕탕 냥대리',
   slug: 'close-call-nyang',
   version: '1.0.0',
   orientation: 'landscape',

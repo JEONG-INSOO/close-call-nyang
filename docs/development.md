@@ -1,4 +1,4 @@
-# 아슬아슬 냥대리 개발 안내
+# 우당탕탕 냥대리 개발 안내
 
 ## 현재 구현 범위
 
@@ -85,7 +85,7 @@ npm.cmd run test:ci
 ### 실제 연결 전에 반드시 확인할 것 (P02-T03)
 
 1. 이 마이그레이션은 배포하지 않았습니다. 실제 Supabase에서 private 테이블/RPC에 대한 anon·authenticated 접근 차단, service-role 호출, 다른 사람 판 접근, 두 요청의 경쟁·삭제 경합·시간 제한을 검증해야 합니다.
-2. 서버 환경변수 `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, 최소32자 비공개 `RANKING_RATE_LIMIT_SALT`가 필요합니다. 앱의 `EXPO_PUBLIC_*`나 GitHub Pages에 service role/salt를 넣지 않습니다. 현재 실제 값은 없습니다.
+2. 현재 서버 코드는 런타임의 `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`와 최소32자 비공개 `RANKING_RATE_LIMIT_SALT`를 사용합니다. Supabase 예약 변수는 자동 주입되므로 사용자 Secrets로 다시 만들지 않습니다. 새 프로젝트의 실제 키 구성을 확인한 뒤 필요한 서버 어댑터 변경을 검증합니다. 앱의 `EXPO_PUBLIC_*`나 GitHub Pages에 service role/salt를 넣지 않습니다. 현재 실제 값은 없습니다.
 3. production CORS는 `https://jeong-insoo.github.io`입니다. `RANKING_ALLOWED_ORIGINS`로 바꿀 수 있지만 localhost는 `RANKING_ENVIRONMENT=staging`일 때만 허용합니다. Origin 없는 native도 인증이 필요합니다. CORS는 공격자의 인증을 대체하지 않습니다.
 4. `verify_jwt=false`는 공개 순위 조회/OPTIONS를 Edge 함수까지 통과시키기 위한 설정입니다. 보호 경로는 함수에서 `auth.getUser`로 검증합니다. DELETE 재시도만 이미 존재하는 삭제 영수증과 서명 검증 JWT를 함께 사용할 수 있습니다. 이 fallback은 ES256/RS256 JWKS 기반이므로 실제 프로젝트의 비대칭 서명키 구성을 확인해야 합니다. HS256을 조용히 허용하지 않습니다.
 5. 게스트 제한은 마지막 `x-forwarded-for` 주소의 일별 HMAC만 저장합니다. 실제 Gateway가 그 마지막 항목을 신뢰할 수 있게 덮어쓰거나 추가하는지 검증해야 합니다. 확인 전에는 IP 위조 방어를 보장하지 않습니다. 주소 누락은 하나의 보수적인 공용 제한으로 묶습니다. 익명 계정 발급 제한도 운영에서 확인합니다.
@@ -107,6 +107,18 @@ npm.cmd run test:ci
 ### 개발 전용 재생 지문 검사
 
 `EXPO_PUBLIC_REPLAY_DIAGNOSTICS=true`로 개발 서버를 다시 시작하면 제목 화면에 `재현 검사 (개발용)`가 나타납니다. `expo-crypto`로 T01 공통3개 골든의 상태 SHA-256과 낙하 틱을 계산합니다. Expo Go의 실제 Hermes에서 실행하고 runtime/hermes 여부와 결과를 별도로 기록해야 합니다. Jest에서 Crypto를 Node로 대체한 통과는 Hermes 통과가 아닙니다. `__DEV__`가 false인 production에는 환경변수가 true여도 패널과 fixture 모듈이 포함되지 않습니다.
+
+## 실제 서버 검증 도구 준비 (P02-T03, 아직 미배포)
+
+사용자가 검증용 `nyang-staging`과 배포용 `nyang-production`을 서울·Free로 분리하는 구성을 승인했습니다. 이후 가입/로그인이 완료되어 CLI 프로젝트/조직 목록 조회가 성공했습니다. 기존 서울 프로젝트1개가 있어 이번 게임용인지 사용자 확인을 기다립니다. 실제 Free·무료 슬롯·기존 데이터 확인 전에는 재사용/추가 생성하지 않습니다. 에이전트는 프로젝트 생성/배포하지 않았습니다. 자세한 순서는 [랭킹 운영 안내](./leaderboard-operations.md)를 따릅니다.
+
+```powershell
+npm.cmd run test:ranking-tools
+npm.cmd run ranking:env-check -- --allow-unconfigured
+npx.cmd --yes supabase@2.117.0 login
+```
+
+첫 명령은 새 도구의 로컬 모의 검사60개, 둘째는 서버 미설정 앱의 정적 검사입니다. 둘 다 실제 서버 권한 검증이 아닙니다. 로그인은 사용자 터미널에서 수행하며 토큰을 채팅에 보내지 않습니다. 실제 공개 URL/key와 별도 ref를 준비한 뒤 운영 안내의 명시적 `--env-file`, `--project-ref`, `--allow-test-writes` 절차로 진행합니다. 결과의 `taskComplete=false`와 수동 `not_run` 항목을 완료로 바꾸지 않습니다.
 
 ## 로컬 파일과 보안
 

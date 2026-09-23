@@ -76,7 +76,7 @@
 - [x] Faster response measured, exact±65deg failure,40deg recoverywindow, oppositecontrol andheld-both behavior verified; distance/achievementsunchanged.
 - [x] Newrulehash/servercopies/3goldens agreeinNode,Deno,Chromium; noignoredmaliciousproof regressions.
 - [x] Updated localdist and representative actualbrowserchecks complete; existingstoragekept, screenshotsinspected, limitsdocumented.
-- [ ] Learning evidence/commit scoped, originalhostedT03 restoredwithnewruledeploypending.
+- [x] Learning evidence/commit scoped, originalhostedT03 restoredwithnewruledeploypending.
 
 ## Validation
 
@@ -102,6 +102,6 @@ Task: T01-plush-and-balance
 
 - [x] 구현 완료
 - [x] 검증 통과
-- commit: pending
+- commit: 4caea00
 
 Final validation: typecheck/server:check, Jest615/41suites, Deno50, tools64, ranked:check/generator--check, Chromium3goldens,3webbuilds,localenvscan,fullE2E28pass/11intentional-skips/0fail/0flaky164.456sec,diffcheck. Exactrules9fc10a2a8fdd4085; local4173distverified. Details/firstfailures/visualevidence/limits in docs/learning-notes/2026-09-22-plush-cat-and-balance.md. No clouddeploy/push/storageclear; phase/current sync follows completion commit.

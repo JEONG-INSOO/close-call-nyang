@@ -22,6 +22,25 @@ export function rulesVersion(value: unknown): string {
   return value;
 }
 
+/** Gateways can supply an empty stream for a bodyless DELETE. Never trust Content-Length. */
+export async function requireEmptyBody(request: Request): Promise<void> {
+  if (request.body === null) return;
+  const reader = request.body.getReader();
+  try {
+    // No buffering: reject at the first byte, and bound empty-chunk processing too.
+    for (let emptyChunks = 0; emptyChunks < 16; emptyChunks += 1) {
+      const { value, done } = await reader.read();
+      if (done) return;
+      if (value.byteLength !== 0) break;
+    }
+    // Do not wait on a producer's cancellation promise before rejecting its body.
+    void reader.cancel().catch(() => {});
+    throw new ApiFailure('INVALID_INPUT');
+  } catch {
+    throw new ApiFailure('INVALID_INPUT');
+  } finally { reader.releaseLock(); }
+}
+
 /** Enforce the cap on received bytes, never only the untrusted Content-Length header. */
 export async function readJson(request: Request): Promise<unknown> {
   if (request.headers.get('content-type')?.split(';')[0].trim().toLowerCase() !== 'application/json') {

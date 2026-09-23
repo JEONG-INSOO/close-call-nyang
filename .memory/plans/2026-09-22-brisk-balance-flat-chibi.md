@@ -8,7 +8,7 @@
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | in_progress | 외형·움직임·물리·재생·웹 검증 통합 | [P01](../phases/2026-09-22-brisk-balance-flat-chibi/P01-gameplay/phase.md) |
+| P01 | done | 외형·움직임·물리·재생·웹 검증 통합, b303fd7 | [P01](../phases/2026-09-22-brisk-balance-flat-chibi/P01-gameplay/phase.md) |
 
 ## Task boundary
 

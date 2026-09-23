@@ -1,5 +1,5 @@
 import expoConfig from '../../../app.config';
-import { APP_NAME, APP_SLUG, IOS_BUNDLE_ID, getFeatureFlags } from '../app';
+import { APP_NAME, APP_SLUG, IOS_BUNDLE_ID, PUBLIC_WEB_URL, getFeatureFlags } from '../app';
 
 describe('getFeatureFlags', () => {
   it.each([
@@ -48,6 +48,13 @@ describe('Expo configuration', () => {
     expect(expoConfig.platforms).toEqual(['ios', 'web']);
     expect(expoConfig.ios?.supportsTablet).toBe(false);
     expect(expoConfig.web?.output).toBe('single');
+  });
+
+  it('renames the display title without migrating the app or public URL identity', () => {
+    expect(APP_NAME).toBe('우당탕탕 냥대리');
+    expect(APP_SLUG).toBe('close-call-nyang');
+    expect(IOS_BUNDLE_ID).toBe('com.mocca.closecallnyang');
+    expect(PUBLIC_WEB_URL).toBe('https://jeong-insoo.github.io/close-call-nyang/');
   });
 
   it('disables recording and background audio permissions', () => {

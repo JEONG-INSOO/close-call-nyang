@@ -80,7 +80,7 @@ Task: T01-grey-tabby
 ## Progress
 - [x] 구현 완료
 - [x] 검증 통과
-- commit: identified by this Task's commit message / Plan header
+- commit: ce13976
 
 ## Completion evidence
 - Typecheck/Jest648(43suites,41.01sec),ranked:check/generator--check,3webbuilds,localenvscan,diffcheck passed. Fullbrowser34pass/11intentional-skips/0fail/0flaky202.046sec.

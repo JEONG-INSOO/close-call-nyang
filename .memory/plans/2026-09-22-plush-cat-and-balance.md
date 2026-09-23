@@ -8,7 +8,7 @@
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | 공통 체형·물리·재생규칙·시각 QA를 한 검증 가능한 변경으로 통합 | [P01](../phases/2026-09-22-plush-cat-and-balance/P01-game-feel/phase.md) |
+| P01 | done ✅ | 공통 체형·물리·재생규칙·시각 QA 완료 (4caea00) | [P01](../phases/2026-09-22-plush-cat-and-balance/P01-game-feel/phase.md) |
 
 ## Scope and Return
 

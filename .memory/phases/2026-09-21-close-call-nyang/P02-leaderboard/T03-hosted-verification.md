@@ -1,6 +1,6 @@
 # Task: T03 실제 랭킹 서버 연결과 운영 검증
 
-## Status: pending
+## Status: in_progress
 
 ## Goal
 사용자의 Supabase 프로젝트에 준비한 API/스키마를 적용하고 실제 두 익명 플레이어로 공유 순위·권한·삭제·실패 복구가 동작하는 것을 확인한다. 운영과 개인정보 변경을 다음 출시 단계에 전달한다.
@@ -93,4 +93,31 @@ Task: T03-hosted-verification
 - [ ] 구현 완료
 - [ ] 검증 통과
 - commit: pending
-- external prerequisites: Supabase 계정/프로젝트·실제 배포 권한; 유료 전환은 이번 계획이 승인하지 않음
+- external prerequisites: 사용자 선택1로 기존 프로젝트 재사용 승인. 실제 조직 Free/Owner/슬롯과 빈 DB 확인 후 nyang-staging(tadokcpealpwjfyjovuy) 재사용·nyang-production(fgojrxmpxpzdiwsktjsx) 생성 완료. 모두 서울/Free. staging만 서버 배포·부분 검증; production은 생성만 완료. 로그인/가입/프로젝트 선택을 다시 요청하지 않는다. 유료 전환은 승인하지 않음.
+
+## Hosted Progress (2026-09-22, partial)
+
+- staging migration202609210001/Edge 배포 완료. 실제 CASE 구문 오류는 최초 실패 트랜잭션 롤백 확인 뒤 괄호로 수정해 적용했다. 빈 DELETE 스트림을 실제 gateway가 전달하는 문제는 bounded 읽기 검증으로 수정·재배포했다. 인증을 완화하지 않았다.
+- 익명Auth 활성/ES256/JWT3600초/가입30회·시간 확인. CAPTCHA는 기존 false 유지, 봇방지 완료로 주장하지 않는다. 서버 salt는 Secrets에만 저장, production DB 암호는 Windows Credential Manager 전용 항목에만 저장. 앱 env는 공개 URL/publishable key만 포함하고 Git 제외.
+- 실제 카탈로그6테이블/12RPC/8helper, 역할별 SQL 거부96개, HTTP smoke14개(REST 비노출/RPC42501·정상 proof·중복·개명·신고·삭제 포함) 통과. 별도 staging101fixture에서1,1,3/top100/me101 통과·롤백. 최종 Auth/프로필/점수/판/신고0, 삭제 완료표식4만 의도적으로 보관. 전체 Task 통과가 아니다.
+- 로컬 typecheck/ranked/server 통과, ranking184/Deno50/tools64/SQLstatic22/Chromium골든3 통과. Jest 최초583중1개 애니메이션 실패 → 단독33통과 → 변경 없는 전체 재실행583통과. 실패 원인은 확정하지 않고 QA에 보존한다.
+- 미검증: 다른 판 최고값·동점/만료·운영자 변경 경쟁, Gateway/한도, 정리cron/백업, 실제 설정 웹/오프라인 복구, production 롤아웃·smoke, iPhone/Hermes. Acceptance/Progress 체크박스와 완료 커밋·다음 포인터는 그대로 미완료. 상세 증거는 운영/QA/학습노트 참조.
+
+## Preparation Evidence (2026-09-22, not completion)
+
+- `scripts/verify-leaderboard.mjs`와15개 모의 회귀, `scripts/inspect-public-env.mjs`와45개 회귀를 준비했다. package 명령, 공개 대상 메타데이터 예시, CLI 임시파일 제외, 운영/개발/QA/학습 노트를 추가했다. 앱/서버 원본·물리는 변경하지 않았다.
+- 전체60도구검사, Jest582(40 suites)/ranking184, typecheck/ranked:check/server:check, Deno45, Node/Deno/Chromium 공통3골든 통과. 기존 production dist local-only 정적 검사 통과; 실제 URL/key 빌드 및 새 전체 E2E는 미실행.
+- CLI2.117.0에서 `--use-api`, `db push --dry-run --skip-vault` 확인. `projects list`는 LegacyPlatformAuthRequiredError로 중단됐다. 후속 답변에서 계정 없음으로 정정됐으므로 가입 후 로컬 `npx.cmd --yes supabase@2.117.0 login`을 진행한다. 토큰을 채팅에 받지 않는다.
+- 설정 없는 hosted runner exit2/not_run과 기본 env 검사 exit1로 안전 차단됨. 생성/배포/호스팅 검사를 실제 실행하지 않았으며 관리자 키/실제 공개 설정도 만들지 않았다.
+- runner는 명시적 환경/ref/상대ref/쓰기 플래그, 정상시간 proof 제출, 생성한 사용자만 정상 DELETE, 모의/실제 구분과 항상 taskComplete=false를 유지한다. 별도 읽기 전용 리뷰에서 새 차단 결함 없음. 상세 증거는 docs/qa-report.md와 docs/learning-notes.md 참고.
+- 실제 DB/RLS/직접 RPC·공동순위101명·다른 판 최고값 경쟁·만료/운영/실제 웹/기기는 여전히 미검증이다. legacy/new server key·Gateway forwarded 신뢰·JWT 최대 수명/cron은 실제 환경 확인 후 필요한 변경만 수행한다.
+- Acceptance/Progress는 미완료로 유지한다. 현재 변경은 완료 커밋/푸시하지 않았으며 P03으로 전진하지 않는다.
+- 후속 명시 요청으로 표시 제목만 우당탕탕 냥대리로 변경한다. [제목·계정 정정](../../../decisions/2026-09-22-title-and-account-correction.md)의 결정을 따른다. 기술 식별자/게임 규칙/실제 검증 완료 여부는 바꾸지 않는다.
+- 제목 변경 검증: 관련 단위48개/4 suites, typecheck, 새 web export, 새 dist의 저장·공유 Chromium9개(39.0초), local-only env scan 통과. 실제 서버 작업은 가입부터 대기하며 현재 T03 미완료를 유지한다.
+
+## Login Check Follow-up (2026-09-22)
+
+- 가입 대기는 해소됐다. 실제 CLI2.117.0 `projects list`/`orgs list` 성공: org oxbvynubycrowcazoqzx(Jeong Insoo), 기본 이름 프로젝트 tadokcpealpwjfyjovuy, 서울 ap-northeast-2, ACTIVE_HEALTHY, linked=false. 이 조회는 Auth 게스트/API/DB 동작 검증이 아니다.
+- CLI의 조직 하위 명령은 `orgs`다. `organizations list`는 UnknownSubcommand로 실패했고 실제 help 확인 후 `orgs list`를 사용했다. 목록만으로 요금제/슬롯/프로젝트 용도/빈 DB 여부를 확정하지 않는다.
+- 기존 프로젝트를 냥대리용 staging으로 사용해도 되는지 한 가지 질문을 보냈다. 답변 전 기존 프로젝트 이름 변경/연결/마이그레이션/생성은 하지 않는다. 실제 조직 plan과 무료 제한을 다음 읽기 전용 점검에서 확인한다.
+- 현재는 메모리/운영 기록만 갱신했으며 구현/호스팅 테스트를 새로 통과했다고 주장하지 않는다. 외부 데이터 쓰기/키 조회/생성/배포/과금/푸시는 수행하지 않았다.

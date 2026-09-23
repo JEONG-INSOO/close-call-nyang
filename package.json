@@ -22,7 +22,10 @@
     "server:check": "deno check --config supabase/deno.json supabase/functions/leaderboard-api/index.ts",
     "test:server-api": "deno test --config supabase/deno.json supabase/functions/_shared/__tests__",
     "test:ranking-schema": "node --test scripts/leaderboard-schema.test.mjs",
-    "online-fixtures:build": "node scripts/export-online-fixture.mjs"
+    "online-fixtures:build": "node scripts/export-online-fixture.mjs",
+    "ranking:verify": "node scripts/verify-leaderboard.mjs",
+    "ranking:env-check": "node scripts/inspect-public-env.mjs",
+    "test:ranking-tools": "node --test scripts/verify-leaderboard.test.mjs scripts/inspect-public-env.test.mjs"
   },
   "dependencies": {
     "@expo/metro-runtime": "~57.0.16",

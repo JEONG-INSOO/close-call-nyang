@@ -124,7 +124,7 @@
 
 - [x] 구현 완료
 - [x] 검증 통과
-- commit: this Task's Commit Message / Plan header identifies the scoped implementation commit.
+- commit: b303fd7
 
 ## Completion Evidence
 

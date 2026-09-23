@@ -152,7 +152,7 @@ declare v_distance numeric;
 begin
   -- Defense in depth only; the service's canonical replay verifies the full kernel.
   if p_terminal is null or pg_catalog.jsonb_typeof(p_state) is distinct from 'object'
-    or p_state->>'screen' is distinct from case when p_terminal then 'result' else 'playing' end
+    or p_state->>'screen' is distinct from (case when p_terminal then 'result' else 'playing' end)
     or pg_catalog.jsonb_typeof(p_state->'run') is distinct from 'object'
     or p_state#>'{run,id}' is distinct from pg_catalog.to_jsonb(p_engine_run_id)
     or p_state#>'{run,seed}' is distinct from pg_catalog.to_jsonb(p_seed)

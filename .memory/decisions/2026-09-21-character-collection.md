@@ -2,7 +2,7 @@
 
 - Date: 2026-09-21
 - Status: Confirmed user feature; implementation defaults explicitly separated below
-- Parent plan: [아슬아슬 냥대리](../plans/2026-09-21-close-call-nyang.md)
+- Parent plan: [우당탕탕 냥대리](../plans/2026-09-21-close-call-nyang.md)
 
 ## D01. 원본 캐릭터와 비율
 

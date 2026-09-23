@@ -13,7 +13,7 @@ describe('screen presentation contracts', () => {
   it('offers start, settings and character actions through the supplied callbacks', async () => {
     const start = jest.fn(); const settings = jest.fn(); const characters = jest.fn();
     await render(<TitleScreen bestScore={125.9} onStart={start} onSettings={settings} onCharacters={characters} />);
-    expect(screen.getByRole('header', { name: ko.title })).toBeOnTheScreen();
+    expect(screen.getByRole('header', { name: '우당탕탕 냥대리' })).toBeOnTheScreen();
     expect(screen.getByLabelText(`${ko.bestLabel} 125%`)).toBeOnTheScreen();
     expect(screen.getAllByRole('button')).toHaveLength(3);
     await fireEvent.press(screen.getByRole('button', { name: ko.start }));

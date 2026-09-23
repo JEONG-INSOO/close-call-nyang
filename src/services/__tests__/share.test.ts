@@ -7,7 +7,7 @@ afterEach(() => jest.restoreAllMocks());
 
 describe('score sharing', () => {
   it.each([[-1, 0], [NaN, 0], [Infinity, 0], [101.9, 101], [200, 200]])('formats %s without capping at100', (score, expected) => {
-    expect(formatShareText(score)).toBe(`아슬아슬 냥대리 프로젝트 성공률 ${expected}%!\n${PUBLIC_WEB_URL}`);
+    expect(formatShareText(score)).toBe(`우당탕탕 냥대리 프로젝트 성공률 ${expected}%!\n${PUBLIC_WEB_URL}`);
   });
   it('uses the native share sheet and distinguishes dismissal from success', async () => {
     const share = jest.spyOn(Share, 'share').mockResolvedValueOnce({ action: Share.sharedAction })

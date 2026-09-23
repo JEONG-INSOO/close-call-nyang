@@ -1,4 +1,6 @@
-# Plan: 아슬아슬 냥대리
+# Plan: 우당탕탕 냥대리
+
+2026-09-22 [제목 변경·계정 정정](../decisions/2026-09-22-title-and-account-correction.md)이 이전 명칭/계정 답변에 우선한다. 기술 식별자는 유지하며 단계 진행률은 바꾸지 않는다.
 
 ## Goal
 Windows에서 Expo SDK 57 + TypeScript + Reanimated + SVG로 한국어 가로 횡스크롤 균형 게임을 만들고, iPhone Expo Go·배포용 iOS 빌드와 GitHub Pages에서 검증한다. 15% 카페/커피/가속, 51% 사무실, 약 90초에 100%, 이후 무한 기록을 구현한다. 중복 가능한 닉네임과 가입 화면 없는 iOS/웹 공통 온라인 리더보드를 제공한다. 광고는 개발용 가상 흐름만 두며 출시에서는 비활성화한다. 실제 App Review 제출과 종합 학습노트까지 추적한다.
