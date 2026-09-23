@@ -8,4 +8,4 @@
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | 서버·클라이언트 top-30 계약과 staging 검증 | [P01](../phases/2026-09-23-leaderboard-top30/P01-contract-and-verification/phase.md) |
+| P01 | `done` | 서버·클라이언트 top-30 계약과 staging 검증 | [P01](../phases/2026-09-23-leaderboard-top30/P01-contract-and-verification/phase.md) |

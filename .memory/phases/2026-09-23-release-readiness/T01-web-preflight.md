@@ -2,7 +2,7 @@
 
 ## Status
 
-pending
+in_progress
 
 ## Scope
 
@@ -20,4 +20,11 @@ pending
 
 ## Blocker
 
-터미널·브라우저 실행기가 helper_unknown_error로 시작되지 않아 현재 대기 중이다.
+없음. 서버를 실행한 뒤 브라우저 스모크를 진행한다.
+
+## Progress
+
+- [x] staging-config export 생성 및 `ranking:env-check` 통과
+- [x] 4173 HTTP 200 및 제목 확인
+- [x] 데스크톱 핵심 브라우저 흐름 3개 통과(키보드 입력/실패·재시작, 일시정지·포커스, A·ArrowLeft 독립 입력)
+- [ ] 두 손가락 터치 포인터 케이스 — 실행이 종료되지 않아 중단, 별도 재현 필요

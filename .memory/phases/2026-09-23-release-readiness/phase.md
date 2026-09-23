@@ -2,7 +2,7 @@
 
 ## Status
 
-pending
+in_progress
 
 ## Goal
 
@@ -10,4 +10,4 @@ pending
 
 ## Blocking note
 
-현재 실행 도구가 프로세스를 시작하지 못해 검증 명령을 아직 실행하지 못했다.
+웹 export는 생성 가능해졌고, 다음은 4173 서버와 브라우저 preflight다.

@@ -1,6 +1,6 @@
 # Task: T03 staging top-30 및 운영 검증
 
-## Status: in_progress
+## Status: done
 
 ## Goal
 
@@ -41,4 +41,5 @@ Task: T03-hosted-top30-verification
 - [x] 실제 smoke 14개 통과
 - [x] staging SQL 권한 거부 96개와 rollback/GUC 정리 통과
 - [x] hosted catalog audit과 migration 202609230002 존재 확인
-- commit: pending
+- [x] staging 공개 설정 웹 export와 `ranking:env-check` 통과
+- commit: d75d1f4 (검증 기록), 후속 export는 무시된 `dist/` 산출물
