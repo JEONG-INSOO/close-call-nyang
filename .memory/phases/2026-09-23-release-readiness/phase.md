@@ -2,7 +2,7 @@
 
 ## Status
 
-in_progress
+done
 
 ## Goal
 
@@ -10,4 +10,6 @@ in_progress
 
 ## Blocking note
 
-웹 export는 생성 가능해졌고, 다음은 4173 서버와 브라우저 preflight다.
+웹 export, 4173 HTTP, 데스크톱·터치 브라우저 preflight를 완료했다.
+
+Progress: done 1/1

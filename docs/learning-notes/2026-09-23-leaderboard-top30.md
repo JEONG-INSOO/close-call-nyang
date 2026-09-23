@@ -26,4 +26,4 @@ SQL 권한도 실제 staging에서 확인했다. 역할을 `SET LOCAL ROLE`로 �
 
 동시 판 최고값·만료·운영자 상태 변경, Gateway 한도, cron·백업, 실제 웹 오프라인 복구, iPhone/Hermes는 아직 별도 검증 대상이다. production에는 migration이나 fixture를 적용하지 않았다.
 
-추가로 staging 공개 환경을 주입해 웹 export를 만들고 `ranking:env-check`를 통과시켰다. 4173 HTTP 200과 데스크톱 브라우저 핵심 흐름 3개는 확인했지만, 두 손가락 터치 포인터 테스트가 종료되지 않아 중단했다. “일부 테스트가 통과했다”와 “전체 브라우저 호환이 검증됐다”는 서로 다른 주장이다.
+추가로 staging 공개 환경을 주입해 웹 export를 만들고 `ranking:env-check`를 통과시켰다. 4173 HTTP 200, 데스크톱 핵심 흐름 3개, `phone-landscape` 두 손가락 터치 흐름을 확인했다. 테스트 본문 통과와 테스트 러너의 webServer 종료 지연은 별개이므로 각각 기록해야 한다.

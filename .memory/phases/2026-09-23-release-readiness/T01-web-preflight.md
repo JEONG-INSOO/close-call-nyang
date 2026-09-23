@@ -2,7 +2,7 @@
 
 ## Status
 
-in_progress
+done
 
 ## Scope
 
@@ -27,4 +27,5 @@ in_progress
 - [x] staging-config export 생성 및 `ranking:env-check` 통과
 - [x] 4173 HTTP 200 및 제목 확인
 - [x] 데스크톱 핵심 브라우저 흐름 3개 통과(키보드 입력/실패·재시작, 일시정지·포커스, A·ArrowLeft 독립 입력)
-- [ ] 두 손가락 터치 포인터 케이스 — 실행이 종료되지 않아 중단, 별도 재현 필요
+- [x] 두 손가락 터치 포인터 케이스 — `phone-landscape`에서 동시 입력·부분 해제·취소 통과
+- 참고: Playwright 본문은 통과했으나 다중 webServer 종료가 지연되어 프로세스는 수동 종료함

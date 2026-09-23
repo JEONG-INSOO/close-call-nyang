@@ -51,7 +51,7 @@
 
 **남은 검증:** 서로 다른 판의 최대값/동점시간 및 개명·삭제·운영자 변경 경쟁, 만료·보관정리 cron/백업·복구, 실제 Gateway forwarded 신뢰/호출한도·CPU, 실제 설정으로 빌드한 웹의 오프라인/재연결 UI, production 배포·smoke, iPhone/Hermes. 이번 새 웹 export/전체E2E/Doctor는 미실행이며 read-only hosted catalog audit과 staging permission batch는 실행 완료했다. 로그 보관은 실제 Free entitlement1일이며 서버 로그 없음으로 표현하지 않는다. T03 완료 커밋·P03 이동·푸시는 하지 않았다.
 
-2026-09-23 release-readiness preflight에서 staging 공개 설정으로 `web:export`와 `ranking:env-check`를 통과시키고 4173 응답 `200`/제목을 확인했다. `e2e/game.spec.ts`의 데스크톱 핵심 3개는 통과했지만 두 손가락 터치 포인터 케이스가 종료되지 않아 전체 실행을 중단했다. 터치 케이스는 통과로 간주하지 않는다.
+2026-09-23 release-readiness preflight에서 staging 공개 설정으로 `web:export`와 `ranking:env-check`를 통과시키고 4173 응답 `200`/제목을 확인했다. `e2e/game.spec.ts`의 데스크톱 핵심 3개와 `phone-landscape` 두 손가락 터치 케이스가 통과했다. 다중 webServer 종료가 지연되어 Playwright 프로세스는 수동 종료했지만, 터치 테스트 본문 자체는 성공 로그를 남겼다.
 
 ## 이전 상태 · 2026-09-22 Supabase CLI 인증 확인
 
