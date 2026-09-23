@@ -5,14 +5,16 @@ import { test } from 'node:test';
 // Static contract regression checks, NOT a PostgreSQL parser, migration run,
 // concurrency test, or hosted RLS verification. P02-T03 must apply the migration
 // and exercise separate anon/authenticated/service-role sessions on a real DB.
-const source = await readFile(new URL('../supabase/migrations/202609210001_leaderboard.sql', import.meta.url), 'utf8');
+const baseSource = await readFile(new URL('../supabase/migrations/202609210001_leaderboard.sql', import.meta.url), 'utf8');
+const top30Source = await readFile(new URL('../supabase/migrations/202609230002_leaderboard_top30.sql', import.meta.url), 'utf8');
+const source = `${baseSource}\n${top30Source}`;
 const sql = source.replace(/--[^\r\n]*/g, '').replace(/\r\n/g, '\n');
 const compact = value => value.replace(/\s+/g, ' ').trim();
 const flat = compact(sql);
-const functions = new Map([...sql.matchAll(/create function (\w+\.\w+)\s*\(([^]*?)\)\s*returns ([^]*?) as \$\$([^]*?)\$\$;/g)]
-  .map(([, name, parameters, declaration, body]) => [name, {
-    parameters: compact(parameters), declaration: compact(declaration), body: compact(body),
-  }]));
+const functions = new Map();
+for (const [, name, parameters, declaration, body] of sql.matchAll(/create (?:or replace )?function (\w+\.\w+)\s*\(([^]*?)\)\s*returns ([^]*?) as \$\$([^]*?)\$\$;/g)) {
+  functions.set(name, { parameters: compact(parameters), declaration: compact(declaration), body: compact(body) });
+}
 function routine(name) {
   const value = functions.get(name);
   assert.ok(value, `Missing SQL function ${name}`);
@@ -88,12 +90,12 @@ test('static: duplicate nicknames, opaque public IDs and safe nonnegative scores
   assert.doesNotMatch(body('public.rank_upsert_profile'), /set .*public_id\s*=/);
 });
 
-test('static: list/me share one snapshot; score-only ties precede exact top 100', () => {
+test('static: list/me share one snapshot; score-only ties precede exact top 30', () => {
   const board = body('public.rank_get_board');
   assert.match(board, /with ranked as materialized/);
   assert.match(board, /rank\(\) over \(order by b\.score desc\) as place/);
   assert.match(board, /where b.rules_version = p_rules_version and p.status = 'active'/);
-  assert.match(board, /order by score desc, achieved_at asc, public_id asc limit 100/);
+  assert.match(board, /order by score desc, achieved_at asc, public_id asc limit 30/);
   assert.match(board, /'me', \(select entry from decorated where user_id = p_user_id\)/);
   assert.match(board, /'isMe', \(user_id = p_user_id\) is true/);
   assert.doesNotMatch(board, /'(?:userId|seed|state|receipt|status|token)'/);
@@ -167,6 +169,15 @@ test('static: checkpoint rejects revival, wrong identity/step count and unsafe s
   assert.match(check, /p_state#>'\{run,protectionSeconds\}' is distinct from '0'::jsonb/);
   assert.match(check, /case when p_terminal then 'result' else 'playing' end/);
   assert.match(check, /pg_catalog.floor\(v_distance\) > 9007199254740991/);
+});
+
+test('static: checkpoint IF condition parenthesizes CASE to protect its internal THEN', () => {
+  // PL/pgSQL reads IF through THEN: parentheses keep the SQL CASE's THEN
+  // inside the expression. This guards the observed hosted parse regression,
+  // but still does not replace applying the migration to real PostgreSQL.
+  const check = body('private.rank_check_state');
+  assert.match(check, /p_state->>'screen' is distinct from \(case when p_terminal then 'result' else 'playing' end\)/);
+  assert.doesNotMatch(check, /is distinct from case\b/);
 });
 
 test('static: terminal finalize returns stored receipt and updates only strict max best', () => {

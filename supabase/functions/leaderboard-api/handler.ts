@@ -7,7 +7,7 @@ import { createInitialState, transition } from '../_shared/game/engine.ts';
 import { acceptedNickname } from '../_shared/nickname-blocklist.ts';
 import { createRateLimiter, type LimitScope } from '../_shared/rate-limit.ts';
 import { createRepository, type RankingRepository } from '../_shared/repository.ts';
-import { digestSpans, objectWithKeys, proofChunk, readJson, rulesVersion, uuid } from '../_shared/validation.ts';
+import { digestSpans, objectWithKeys, proofChunk, readJson, requireEmptyBody, rulesVersion, uuid } from '../_shared/validation.ts';
 import { ProofValidationError, verifyChunk } from '../_shared/verifyProof.ts';
 
 export interface ServerDependencies {
@@ -67,10 +67,7 @@ export function createHandler(deps: ServerDependencies): (request: Request) => P
       };
       if (!Object.hasOwn(scopes, route)) throw new ApiFailure('INVALID_INPUT');
       if (path !== '/leaderboard' && [...url.searchParams].length !== 0) throw new ApiFailure('INVALID_INPUT');
-      if (request.method === 'DELETE' && request.body !== null) {
-        await request.body.cancel();
-        throw new ApiFailure('INVALID_INPUT');
-      }
+      if (request.method === 'DELETE') await requireEmptyBody(request);
       const token = bearer(request);
       let userId: string | null = null;
       let deletionRetry = false;
@@ -96,7 +93,7 @@ export function createHandler(deps: ServerDependencies): (request: Request) => P
         const board = await repository.getBoard(userId, version);
         // The personalized object must never enter a shared/CDN cache.
         headers.set('Cache-Control', 'private, max-age=30');
-        return json({ entries: board.entries.slice(0, 100).map(entry), me: board.me === null ? null : entry(board.me), rulesVersion: board.rulesVersion, fetchedAt: board.fetchedAt });
+        return json({ entries: board.entries.slice(0, 30).map(entry), me: board.me === null ? null : entry(board.me), rulesVersion: board.rulesVersion, fetchedAt: board.fetchedAt });
       }
       const subject = userId!;
       if (route === 'GET /profile') return json(profile(await repository.getProfile(subject)));

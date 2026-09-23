@@ -1,6 +1,6 @@
 # Task: T01 서버 top-30 계약
 
-## Status: in_progress
+## Status: done
 
 ## Goal
 
@@ -65,6 +65,6 @@ Task: T01-server-top30
 
 ## Progress
 
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending

@@ -7,7 +7,7 @@ import { createInitialState, transition } from '../game/engine.ts';
 import { BALANCE } from '../game/balance.ts';
 import { RULES_VERSION } from '../game/rulesVersion.ts';
 import type { RankingRepository, RunCheckpoint } from '../repository.ts';
-import { digestSpans } from '../validation.ts';
+import { digestSpans, MAX_BODY_BYTES } from '../validation.ts';
 
 const USER = '11111111-1111-4111-8111-111111111111';
 const OTHER = '22222222-2222-4222-8222-222222222222';
@@ -91,16 +91,18 @@ Deno.test('anonymous leaderboard read never creates an identity and caches priva
   assert.deepEqual(h.calls.find(call => call.method === 'getBoard')!.args, [null, RULES_VERSION]);
 });
 
-Deno.test('authenticated board preserves tie ranks and my position outside the top 100 without private identifiers', async () => {
+Deno.test('authenticated board caps public rows at 30 and preserves my position outside the list', async () => {
   const h = harness({ repository: { async getBoard() {
-    return { entries: [{ ...entry, rank: 1, isMe: false }, { ...entry, publicId: OTHER, rank: 1, isMe: false }],
-      me: { ...entry, rank: 150, score: 2 }, rulesVersion: RULES_VERSION, fetchedAt: NOW,
+    const entries = Array.from({ length: 31 }, (_, index) => ({ ...entry, publicId: index === 1 ? OTHER : `00000000-0000-4000-8000-${(index + 1).toString(16).padStart(12, '0')}`, rank: index < 2 ? 1 : index + 1, isMe: false }));
+    return { entries,
+      me: { ...entry, rank: 31, score: 2 }, rulesVersion: RULES_VERSION, fetchedAt: NOW,
       userId: USER, lastDigest: 'private' } as Awaited<ReturnType<RankingRepository['getBoard']>>;
   } } });
   const response = await h.request(`/leaderboard?rulesVersion=${RULES_VERSION}`);
   const body = await response.json();
-  assert.deepEqual(body.entries.map((value: { rank: number }) => value.rank), [1, 1]);
-  assert.equal(body.me.rank, 150);
+  assert.equal(body.entries.length, 30);
+  assert.deepEqual(body.entries.slice(0, 2).map((value: { rank: number }) => value.rank), [1, 1]);
+  assert.equal(body.me.rank, 31);
   assert.equal('userId' in body, false);
   assert.equal('lastDigest' in body, false);
   assert.deepEqual(Object.keys(body.entries[0]).sort(), ['publicId', 'nickname', 'score', 'rank', 'achievedAt', 'isMe'].sort());
@@ -276,6 +278,95 @@ Deno.test('profile removal precedes Auth removal and completes its receipt last'
   assert.ok(names.indexOf('deletePlayerData') < names.indexOf('deleteUser'));
   assert.ok(names.indexOf('deleteUser') < names.indexOf('completeDeletion'));
   assert.deepEqual(h.calls.find(call => call.method === 'deleteUser')!.args, [USER]);
+});
+
+Deno.test('gateway-style empty DELETE streams permit deletion only after verified authentication', async () => {
+  for (const length of [undefined, '0']) {
+    const h = harness();
+    const headers: Record<string, string> = { authorization: 'Bearer valid' };
+    if (length !== undefined) headers['content-length'] = length;
+    const stream = new ReadableStream<Uint8Array>({ start(controller) {
+      controller.enqueue(new Uint8Array(0));
+      controller.close();
+    } });
+    const request = new Request('https://project.supabase.co/functions/v1/leaderboard-api/profile', {
+      method: 'DELETE', headers, body: stream,
+    });
+    assert.notEqual(request.body, null);
+    const response = await h.handler(request);
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), { deleted: true });
+    const names = h.calls.map(call => call.method);
+    assert.ok(names.indexOf('authenticate') < names.indexOf('deletePlayerData'));
+    assert.ok(names.indexOf('deletePlayerData') < names.indexOf('deleteUser'));
+    assert.ok(names.indexOf('deleteUser') < names.indexOf('completeDeletion'));
+    assert.equal(request.body!.locked, false);
+  }
+});
+
+Deno.test('an empty DELETE stream without authentication still returns UNAUTHORIZED', async () => {
+  const h = harness();
+  const response = await h.handler(new Request('https://project.supabase.co/functions/v1/leaderboard-api/profile', {
+    method: 'DELETE', body: new ReadableStream<Uint8Array>({ start(controller) { controller.close(); } }),
+  }));
+  assert.equal(response.status, 401);
+  assert.equal((await response.json()).code, 'UNAUTHORIZED');
+  assert.equal(h.calls.length, 0);
+});
+
+Deno.test('DELETE rejects and cancels the first received byte even with Content-Length zero', async () => {
+  for (const size of [1, MAX_BODY_BYTES + 1]) {
+    const h = harness();
+    let pulls = 0;
+    let cancelled = false;
+    const stream = new ReadableStream<Uint8Array>({
+      pull(controller) { pulls += 1; controller.enqueue(new Uint8Array(size)); },
+      cancel() { cancelled = true; },
+    }, { highWaterMark: 0 });
+    const request = new Request('https://project.supabase.co/functions/v1/leaderboard-api/profile', {
+      method: 'DELETE', headers: { authorization: 'Bearer valid', 'content-length': '0' }, body: stream,
+    });
+    const response = await h.handler(request);
+    assert.equal(response.status, 400);
+    assert.equal((await response.json()).code, 'INVALID_INPUT');
+    assert.equal(pulls, 1);
+    assert.equal(cancelled, true);
+    assert.equal(request.body!.locked, false);
+    assert.equal(h.calls.length, 0);
+  }
+});
+
+Deno.test('DELETE bounds zero-byte chunks and tolerates a failed cancellation callback', async () => {
+  const h = harness();
+  let pulls = 0;
+  let cancelled = false;
+  const request = new Request('https://project.supabase.co/functions/v1/leaderboard-api/profile', {
+    method: 'DELETE', headers: { authorization: 'Bearer valid' },
+    body: new ReadableStream<Uint8Array>({
+      pull(controller) { pulls += 1; controller.enqueue(new Uint8Array(0)); },
+      cancel() { cancelled = true; throw new Error('private-stream-diagnostic'); },
+    }, { highWaterMark: 0 }),
+  });
+  const response = await h.handler(request);
+  assert.equal(response.status, 400);
+  assert.equal((await response.json()).code, 'INVALID_INPUT');
+  assert.equal(pulls, 16);
+  assert.equal(cancelled, true);
+  assert.equal(request.body!.locked, false);
+  assert.equal(h.calls.length, 0);
+});
+
+Deno.test('DELETE stream read failures stay INVALID_INPUT and never start deletion', async () => {
+  const h = harness();
+  const request = new Request('https://project.supabase.co/functions/v1/leaderboard-api/profile', {
+    method: 'DELETE', headers: { authorization: 'Bearer valid' },
+    body: new ReadableStream<Uint8Array>({ pull(controller) { controller.error(new Error('private-stream-diagnostic')); } }),
+  });
+  const response = await h.handler(request);
+  assert.equal(response.status, 400);
+  assert.equal((await response.json()).code, 'INVALID_INPUT');
+  assert.equal(request.body!.locked, false);
+  assert.equal(h.calls.length, 0);
 });
 
 Deno.test('failed Auth deletion returns transient failure and leaves the receipt pending for retry', async () => {
