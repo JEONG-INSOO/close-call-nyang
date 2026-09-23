@@ -1,4 +1,64 @@
-# 아슬아슬 냥대리 QA 기록
+# 우당탕탕 냥대리 QA 기록
+
+## 2026-09-23 최신: staging 규칙 동기화 후 실제 smoke 재검증
+
+로컬 규칙 버전이 `nyang-v1-bc732af6f2a7ea66`으로 변경된 뒤 staging 함수가 이전 버전을 사용해 첫 요청이 `RULES_MISMATCH`로 거절됐다. production은 건드리지 않고 staging `leaderboard-api`만 현재 소스로 재배포했다. 재실행한 실제 smoke 보고서는 Git 제외 `output/ranking-staging-87271deb-8290-4f21-93c2-4dc1fb4c8ee3.json`이며 14개 통과·0개 실패·정리 대상 0개, `smokePassed=true`, `taskComplete=false`다. 수동 8개 항목(동시 판 최고값/만료·운영/한도·cron·실제 웹 복구·Hermes)은 여전히 별도 검증이 필요하다.
+
+## 2026-09-22 최신: 승인된 회색 태비 기본 캐릭터
+
+[새 아트 검증 기록](./learning-notes/2026-09-22-grey-tabby-rookie.md)에서 기본 rookie 외형, 같은 SVG의4포즈, 보상 보존과 실제 브라우저 확인을 구분한다. 물리/서버 규칙은 f7245064c9459310 그대로이며 이 아트 작업은 원격 서버 검증 완료를 뜻하지 않는다.
+
+## 2026-09-22 최신: 긴장감과 평면 찌비
+
+새 외형·시드 기반 균형·3배 배경을 로컬 웹에 구현했다. [최신 통합 검증 기록](./learning-notes/2026-09-22-brisk-balance-flat-chibi.md)이 이번 결과와 미검증 범위를 구분한다. 새 로컬 규칙은 `nyang-v1-f7245064c9459310`이며 staging의 옛 배포와 다르다. 아래 인형형 구현/서버 검사는 당시 기록이다. P02-T03 원격 재배포·실기기는 계속 미완료다.
+
+## 2026-09-22 최신 게임 외형·물리 변경
+
+인형형 짧은 팔다리와 빠른65도 균형을 로컬 빌드에 반영했다. [독립 검증 기록](./learning-notes/2026-09-22-plush-cat-and-balance.md)에 최초 실패와 수정, 최종 회귀·브라우저 결과를 기록한다. 새 규칙9fc10a2a8fdd4085는 로컬 원본/서버 사본에만 반영했으며 아래 staging 원격 배포의 옛 규칙과 구분한다. P02-T03/실기기 검증은 여전히 미완료다.
+
+## 최신 상태 · 2026-09-22 staging 실제 배포·부분 검증
+
+사용자 선택1로 기존 프로젝트를 staging으로 재사용했다. 조직 `oxbvynubycrowcazoqzx`의 Free/Owner1명/기존1개 프로젝트와 빈 DB·Auth0·스토리지0·함수0을 확인한 뒤, 서울의 `nyang-staging`(tadokcpealpwjfyjovuy)과 `nyang-production`(fgojrxmpxpzdiwsktjsx)을 준비했다. 후자는 생성만 완료했으며 아직 랭킹 migration/API를 배포하지 않았다. 요금제 변경이나 유료 옵션 선택은 없다.
+
+| 이번 실제 검사 | 결과 / 범위 |
+| :--- | :--- |
+| staging migration/API | 202609210001 적용, leaderboard-api 원격 번들 배포·수정 재배포 성공 |
+| 실제 카탈로그 | private6테이블 RLS/권한, public12RPC 및 private8helper 소유자·search_path·실행권한 통과 |
+| Auth 설정 | 익명 가입 활성, ES256, JWT3600초, 익명 가입30회/시간. CAPTCHA 기존false 유지 |
+| 실제 HTTP smoke | 최신14passed/0failed, 정상 시간 proof·소유권·중복 ACK/동시 finalize·중복닉네임·개명·신고·자기삭제·같은JWT 삭제재시도 |
+| 실제 직접 REST | anon/B의 A점수 INSERT/PATCH4요청 모두406/PGRST106. private스키마 비노출 증거이지 단독 RLS 증거가 아님 |
+| 실제 직접 RPC |3개 기존 RPC×anon/B6요청 모두 정확42501(401/403).404를 통과로 계산하지 않음 |
+| 실제 SQL 역할 검사 | anon/authenticated/service_role의6테이블×4종0행 요청72개, anon/authenticated의12RPC24개 모두42501; 총96개 |
+| 실제 SQL 순위 fixture |101명 전용UUID/고유규칙, 공동1·1·3/top100/내101위/동점시간순/비공개ID 미노출 통과; 전부ROLLBACK |
+| 최종 임시 데이터 정리 | Auth/players/best_scores/runs/reports 모두0, pending삭제0. 완료 삭제표식4는 보관정책에 따라 유지 |
+| 최신 로컬 검사 | typecheck/ranked/server 통과, ranking184/Deno50/tools64/SQLstatic22/Chromium골든3 통과 |
+| 전체 Jest | 최초582pass/1fail, GameScene 단독33pass, 코드변경 없는 전체 재실행583/583(40suites,26.814초) |
+
+최신 실제 smoke 보고서는 Git 제외 `output/ranking-staging-e99040f6-eeea-41e3-a392-15d735bf72b0.json`이다. 기본검사12개 성공 보고서도 보존했다. `evidenceSource=hosted`, `smokePassed=true`, `cleanupRequired=[]`, `signupResponseUncertain=false`이나 **taskComplete=false**다. runner의8개 수동 항목은 자동으로 not_run이며 별도로 실행한 카탈로그/권한/순위 증거는 이 문서와 SQL 파일에 구분해 기록한다.
+
+### 이번 실패와 수정
+
+- 첫 실제 migration은 PL/pgSQL IF 내부 CASE의 THEN 해석 때문에 SQLSTATE42601로 실패했다. 랭킹 객체가 롤백된 것을 확인하고 CASE 식에 괄호를 추가해 재적용했다. 적용된 현재 migration을 다음 SQL 수정에 재작성하지 말고 새 migration을 추가한다.
+- 첫 smoke는 본문 없는 DELETE가 gateway에서 빈 non-null 스트림으로 도착해400이 됐다. null 또는 실제0바이트 종료만 허용하고 실제 첫 바이트/과도한 빈 청크를 거부하는 수정 후50개 Deno 회귀·실제 재검증을 통과했다. 이 최초 실패 때는 Auth 게스트가 생성되지 않았다.
+- Windows npx.cmd 위치 인자로 다중행 SQL을 넘긴 실행은 exit0여도 rows[]만 반환했다. 통과 증거로 인정하지 않았으며 공식 Management API에 UTF-8 JSON의 단일 배치로 다시 보내 assertionsPassed/rollbackCompleted/intentGucsCleared를 확인했다. SQL 파일의 SELECT만 떼어 실행하면 검증이 아니다.
+- 전체 Jest의 커피 표시 opacity 간헐 실패는 단독/전체 재실행에서 재현되지 않았다. 테스트 타이밍 문제로 확정하지 않았고, 애니메이션·물리 코드를 바꾸거나 기대값을 완화하지 않았다. 원인이 해결됐다고 주장하지 않는다.
+
+**남은 검증:** 서로 다른 판의 최대값/동점시간 및 개명·삭제·운영자 변경 경쟁, 만료·보관정리 cron/백업·복구, 실제 Gateway forwarded 신뢰/호출한도·CPU, 실제 설정으로 빌드한 웹의 오프라인/재연결 UI, production 배포·smoke, iPhone/Hermes. 이번 새 웹 export/전체E2E/Doctor/audit는 미실행이다. 로그 보관은 실제 Free entitlement1일이며 서버 로그 없음으로 표현하지 않는다. T03 완료 커밋·P03 이동·푸시는 하지 않았다.
+
+## 이전 상태 · 2026-09-22 Supabase CLI 인증 확인
+
+- 사용자 로그인 완료 후 CLI2.117.0 `projects list`와 `orgs list` 모두 exit0. 조직1개와 기존 서울(ap-northeast-2) ACTIVE_HEALTHY 프로젝트1개를 실제 조회했다. 로컬에는 연결되지 않았다.
+- 조직 이름/프로젝트 상태는 확인했지만 Free plan/남은 슬롯/빈 DB/게임 전용 여부는 목록으로 입증하지 못한다. 기존 프로젝트를 staging으로 재사용할지 사용자 질문 후 대기한다.
+- `organizations list`는 잘못된 하위 명령으로 UnknownSubcommand가 났고, help 확인 후 지원되는 `orgs list`로 수정했다. 인증 실패와 명령 오류를 구분한다.
+- 이번에는 문서·메모리만 변경했다. 앱 테스트를 새로 돌리거나 실제 게스트/Auth/DB/랭킹 검증을 수행하지 않았다. 키 조회·프로젝트 변경/생성·link·migration·deploy·과금·푸시는 없다. 이전 '가입 필요'는 해결됐지만 T03 자체는 여전히 미완료다.
+
+## 최신 추가 검증 · 2026-09-22 제목 변경
+
+- 표시 이름/Expo 메타데이터/공유 문구를 `우당탕탕 냥대리`로 변경했다. config/share/presentation/settings 4 suites,48개 검사 통과. slug/bundle ID/공개 URL 유지 회귀1개를 추가했다.
+- `web:export`와 `typecheck` 통과. 새 production dist로 `playwright test e2e/storage.spec.ts`를 실행해 desktop1280×720/phone844×390/small667×375의 저장·복구·새 제목 공유 문구9/9를39.0초에 통과했다. 전체 E2E/전체 Jest를 재실행한 것은 아니다.
+- 새 dist의 `ranking:env-check -- --allow-unconfigured` 통과(텍스트3/바이너리5 제외). 실제 서버 연결 준비 완료를 뜻하지 않는다. 온라인/장면 fixture 번들은 이번에 재빌드하지 않았고 이9개 검사는 새 기본 dist만 사용한다.
+- 기존 제목은 런타임 소스/테스트에서 제거했으며, 과거 청사진에는 당시 이름이 남을 수 있다. 최신 결정이 우선한다. 생성된 dist/test-results는 Git에 넣지 않는다. 이번 실행으로 기본 Playwright 결과 파일은 제목 변경9개 검사의 결과로 교체됐다.
+- 사용자 최신 답변에 맞춰 Supabase 계정 상태를 없음/가입 필요로 정정했다. 회원가입·서버 생성·배포·푸시·T03 완료 커밋은 하지 않았다. 실제 iPhone/호스팅 검증은 대기한다.
 
 확인일: **2026-09-21 (KST)**. P01의 로컬 게임·production 웹 검증 기록이며 출시 승인 기록이 아닙니다. 온라인 닉네임/순위, GitHub Pages 공개, iPhone/스토어 배포는 아직 완료하지 않았습니다.
 
@@ -159,3 +219,24 @@ Metro가 이전 공개 환경변수를 재사용한 실패는 두 export의 `--c
 **not-run:** 실제 Supabase SQL/RLS/권한·원자성·Auth/익명 가입·서명키·삭제 응답 유실·실서버 속도 제한/CPU/보관 정리, 공개 Pages 배포, iPhone Hermes 진단/Expo Go/Safari/TestFlight·성능·소리·실제100% 사람 완주. Deno45·SQL정적21·별도 Node/Deno/Chromium 골든의 T01 기록은 역사적 결과이며 이번에 서버 수정 없이 재실행했다고 주장하지 않습니다. 신규 dev 진단의 SHA 경계는 Jest에서 Node로 모의했으므로 Hermes 통과가 아닙니다.
 
 여러 브라우저 탭 간 원자적 proof 쓰기는 보장하지 않아 온라인 게임은 한 탭에서 사용하도록 기록했습니다. 만료된 삭제 재시도 JWT의 운영 복구는 T03 확인 대상입니다. npm 설치 감사의 기존 중간등급10개는 그대로이며 이번 Expo Doctor/별도 audit 재실행은 없습니다. GitHub 푸시·실서버/Pages/EAS 배포·스토어 문구 확인은 수행하지 않았습니다.
+
+## 2026-09-22 · P02-T03 로컬 운영 검증 도구 준비
+
+**실제 Supabase 배포/통합 검증은 not_run입니다.** 사용자는 후속 답변에서 Supabase 계정이 없다고 정정했습니다. 서울·Free의 `nyang-staging`/`nyang-production` 분리 승인은 유지합니다. 먼저 가입, 이후 실제 CLI 로그인/조직·슬롯·ref 확인이 필요합니다.
+
+| 이번에 실행한 검사 | 결과 | 증거 범위 |
+| :--- | :--- | :--- |
+| `test:ranking-tools` |60/60 pass | hosted runner15 + public env45, 네트워크/가상시계 주입, simulated만 해당 |
+| `typecheck` / `test:ci` | pass /582/582 |40 suites, 최종43.146초 |
+| `ranked:check` / `test:ranking` | pass /184/184 | 규칙 사본8개 일치, 기존12 suites |
+| `server:check` / `test:server-api` | pass /45/45 | Deno 타입과 Request/로컬 JWT, 외부 DB/Auth는 모의 |
+| `ranked:browser` |3/3 pass | Chromium153.0.8010.12, nyang-v1-2093a8b42d416f8a, Node/Deno/브라우저 수치 일치 |
+| `ranking:env-check -- --allow-unconfigured` | pass, local-only | 기존 dist 텍스트3개, 바이너리5개 제외; 새 export/전체 E2E는 미실행 |
+| 설정 없는 `ranking:verify -- --environment staging` | 예상 exit2/not_run | DISTINCT_PROJECT_REFS_REQUIRED, 실제 요청/계정 생성 없음 |
+| 설정 없는 기본 `ranking:env-check` | 예상 exit1 | 운영 공개 설정 누락을 숨기지 않음 |
+| CLI2.117.0 version/deploy/login/db push help | pass | 원격 번들 --use-api, --dry-run/--skip-vault 확인 |
+| CLI `projects list` | blocked | LegacyPlatformAuthRequiredError, 로그인 필요 |
+
+도구 검사는 명시적 쓰기 허가/대상 불일치 차단, 실제 엔진 기반 proof 생성, 누적 실제 시간 대기, ACK 변조·재전송, 가입/확정/삭제 실패·응답 유실과 자기 계정 정리, 보고서 비밀값 제외를 확인합니다. 정적 키 검사 오탐(SDK 필드명 상수)은 좁게 수정했습니다. 호스팅 보고서는 항상 `taskComplete=false`이며 미구현 수동 검사는 `not_run`으로 남습니다.
+
+**아직 not_run:** 프로젝트 생성, 실제 SQL 문법 실행/카탈로그 권한/직접 REST·RPC 차단, 동시 트랜잭션·공동순위101명 fixture, 실제 Auth/서명키/탈퇴/호스팅 proof, Gateway·CPU·한도, cron/백업/복구, 실제 staging 웹 연결·통신 복구, production 연결, iPhone/Hermes. 기존 E2E28pass11skip과 SQL 정적21/Doctor는 해당 이전 기록일 뿐 이번에 다시 실행한 증거가 아닙니다. 실제 프로젝트 비밀값·키를 발급/저장하지 않았고 배포·푸시·Task 완료 커밋도 하지 않았습니다.
