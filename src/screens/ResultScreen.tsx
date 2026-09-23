@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
   primaryText: { color: palette.ink, fontSize: 16, fontWeight: '800' },
   secondary: { flex: 1, minHeight: 50, paddingHorizontal: 10, borderRadius: 16, borderWidth: 1, borderColor: palette.border, alignItems: 'center', justifyContent: 'center' },
   secondaryText: { color: palette.ink, fontSize: 14, fontWeight: '600' },
-  revive: { minHeight: ui.minTapSize, alignItems: 'center', justifyContent: 'center', marginTop: 9, borderRadius: 14, backgroundColor: palette.lavender },
+  revive: { minHeight: ui.minTapSize, alignItems: 'center', justifyContent: 'center', marginTop: 9, marginBottom: 12, borderRadius: 14, backgroundColor: palette.lavender },
   services: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 },
   serviceButton: { flex: 1, minWidth: 80, minHeight: ui.minTapSize, paddingHorizontal: 6, alignItems: 'center', justifyContent: 'center', borderRadius: 13, borderWidth: 1, borderColor: palette.border },
   serviceText: { color: palette.ink, fontSize: 12, lineHeight: 18, fontWeight: '600', textAlign: 'center' },
