@@ -4,10 +4,11 @@ import { palette } from '../theme/tokens';
 
 export interface TitleScreenProps {
   bestScore: number; onStart(): void; onSettings(): void; onCharacters?(): void;
+  onResume?(): void; resumeAvailable?: boolean;
   nickname?: string; onNickname?(): void; onLeaderboard?(): void; startBusy?: boolean; onlineNotice?: string | null;
 }
 
-export function TitleScreen({ bestScore, onStart, onSettings, onCharacters, nickname, onNickname, onLeaderboard,
+export function TitleScreen({ bestScore, onStart, onSettings, onCharacters, onResume, resumeAvailable = false, nickname, onNickname, onLeaderboard,
   startBusy = false, onlineNotice }: TitleScreenProps) {
   const best = Number.isFinite(bestScore) ? Math.max(0, Math.floor(bestScore)) : 0;
   return (
@@ -27,6 +28,11 @@ export function TitleScreen({ bestScore, onStart, onSettings, onCharacters, nick
           <Text style={styles.startText}>{startBusy ? ko.starting : ko.start}</Text>
           <Text style={styles.arrow} accessibilityElementsHidden>→</Text>
         </Pressable>
+        {resumeAvailable && onResume && <Pressable testID="resume-saved-button" accessibilityRole="button"
+          accessibilityLabel={ko.resumeSaved} onPress={onResume}
+          style={({ pressed }) => [styles.resumeSaved, pressed && styles.pressed]}>
+          <Text style={styles.resumeSavedText}>{ko.resumeSaved}</Text>
+        </Pressable>}
         <View style={styles.services}>
           {onNickname && <Pressable testID="title-nickname" accessibilityRole="button" accessibilityLabel={nickname ? `${ko.nicknameEdit}: ${nickname}` : ko.nicknameSet}
             onPress={onNickname} style={({ pressed }) => [styles.serviceButton, pressed && styles.pressed]}>
@@ -65,6 +71,8 @@ const styles = StyleSheet.create({
   recordValue: { color: palette.ink, fontSize: 20, fontWeight: '800', fontVariant: ['tabular-nums'] },
   start: { minHeight: 54, borderRadius: 17, backgroundColor: palette.mint, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20 },
   startText: { color: palette.ink, fontSize: 18, fontWeight: '800' },
+  resumeSaved: { minHeight: 48, marginTop: 10, borderRadius: 15, borderWidth: 1, borderColor: palette.border, justifyContent: 'center', alignItems: 'center' },
+  resumeSavedText: { color: palette.ink, fontSize: 16, fontWeight: '700' },
   arrow: { color: palette.ink, fontSize: 25 },
   services: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 10 },
   serviceButton: { flexGrow: 1, flexBasis: '40%', minHeight: 44, padding: 8, justifyContent: 'center', alignItems: 'center', borderRadius: 14, borderWidth: 1, borderColor: palette.border },

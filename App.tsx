@@ -8,6 +8,7 @@ import { LandscapeGate, useWebPortraitGate } from './src/components/LandscapeGat
 import { PauseOverlay } from './src/components/PauseOverlay';
 import { getFeatureFlags } from './src/config/app';
 import { scoreOf } from './src/game/difficulty';
+import type { GameState } from './src/game/types';
 import { useGameController } from './src/game/useGameController';
 import { ko } from './src/i18n/ko';
 import { useKeyboardInput } from './src/input/useKeyboardInput';
@@ -29,6 +30,7 @@ import { playHaptic } from './src/services/haptics';
 import { getRewardedAdAvailability } from './src/services/rewardedAds';
 import { shareScore, type ShareResult } from './src/services/share';
 import { usePreferences } from './src/services/usePreferences';
+import { clearGameResume, loadGameResume, resumeStateFromGameState, saveGameResume } from './src/services/gameResume';
 import { palette } from './src/theme/tokens';
 
 type Panel = 'settings' | 'characters' | 'share' | 'nickname' | 'leaderboard' | 'diagnostics' | null;
@@ -47,6 +49,8 @@ export default function App(): React.JSX.Element {
   const [runCharacter, setRunCharacter] = useState<CharacterId>(DEFAULT_CHARACTER_ID);
   const [panel, setPanel] = useState<Panel>(null);
   const [shareResult, setShareResult] = useState<ShareResult | null>(null);
+  const [resumeState, setResumeState] = useState<GameState | null>(null);
+  const [resumeLoading, setResumeLoading] = useState(true);
   const panelRef = useRef<Panel>(null);
   const mounted = useRef(true);
   const sharing = useRef(false);
@@ -72,12 +76,35 @@ export default function App(): React.JSX.Element {
     return () => { mounted.current = false; };
   }, []);
 
+  useEffect(() => {
+    let active = true;
+    void loadGameResume().then(saved => {
+      if (!active) return;
+      setResumeState(saved);
+      setResumeLoading(false);
+    });
+    return () => { active = false; };
+  }, []);
+
+  const persistResume = useCallback(() => {
+    const saved = resumeStateFromGameState(controller.readState());
+    if (!saved) return;
+    setResumeState(saved);
+    void saveGameResume(saved);
+  }, [controller]);
+
+  const clearResume = useCallback(() => {
+    setResumeState(null);
+    void clearGameResume();
+  }, []);
+
   const pause = useCallback(() => {
     ranking.cancelStart();
     controller.clearInput();
     controller.resetFrameClock();
     controller.dispatch({ type: 'PAUSE' });
-  }, [controller, ranking.cancelStart]);
+    persistResume();
+  }, [controller, persistResume, ranking.cancelStart]);
   useKeyboardInput(controller);
   useAppLifecycle(pause);
 
@@ -111,9 +138,26 @@ export default function App(): React.JSX.Element {
     const screen = controller.readState().screen;
     if (screen !== 'title' && screen !== 'result') return;
     services.current.audio.unlock();
+    clearResume();
     void ranking.start();
-  }, [controller, ranking.start, portraitBlocked]);
-  const home = useCallback(() => { ranking.leaveRun(); controller.dispatch({ type: 'HOME' }); }, [controller, ranking.leaveRun]);
+  }, [clearResume, controller, ranking.start, portraitBlocked]);
+  const home = useCallback(() => {
+    const current = controller.readState();
+    if (current.screen === 'paused' || current.screen === 'playing' || current.screen === 'countdown' || current.screen === 'ad') {
+      persistResume();
+    } else {
+      clearResume();
+    }
+    ranking.leaveRun();
+    controller.dispatch({ type: 'HOME' });
+  }, [clearResume, controller, persistResume, ranking.leaveRun]);
+  const resumeSaved = useCallback(() => {
+    if (!resumeState || portraitBlocked || panelRef.current !== null) return;
+    if (!controller.restore(resumeState)) return;
+    controller.dispatch({ type: 'RESUME' });
+    setResumeState(null);
+    void clearGameResume();
+  }, [controller, portraitBlocked, resumeState]);
   const resume = useCallback(() => {
     if (!portraitBlocked && panelRef.current === null && controller.readState().screen === 'paused') {
       services.current.audio.unlock();
@@ -175,6 +219,7 @@ export default function App(): React.JSX.Element {
             characterId={runCharacter} reduceMotion={preferences.value.settings.reduceMotion} />
           {screen === 'title' && <TitleScreen bestScore={preferences.value.bestScore} onStart={start}
             onSettings={openSettings} onCharacters={openCharacters} startBusy={ranking.startBusy}
+            onResume={resumeSaved} resumeAvailable={!resumeLoading && resumeState !== null}
             nickname={online.profile?.nickname} onNickname={() => openOnline('nickname')}
             onLeaderboard={() => openOnline('leaderboard')}
             onlineNotice={ranking.localNotice ?? (online.status === 'unconfigured' ? '랭킹 연결을 준비 중이에요. 지금은 기기에 기록됩니다.' : online.error)} />}

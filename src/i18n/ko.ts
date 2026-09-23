@@ -6,6 +6,7 @@ export const ko = {
   retry: '다시 도전',
   pause: '일시정지',
   resume: '이어하기',
+  resumeSaved: '저장된 게임 이어하기',
   settings: '설정',
   close: '닫기',
   music: '배경 음악',

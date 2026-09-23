@@ -29,6 +29,7 @@ export interface GameController {
   subscribeEffects(listener: (effects: GameEffect[], state: GameState) => void): () => void;
   subscribeTicks(listener: (tick: PlayedTick) => void): () => void;
   dispatch(action: ControlAction): void;
+  restore(state: GameState): boolean;
   setInput(source: InputSource, id: string, direction: -1 | 1, down: boolean): void;
   clearInput(): void;
   advanceFrame(timestampMs: number): void;
@@ -270,6 +271,15 @@ export function createGameController(flags: { mockAdsEnabled: boolean }): GameCo
     subscribeEffects: (listener) => subscribe(effectListeners, listener),
     subscribeTicks: (listener) => subscribe(tickListeners, listener),
     dispatch,
+    restore(nextState) {
+      if (disposed || nextState.screen !== 'paused') return false;
+      state = { ...nextState, run: nextState.run ? { ...nextState.run, event: nextState.run.event ? { ...nextState.run.event } : null } : null };
+      input.clear();
+      resetClock();
+      publishSnapshot();
+      publishFrame();
+      return true;
+    },
     setInput(source, id, direction, down) {
       if (!disposed) input.set(source, id, direction, down);
     },
