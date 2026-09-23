@@ -1,5 +1,5 @@
 import { BALANCE } from '../balance';
-import { difficultyAt, scoreOf, speedAt, stageOf } from '../difficulty';
+import { difficultyAt, driftRateAt, scoreOf, speedAt, stageOf } from '../difficulty';
 
 describe('distance milestones', () => {
   test.each([
@@ -56,16 +56,24 @@ describe('initial difficulty tuning', () => {
     const expected = {
       level,
       speedMps: BALANCE.baseSpeedMps * (1 + 0.7 * Math.log1p(extra / 85)),
-      instability: 7.6 + 0.9 * level,
-      disturbance: 1.8 + 0.22 * level,
-      eventStrength: 1.6 + 0.5 * level,
-      eventIntervalSeconds: Math.max(4, 6 / (1 + 0.2 * level)),
+      instability: 7.6 + 1.1 * level,
+      disturbance: 1.8 + 0.32 * level,
+      eventStrength: 1.6 + 0.65 * level,
+      eventIntervalSeconds: Math.max(4, 6 / (1 + 0.3 * level)),
     };
     const actual = difficultyAt(distance);
     // The explicit log series preserves tuning to floating-point precision.
     for (const key of Object.keys(expected) as Array<keyof typeof expected>) {
       expect(actual[key]).toBeCloseTo(expected[key], 12);
     }
+  });
+
+  test('drift stays at its opening speed through 15m, then cycles faster', () => {
+    expect(driftRateAt(0)).toBe(1);
+    expect(driftRateAt(15)).toBe(1);
+    expect(driftRateAt(50)).toBeGreaterThan(1);
+    expect(driftRateAt(100)).toBeGreaterThan(driftRateAt(50));
+    expect(driftRateAt(Number.MAX_VALUE)).toBeLessThanOrEqual(2.8);
   });
 
   test('speed and force continue rising beyond 100 and 200 without a gameplay cap', () => {

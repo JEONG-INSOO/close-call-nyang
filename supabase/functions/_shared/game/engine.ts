@@ -154,7 +154,7 @@ function playingTick(state: GameState, dt: number, input: InputState): Transitio
     const pressure = adaptationAt(time);
     const instability = 2.2 + pressure * (difficulty.instability - 2.2);
     const disturbanceAmplitude = 0.18 + pressure * (difficulty.disturbance - 0.18);
-    const disturbance = disturbanceAmplitude * balanceDrift(time, run.seed);
+    const disturbance = disturbanceAmplitude * balanceDrift(time, run.seed, run.distanceM);
     const eventForce = !protectedNow && run.event?.phase === 'active'
       ? run.event.direction * run.event.strength : 0;
     const acceleration = instability * stableSin(run.angleRad)

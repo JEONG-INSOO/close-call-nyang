@@ -26,11 +26,18 @@ export function difficultyAt(distanceM: number): Difficulty {
   return {
     level,
     speedMps: speedAt(distance),
-    instability: 7.6 + 0.9 * level,
-    disturbance: 1.8 + 0.22 * level,
-    eventStrength: 1.6 + 0.5 * level,
-    eventIntervalSeconds: Math.max(4, 6 / (1 + 0.2 * level)),
+    instability: 7.6 + 1.1 * level,
+    disturbance: 1.8 + 0.32 * level,
+    eventStrength: 1.6 + 0.65 * level,
+    eventIntervalSeconds: Math.max(4, 6 / (1 + 0.3 * level)),
   };
+}
+
+/** After coffee, the drift waveform itself cycles faster as distance rises. */
+export function driftRateAt(distanceM: number): number {
+  const distance = safeDistance(distanceM);
+  const level = stableLog1p(Math.max(0, distance - 15) / 35);
+  return 1 + Math.min(1.8, 0.85 * level);
 }
 
 function smoothstep(value: number): number {
@@ -60,9 +67,11 @@ function noiseAt(time: number, seed: number, period: number, salt: number): numb
 }
 
 /** Stateless bounded drift: it never consumes the separate event RNG stream. */
-export function balanceDrift(elapsedSeconds: number, seed: number): number {
+export function balanceDrift(elapsedSeconds: number, seed: number, distanceM = 0): number {
   const time = Number.isFinite(elapsedSeconds) ? Math.max(0, elapsedSeconds) : 0;
   const normalizedSeed = Number.isFinite(seed) ? seed >>> 0 : 1;
-  return 0.65 * noiseAt(time, normalizedSeed, 0.8, 0x243f6a88)
-    + 0.35 * noiseAt(time, normalizedSeed, 1.15, 0xb7e15162);
+  const rate = driftRateAt(distanceM);
+  const pressureTime = time * rate;
+  return 0.65 * noiseAt(pressureTime, normalizedSeed, 0.8, 0x243f6a88)
+    + 0.35 * noiseAt(pressureTime, normalizedSeed, 1.15, 0xb7e15162);
 }
