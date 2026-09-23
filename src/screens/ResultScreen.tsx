@@ -92,7 +92,7 @@ export function ResultScreen({ score, bestScore, canRevive, onRetry, onHome, onS
 const styles = StyleSheet.create({
   root: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center', padding: ui.gutter, backgroundColor: palette.overlay, zIndex: 4 },
   card: { width: '100%', maxWidth: 380, maxHeight: '100%', borderRadius: 26, backgroundColor: palette.paper, borderWidth: 1, borderColor: palette.border, overflow: 'hidden' },
-  scroll: { flexShrink: 1 },
+  scroll: { flexShrink: 1, paddingVertical: 8 },
   content: { paddingHorizontal: 20, paddingTop: 28, paddingBottom: 28 },
   title: { color: palette.ink, fontSize: 21, lineHeight: 29, fontWeight: '800', textAlign: 'center' },
   scoreBlock: { alignItems: 'center', marginTop: 15 },
