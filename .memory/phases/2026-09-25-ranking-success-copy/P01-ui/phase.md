@@ -4,7 +4,7 @@
 
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| T01 | in_progress | 완료 문구와 상세행 제거 | [T01](./T01-success-copy.md) |
+| T01 | done | 완료 문구와 상세행 제거; 7a7e5b5 | [T01](./T01-success-copy.md) |
 
 ## Progress
-- done: 0/1 (active: T01)
+- done: 1/1 (return to Pages P01-T03)

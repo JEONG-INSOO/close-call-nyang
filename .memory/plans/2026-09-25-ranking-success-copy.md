@@ -7,6 +7,6 @@
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | in_progress | 안내·회귀검사 | [P01](../phases/2026-09-25-ranking-success-copy/P01-ui/phase.md) |
+| P01 | done | 안내·회귀검사; 7a7e5b5 | [P01](../phases/2026-09-25-ranking-success-copy/P01-ui/phase.md) |
 
 완료 후 기존 Pages P01-T03으로 복귀. 시작 작업트리 clean. 생성물/output/env는 커밋하지 않는다.

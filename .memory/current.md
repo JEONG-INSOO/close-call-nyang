@@ -1,5 +1,9 @@
 # Current Context
 
+## Latest checkpoint — result ranking notice simplified
+- User-requested UI task completed7a7e5b5: exact 랭킹등록완료! only; removed receipt score/best/rank detail row and unused copy. Server-confirmed submitted+receipt guard, local scores, leaderboard/API untouched. UI72/ranking186/typecheck/ranked8/mockexport/phone-landscape online2pass(exit0), screenshot/diffcheck pass. Own3QA servers stopped after Windows cleanup wait; no existing server/data changes.
+- Resume Pages T03 below. New UI exists in local source/mockfixture only; public Pages remains1059db2. No push/deployment this task. Learning note/decision/plan recorded. Fullpublic/native/offline checks still separate.
+
 ## Latest checkpoint — Pages T02 completed; public browser smoke next
 - T02 completion commit bd2f322. User-approved normal push deployed1059db2588b72dc2ce4f65c04d0de812205e728b through run36023721062: build/deploy success; CIJest659/ranking186/Chromium34pass11skip, types/parity/export/envscan pass. Public URL https://jeong-insoo.github.io/close-call-nyang/ HTTP200/root; referencedJSc8206f2bbd30f58831acdcb59307d841 HTTP200/javascript. Publicvariables2readbackmatched, Pagesworkflow verified.
 - Active Pages T03: desktop+844x390+667x375 actualpublic browser core play/pause/retry, assets/console, guest publictop30 and friendlyoutage. Do not create production identity or submit scores without separate scoped write approval. CI/local-browser evidence is not public-origin QA. Offline/reconnect/native remain separate. Completion/docs/bookkeeping commits after1059db2 are LOCAL, not another deployed code revision. Earlier in-progress/approval-wait notes are historical.
