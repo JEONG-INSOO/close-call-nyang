@@ -1,0 +1,35 @@
+# Keep the credential/build exclusions from .gitignore.
+node_modules/
+.expo/
+dist/
+coverage/
+test-results/
+playwright-report/
+blob-report/
+output/
+*.tsbuildinfo
+npm-debug.log*
+.env
+.env.*
+!.env.example
+*.p8
+*.p12
+*.mobileprovision
+credentials.json
+supabase/.temp/
+supabase/.branches/
+.supabase/
+.codeburn/
+.codex/
+.DS_Store
+Thumbs.db
+
+# Private working notes and non-app tooling are not build inputs.
+/.agents/
+/.memory/
+/docs/
+/.github/
+/examples/
+/test
+/CODEBURN-SETUP.md
+/supabase/

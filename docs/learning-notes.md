@@ -1,5 +1,27 @@
 # 우당탕탕 냥대리 학습노트
 
+## 2026-09-25 · TestFlight 준비: 프로젝트 연결과 서명은 별개
+
+`distribution: 'store'`는TestFlight/AppStore에올릴서명앱을준비하는프로필이다. ExpoGo코드를복사하는것이아니다. eas.json에서remote빌드번호/autoIncrement와광고·진단false를설정했고Apple앱ID는확인전비워두었다. EASprojectId는Expo프로젝트식별자이고AppleTeamID/ascAppId를대체하지않는다.
+
+실제 `eas init`는원격프로젝트생성은성공했지만TypeScript동적config자동수정은실패했다. 전체실패로보고다시생성하지않고응답의실제ID를app.config.ts에반영한뒤project:info로동일계정/slug/ID를확인했다. 이는부분성공을확인하고재개하는예다.
+
+.easignore를추가하면.gitignore보다우선하므로기존env·서명파일·output제외도반드시복사해야한다. 별도검사2개가이를확인하고프로필의store/noDevClient/광고·진단false를검사한다. 타입/Expo설정20검사도통과했다. 실제빌드archive검사·서명·빌드·업로드·TestFlight처리·기기QA는아직하지않았다. 추가확인항목은아이콘과EAS운영공개env,기존Apple앱유무이며비밀값을빌드env로복사하지않는다.
+
+학습질문: 왜TestFlight에store프로필이필요할까? EASID와Apple앱ID는어떻게다를까? .easignore추가시기존비밀제외규칙을빼면어떤문제가생길까? 이번준비는스토어심사제출이나배포완료가아니다.
+
+## 2026-09-25 · Expo Go 테스트와 iOS 배포는 다르다
+
+ExpoGo는 기존호스트앱에서 게임JS를 실행하는 개발환경이고, TestFlight는 우리bundleIdentifier로 서명·빌드된독립앱을 시험하는 단계다. PC로그인과Apple서명계정도 서로 다르다. 현재ExpoCLI는insoojeong인증정상이며 iPhone도같은Expo계정으로로그인해야한다.
+
+호환성검사가Expo57.0.24에~57.0.25를권장해 package.json과lock을함께갱신했다. SDKmajor업그레이드가아니며 종속CLI/JSI패치도npm이해결했다. install--check최신호환,Doctor21/21,typecheck,Jest665/44suites,ranked8통과. npm audit기존moderate10건은별도부채로남겼고 `audit fix --force`로무관한변경을만들지않았다.
+
+처음로그인조회UnexpectedServerError/패키지조회EACCES는sandbox네트워크제한이었다. 허용된네트워크로다시확인하자로그인정상으로확인됐다. 오류한번으로토큰만료라단정하면불필요한재로그인을요청하게된다.
+
+이번개발서버는프로세스환경만설정하고dotenv/운영backend를배제했다. `EXPO_PUBLIC_REPLAY_DIAGNOSTICS=true`는기존Hermes골든검사진입을켜며광고는false다. 서버status200/manifest200은기기가실제로동작한다는증거가아니다. 실제터치/햅틱/앱전환/저장/3golden결과는사용자iPhone에서확인해야한다. 체크리스트와재실행명령은 [iOS 준비](./ios-release.md)에기록했다.
+
+학습질문: 웹검사만으로iPhone동작을보장할수있나? Expo로그인과Apple서명은무엇이다른가? `!__DEV__` 제출조건때문에Go와TestFlight랭킹검사가왜나뉠까? 기기검증전Task는미완료이며EAS프로젝트/서명/스토어자료준비와소개문구재승인이남아있다.
+
 ## 2026-09-25 · 결과 버튼을 동일한 세로 목록으로 만들기
 
 ResultScreen의 처음으로/다시도전/랭킹/닉네임/공유/캐릭터/설정, 조건부 광고·재전송 버튼에 공통 button/buttonText 스타일을 적용했다. 핵심은 `width: '100%', minHeight: 50, flexShrink: 0`와 부모의 `flexDirection: 'column', gap: 10`이다. 모양·글자·색상은 공유하고 각 onPress/노출/disabled 조건은 유지한다. 재전송 버튼은 안내 박스 밖으로 옮겨 나머지와 너비를 맞췄다.

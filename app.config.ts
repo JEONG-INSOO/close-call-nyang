@@ -5,6 +5,10 @@ import type { ExpoConfig } from 'expo/config';
 const config: ExpoConfig = {
   name: '우당탕탕 냥대리',
   slug: 'close-call-nyang',
+  owner: 'insoojeong',
+  extra: {
+    eas: { projectId: '315e87a2-f405-4f65-ae45-c91f1d2c59bf' },
+  },
   version: '1.0.0',
   orientation: 'landscape',
   userInterfaceStyle: 'light',

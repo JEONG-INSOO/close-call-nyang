@@ -18,6 +18,11 @@ describe('getFeatureFlags', () => {
 });
 
 describe('Expo configuration', () => {
+  it('links to the verified EAS project without inventing Apple signing identities', () => {
+    expect(expoConfig.owner).toBe('insoojeong');
+    expect(expoConfig.extra?.eas?.projectId).toBe('315e87a2-f405-4f65-ae45-c91f1d2c59bf');
+    expect(expoConfig.ios?.appleTeamId).toBeUndefined();
+  });
   const originalGithubPages = process.env.GITHUB_PAGES;
   afterEach(() => {
     if (originalGithubPages === undefined) delete process.env.GITHUB_PAGES;
