@@ -10,6 +10,24 @@ import { ResultScreen } from '../ResultScreen';
 import { TitleScreen } from '../TitleScreen';
 
 describe('screen presentation contracts', () => {
+  it('gives every result action the same geometry and preserves each callback', async () => {
+    const actions = { onRetry: jest.fn(), onHome: jest.fn(), onShare: jest.fn(), onRevive: jest.fn(),
+      onSettings: jest.fn(), onCharacters: jest.fn(), onLeaderboard: jest.fn(), onNickname: jest.fn(), onRetrySubmission: jest.fn() };
+    const view = await render(<ResultScreen score={15} bestScore={20} canRevive submissionState="pending" {...actions} />);
+    const buttons = screen.getAllByRole('button');
+    expect(buttons).toHaveLength(9);
+    for (const button of buttons) {
+      expect(button).toHaveStyle({ width: '100%', minHeight: 50, flexShrink: 0, borderRadius: 14, backgroundColor: palette.paper });
+      await fireEvent.press(button);
+    }
+    for (const callback of Object.values(actions)) expect(callback).toHaveBeenCalledTimes(1);
+    await view.rerender(<ResultScreen score={15} bestScore={20} canRevive={false} startBusy {...actions} />);
+    expect(screen.queryByTestId('revive-button')).toBeNull();
+    expect(screen.getByTestId('retry-button')).toBeDisabled();
+    await fireEvent.press(screen.getByTestId('retry-button'));
+    expect(actions.onRetry).toHaveBeenCalledTimes(1);
+  });
+
   it('offers start, settings and character actions through the supplied callbacks', async () => {
     const start = jest.fn(); const settings = jest.fn(); const characters = jest.fn();
     await render(<TitleScreen bestScore={125.9} onStart={start} onSettings={settings} onCharacters={characters} />);
