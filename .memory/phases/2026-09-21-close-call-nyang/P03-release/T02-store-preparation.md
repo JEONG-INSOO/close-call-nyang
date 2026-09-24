@@ -1,9 +1,17 @@
 # Task: T02 아이콘·스토어 초안·EAS 설정
 
-## Status: in_progress
+## Status: done
 
 ## Goal
 게임과 일관된 벡터 아이콘, 사용자가 검토할 한국어 스토어 초안, Windows에서 사용할 EAS 배포 설정을 로컬에서 재현 가능하게 준비한다.
+
+## 2026-09-25 execution clarification (overrides historical details below)
+- User chose new AppStoreConnect app (option1); no existinggameapp. Newapp/signing requires officialAppleauthentication; thisTask only preparesassets/drafts, noReview.
+- Currenttitle 우당탕탕 냥대리 and Top30 override all historical oldtitle/top100 below. Currentrookie is grey tabby/brightfriendlyface/suit/ID; new original flatSVG icon represents thisconcept, not a replacement for in-game PNG assets. Icon remains draft for finaluserreview.
+- EASconnection/storeprofile alreadycompleted a7d0343. Preserve actualowner/projectID and existing .easignore. PriorGoQA expo57.0.25patch is knownscopedpreparation; keep and include validatedpatch in finalsourcecommit, no majorupgrade.
+- Required new verification scripts: scripts/render-branding.mjs exports renderBranding/verifyBranding (SVGsource with embedded-free shapes only, sharp PNG1024RGB+48RGB), scripts/release-preparation.test.mjs (iconconfig, metadata lengths/draft/nullinput/pricing, Top30, EASflags), scripts/verify-web.mjs (Pagesindex+bundledJS/assets+favicon withactualcontent, optional policy/support only ifpresent). package scripts branding:render,branding:verify,test:release,web:verify.
+- Docs/ios-release.md exists: append realresults, don'treplace GoQA notes. support/privacy URLs inmetadata are intended targets, NOT yetlive/approved; clearly pending, no AppReview untilcompleted. Storemetadata/privacyinventory are drafts, legaloperator/contact/territories/price remainnull; don'tinfer publicsupportemail fromgit.
+- Productionpublicenv registration may follow existingEASpermission using onlyexactproductionURL/publishable allowlist; never servicekey. Ifperformed, verifyreadbackwithoutprintingvalue. No EASbuild untilicon/sourcearchive/env/signing checked. CurrentPages/ExpoGoservers preserved; no automaticpush/redeploy.
 
 ## Decision Summary
 - Character collection amendment: icon/launch identity uses the default rookie (user option2), sharing the same original SVG style as diligent/veteran. Local-only completedRuns0..10 and selectedCharacter are settings/progress data, not server rank data; privacy inventory and review notes must distinguish them. Unlock1 at the first100% run and unlock3 at10 distinct runs; never claim character stat advantages. User still reviews final store copy/screenshots later.
@@ -88,11 +96,11 @@
 - config에 `extra.eas.projectId`를 넣는 계정 연결은 다음 Task의 실제 EAS 인증 후 수행한다. `ITSAppUsesNonExemptEncryption`은 실제 라이브러리/기능 검토 전 미리 false로 단정하지 않는다. 오디오 설정은 녹음/백그라운드 권한 미요구를 유지한다.
 
 ## Acceptance Criteria
-- [ ] 아이콘이 게임 캐릭터와 일관되고 PNG 크기/불투명 조건을 만족한다.
-- [ ] 스토어 문구와 캡처 계획이 draft로 보관되며 모든 미정 운영 입력은 null이다.
-- [ ] EAS production에 개발 client·가상 광고 활성화·실제 광고 SDK가 없고 bundle ID가 정확하다.
-- [ ] EAS/Pages의 공개 backend env 계약과 서버 비밀 경계가 명확하고, 원격 데이터/신고/삭제를 설명하는 개인정보 근거 및 심사 노트가 있다.
-- [ ] `docs/ios-release.md`와 학습노트가 아이콘 생성, Expo Go/독립 빌드/심사 제출의 차이를 설명한다.
+- [x] 아이콘이 게임 캐릭터와 일관되고 PNG 크기/불투명 조건을 만족한다.
+- [x] 스토어 문구와 캡처 계획이 draft로 보관되며 모든 미정 운영 입력은 null이다.
+- [x] EAS production에 개발 client·가상 광고 활성화·실제 광고 SDK가 없고 bundle ID가 정확하다.
+- [x] EAS/Pages의 공개 backend env 계약과 서버 비밀 경계가 명확하고, 원격 데이터/신고/삭제를 설명하는 개인정보 근거 및 심사 노트가 있다.
+- [x] `docs/ios-release.md`와 학습노트가 아이콘 생성, Expo Go/독립 빌드/심사 제출의 차이를 설명한다.
 
 ## Validation
 - 작업 폴더 `D:\GrillmeEDU`: `npm.cmd run branding:render`, `npm.cmd run branding:verify` — 생성/메타데이터 검사 통과, 결과 이미지 직접 확인.
@@ -115,7 +123,10 @@ Task: T02-store-preparation
 ```
 
 ## Progress
+- 2026-09-25 complete: originalSVG/1024+48opaqueRGBPNG/sharp0.35.4/config/store drafts/privacyinventory/7releasechecks implemented. Bothimage sizes visually inspected; userfinalapprovalpending. UserselectednewAppleapp; no actualAppleappcreated.
+- Validation actual: Jest666/44suites, release7, Doctor21/21, typecheck, ranked8, brandingrender/check, safepublicconfig allpassed. Productionpublicenv2registeredtoEAS+readbackmatched; nosecretoutput. Exactproductionenv exportviawebwrapper passed, JS1/assets17/ICO48 and envscan10passed. Policy/supportabsentexplicitpending. InitialPNG-onlywebcheckcorrectedtoExpoICO withregression. ExistingGoSDK57.0.25patchincluded; noengine/serverchange/push.
+- TestFlightbuild/signing/AppReview/nativeQA remainnot_run; those areT03/T04, notthisdrafttask. ExistingT01incompletepreserved.
 - 2026-09-25 TestFlight bootstrap a7d0343 완료: 실제EAS연결/storeprofile/ignore경계/configtests 준비. 전체Task아님. 사용자existingAppleapp질문답변대기; 아이콘/운영publicenv/필수자료 미완료. 현재제목우당탕탕냥대리/Top30/승인rookiePNGart가위legacy문구를우선한다. 실제서명/빌드업로드미실행. ExpoGo실기기결과not_run유지.
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- commit: this task completion commit (SHA recorded in current/phase afterward)

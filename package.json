@@ -10,6 +10,10 @@
     "test": "jest",
     "test:ci": "jest --ci --runInBand",
     "web:export": "node scripts/export-web.mjs",
+    "web:verify": "node scripts/verify-web.mjs",
+    "branding:render": "node scripts/render-branding.mjs",
+    "branding:verify": "node scripts/render-branding.mjs --check",
+    "test:release": "node --test scripts/release-preparation.test.mjs scripts/eas-config.test.mjs",
     "web:serve": "node scripts/serve-web.mjs --port 4173 --base /close-call-nyang",
     "e2e": "playwright test",
     "fixtures:build": "node scripts/build-scene-fixtures.mjs",
@@ -31,7 +35,7 @@
     "@expo/metro-runtime": "~57.0.16",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@supabase/supabase-js": "2.116.0",
-    "expo": "~57.0.24",
+    "expo": "~57.0.25",
     "expo-asset": "~57.0.18",
     "expo-audio": "~57.0.5",
     "expo-clipboard": "~57.0.2",
@@ -59,6 +63,7 @@
     "deno": "2.9.6",
     "jest": "29.7.0",
     "jest-expo": "~57.0.5",
+    "sharp": "0.35.4",
     "test-renderer": "1.2.0",
     "typescript": "~6.0.3"
   }

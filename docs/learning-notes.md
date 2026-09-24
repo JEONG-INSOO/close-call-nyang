@@ -1,5 +1,26 @@
 # 우당탕탕 냥대리 학습노트
 
+## 2026-09-25 · 원본 아이콘에서 배포 파일까지 검증하기 (P03-T02)
+
+### 핵심 변경과 이유
+
+- `assets/branding/icon.svg`는 게임 신입 고양이의 회색 태비·밝은 표정·정장·사원증·커피 특징을 담은 별도 원본 아이콘이다. 실제 게임 PNG를 교체하지 않았다. 아이콘은 큰 크기뿐 아니라 48px에서도 식별돼야 하므로 두 출력을 직접 확인했다. 아직 사용자 최종 승인 전 초안이다.
+- `scripts/render-branding.mjs`는 고정한 sharp0.35.4로 `resize(...).flatten(...).removeAlpha()`를 수행한다. 원본 SVG → 불투명 RGB PNG → app.config의 icon/favicon → Expo 빌드 순서다. `--check`는 생성하지 않고 크기·채널·원본을 다시 렌더링한 픽셀을 비교한다. 검사기가 몰래 파일을 고치면 누락을 발견할 수 없기 때문이다.
+- `scripts/verify-web.mjs`는 HTML의 Pages 경로와 JS/에셋/파비콘이 실제 파일인지 확인한다. `store/`는 소개 초안과 개인정보 근거, `release-inputs.json`은 사용자가 아직 주지 않은 값을 null로 구별한다. `status: 'draft'`는 제출 승인이라는 오해를 막는 상태다.
+- EAS production에는 검증된 공개 URL/publishable 키 두 개만 등록해 읽기 결과를 대조했다. 클라이언트 키는 앱에 공개되므로 DB 접근 권한을 보장하는 비밀이 아니다. RLS/서버 검증과 service-role 비밀의 분리는 그대로 유지했다.
+
+### 실제 검사와 실패에서 배운 점
+
+Jest666/44 suites, release7, Doctor21/21, typecheck, ranked8, 아이콘 생성/픽셀 검사/육안 확인 통과. 실제 production-config 웹 export 후 JS1/asset17/favicon 검사와 환경·알려진 비밀 패턴10 검사 통과. `git diff --check`도 확인한다. Expo Go의 이전57.0.25 패치를 함께 보존해 소스에 기록했다.
+
+처음에는 PNG 입력이 그대로 웹에 나올 것으로 가정했지만 Expo는 favicon.ico로 변환했다. sharp가 ICO를 읽지 못한 오류를 앱 오류로 오해하지 않고 설치된 Expo 인코더를 확인했다. 32비트 BGRA/48px 프레임/알파와 필요 시 마스크를 검사하도록 고쳤으며 잘린 ICO·투명 프레임 실패 테스트를 추가했다. **설정 입력 형식과 빌드 출력 형식은 다를 수 있다.**
+
+### 알아야 할 점 / 범위 밖
+
+개인정보/지원 페이지는 아직 없어 검사 결과에 pending으로 표시한다. 이를 전체 출시 성공으로 숨기지 않는다. 실제 Apple 팀/앱 ID·서명·빌드·TestFlight 처리·실기기 검사는 다음 Task이고 App Review는 사용자 최종 승인 후다. 소개 문구/아이콘을 검토받아야 하며 웹 화면을 실제 iPhone 캡처로 대체하지 않는다. 서버 정책·게임 난이도·랭킹 프로토콜은 변경하지 않았다.
+
+추가 발견: 기존 의존성 audit moderate10건과 공개 지원/개인정보 페이지 미완료는 계속 남는다. 범위 밖이라 강제 의존성 업그레이드/공개 게시하지 않았다. 학습 연습: 아이콘 SVG 색을 임시 변경하면 `branding:verify`가 실패하는 이유, 공개 키가 있어도 누구나 점수를 쓸 수 없는 이유를 설명해 보자.
+
 ## 2026-09-25 · TestFlight 준비: 프로젝트 연결과 서명은 별개
 
 `distribution: 'store'`는TestFlight/AppStore에올릴서명앱을준비하는프로필이다. ExpoGo코드를복사하는것이아니다. eas.json에서remote빌드번호/autoIncrement와광고·진단false를설정했고Apple앱ID는확인전비워두었다. EASprojectId는Expo프로젝트식별자이고AppleTeamID/ascAppId를대체하지않는다.

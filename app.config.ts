@@ -10,6 +10,7 @@ const config: ExpoConfig = {
     eas: { projectId: '315e87a2-f405-4f65-ae45-c91f1d2c59bf' },
   },
   version: '1.0.0',
+  icon: './assets/branding/icon.png',
   orientation: 'landscape',
   userInterfaceStyle: 'light',
   platforms: ['ios', 'web'],
@@ -19,6 +20,7 @@ const config: ExpoConfig = {
     buildNumber: '1',
   },
   web: {
+    favicon: './assets/branding/favicon.png',
     bundler: 'metro',
     output: 'single',
   },

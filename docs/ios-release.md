@@ -1,5 +1,18 @@
 # iOS 출시 준비와 Expo Go 검사
 
+## 2026-09-25 · 새 앱 선택 / P03-T02 준비 완료
+
+사용자는 기존 App Store Connect 앱이 없어 새 앱 준비를 선택했다. **아직 Apple 앱 생성·서명·IPA 빌드·TestFlight 업로드를 실행한 것은 아니다.** 다음 P03-T03에서 공식 인증과 팀/앱 식별자를 실제 확인한다. 비밀번호/2FA는 채팅에 보내지 않는다.
+
+- `assets/branding/icon.svg`는 회색 태비·정장·사원증·커피의 새 원본 아이콘 초안이다. 게임의 PNG 캐릭터는 그대로 유지했다. `npm.cmd run branding:render`로 sharp0.35.4를 사용해 RGB 불투명 1024/48 PNG를 생성한다. `branding:verify`는 재생성 없이 원본과 픽셀을 비교한다. 두 크기 육안 확인 완료, 사용자 최종 디자인 승인은 별도다.
+- store/에 한국어 소개·심사 안내·개인정보 데이터 근거·실제 iPhone 캡처 계획을 저장했다. `status: draft`, 운영자/공개 연락처/가격/지역/Apple 식별자 null. 개인정보/지원 URL은 **예정 주소**이며 이번 export에도 아직 없다. App Review 전 실제 게시·문구 승인 필요.
+- 기존 빈 EAS production 환경을 확인한 다음 `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` 두 개만 project/plaintext로 등록하고 CLI readback을 메모리에서 대조했다. Pages와 같은 운영 ref `fgojrxmpxpzdiwsktjsx`. 키 내용은 문서/출력/Git에 남기지 않았으며 서버 키는 등록하지 않았다. 광고/진단 false는 기존 eas.json 프로필 유지.
+- 실제 검증: branding 생성·읽기검사/1024·48 이미지 확인, release 검사7, 전체 Jest666(44 suites), typecheck, Doctor21/21, ranked canonical8 통과. 개발 public config에 Pages baseUrl 없음·가로·iPhone-only·bundle/icon 정확.
+- 올바른 production 공개 입력과 두 개발 flag=false로 `scripts/export-web.mjs`(web:export와 동일 진입점)를 실행했다. dist의 JS1/참조 asset17/불투명48프레임 ICO 검사 및 공개 설정·알려진 비밀 패턴 검사10 통과. 현재 로컬 dist는 운영 설정이며 **사이트 재배포는 하지 않았다**. 게임을 시작해도 온라인 참여/등록은 별도 사용자 행위다.
+- 초기 web:verify는 PNG만 예상해 Expo의 ICO에서 실패했다. 실제 Expo 인코더의 16/32/48 BGRA 출력·마스크 생략 형식을 읽고 검사를 교정했으며 깨진/투명 ICO 회귀 검사를 추가했다. 서버나 게임 로직 문제는 아니었다.
+
+남은 사항: Apple 인증·서명 권한·암호화 수출 답변 검토·빌드 업로드 archive 확인·실제 클라우드 빌드·TestFlight 처리 상태 확인·실제 iPhone/Hermes/온라인 QA. 기존 npm audit moderate10은 강제 변경하지 않았다. Go 실행과 독립 앱, TestFlight 업로드와 App Review는 각각 별도 검증이다.
+
 ## TestFlight 준비 · 2026-09-25 후속
 
 - 사용자 요청으로 TestFlight 준비를 진행했다. EAS CLI24.7.0, 계정insoojeong; 실제 프로젝트 `315e87a2-f405-4f65-ae45-c91f1d2c59bf` 생성/연결 후 project:info의 `@insoojeong/close-call-nyang` 일치 확인.
