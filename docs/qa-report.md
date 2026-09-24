@@ -1,5 +1,12 @@
 # 우당탕탕 냥대리 QA 기록
 
+## 2026-09-25 · 동일규격 결과 버튼 공식 재배포
+
+- UI커밋1e0961f + 완료문구7a7e5b5, 실제배포SHAa4c5ee250ff148f8c938682ccf8e39abc7b064a7. Actions36027176616 build/deploy success. CIJest665/44suites,ranking186/12suites,Chromium37pass/11intentional skip/0fail,타입/parity/export/envscan 통과.
+- 공개origin에서 독립새context3개(1280x720,844x390,667x375): 실제키입력종료 후7버튼 x/width/height50/radius/background 일치, 세로간격>=9, 전버튼viewport접근 및 retry 성공. uncaught/console error/HTTP>=400/서버쓰기 모두0. Supabase 비GET 요청은 검사실패하도록 차단했으며 시도도0. 공개JS b317607e7c3e95f74779ba3c6c9296af HTTP200. output/result-stack-public-{desktop,phone,small}.png 육안확인(small), 원본이미지는ignored.
+- 랭킹 완료 문구 검사에서 첫 raw문자열 검색false는 압축JS의 유니코드escape/셸한글 전달을 고려하지 않은 검사한계였다. 코드포인트+escape정규화 후 새문구true/옛상세문구false. 실제production 등록/랭킹상세/전체PagesT03/offline/native 통과를 주장하지 않는다.
+- 로컬typecheck/UI73/ranked8/webexport/새레이아웃3브라우저통과. Windows cleanup 대기는 직접시작한3서버만PID/명령 확인 후종료, runner exit0. 학습노트 기록.
+
 ## 2026-09-25 · T02 GitHub Pages 첫 공개 배포 성공
 
 - 승인된 대상 JEONG-INSOO/close-call-nyang PUBLIC/main. 운영 공개변수2개 등록/일치확인, Pages build_type=workflow. 비밀키 출력/등록 및 production 사용자 데이터 변경 없음.

@@ -1,5 +1,11 @@
 # GitHub Pages 배포 준비
 
+## 2026-09-25 · 결과 버튼 통일 재배포
+
+사용자가 공식 사이트 재배포를 요청했다. 랭킹 완료 문구7a7e5b5와 단일열 공통규격 버튼1e0961f를 포함한 main `a4c5ee250ff148f8c938682ccf8e39abc7b064a7`를 정상 push했다. [실행36027176616](https://github.com/JEONG-INSOO/close-call-nyang/actions/runs/36027176616)의 build/deploy 모두success. 전체Jest665/44suites, ranking186/12suites, Chromium37passed/11의도적skip(3.7분), 타입/사본/운영export/envscan 통과. 기존 Pagesworkflow/운영공개변수는 유지했으며 서버설정과 사용자 데이터는 변경하지 않았다.
+
+공개document/JS HTTP200, 새 JS `index-b317607e7c3e95f74779ba3c6c9296af.js`. 실제공개1280x720/844x390/667x375에서 종료버튼7개 모두 같은x/width/height50/색상/radius, 세로간격>=9, 마지막버튼스크롤접근/재도전 통과. 세션별 console/pageerror/HTTP오류/서버쓰기0. 유니코드 이스케이프를 해석한 공개JS에서 랭킹등록완료! 존재와 옛검증된성공률 문구 부재 확인. 실제production 계정으로 제출한 검증은 아니며, 전체PagesT03/네이티브 검증은 별도다. 이후 결과기록 커밋은 로컬이며 배포SHA는 위a4c5ee2다.
+
 ## 2026-09-25 · 승인된 첫 공개 배포
 
 사용자가 공개 배포를 승인한 뒤 정확한 공개 저장소와 main을 재확인했다. 두 production 공개 변수만 등록하고 값 일치를 메모리에서 확인했으며, Pages API에서 `build_type: workflow`와 대상 URL을 확인했다. 서버 비밀키는 등록하지 않았다.
