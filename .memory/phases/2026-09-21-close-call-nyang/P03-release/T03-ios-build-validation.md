@@ -1,6 +1,12 @@
 # Task: T03 실제 iOS 빌드·TestFlight·기기 검증
 
-## Status: pending
+## Status: in_progress
+
+## 2026-09-25 handoff
+- PrerequisiteP03-T02completed3a53ee3; Jest666/release7/Doctor21/types/ranked8/productionexport+envscanpassed. OriginalT01support/privacyandphysicalGoQAremainincomplete, notwaived.
+- UserchosefreshAppleapp; actualApplelogin/team/signing/ascIDnotverified. EAS24.7.0 existingproject315e87a2-f405-4f65-ae45-c91f1d2c59bf @insoojeong/close-call-nyang alreadylinked, productionpublicenv2registered+matched. Don'trecreateEASproject or printsecretvalues.
+- Currenttitle우당탕탕냥대리/Top30 overrideshistoricalTop100below. NativeimageSDK57 macos-tahoe-26.5-xcode-26.6 alreadyconfigured; preserveunlesscurrentevidencerequireschange.
+- Next officialuser-operatedAppleauth viaEAScredentials; then actualteam/ascID, archiveinspection/exportcompliance review/sourcecommit beforebuild. No credentials inchat/Git, noAppReview, noexternaltesterinvites, nopaidplanchange. NoIPA/submit/deviceQAexecutedatthishandoff.
 
 ## Goal
 Windows에서 EAS로 독립 iPhone 빌드를 생성해 App Store Connect에 업로드하고, 실제 기기 플레이와 iOS·웹 공통 온라인 순위/닉네임·삭제를 같은 live backend에서 검증한 증거를 남긴다.

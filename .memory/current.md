@@ -1,5 +1,10 @@
 # Current Context
 
+## Latest checkpoint — P03-T02 completed 3a53ee3; Apple authentication next
+- User option1: no existing AppStoreConnect game app, prepare new one. Decision recorded; actual Apple app NOT created. P03-T02 completion3a53ee3 contains original flat grey-tabby iconSVG/1024+48 opaquePNG, pinnedsharp0.35.4, render/read-onlypixelcheck, configicons, storedrafts/nulloperatinginputs/privacyinventory/screenshots pending, knownExpo57.0.25patch.
+- Actualchecks: Jest666/44suites, release7, Doctor21/21, types, ranked8, render/check+visual1024/48 passed. Productionpublicenv wrapperexport passed; distJS1/assets17/ExpoICO48, envscan10 passed. InitialPNG-onlycheckfixedafterreadingactualExpoICOencoder. EASproductionwasempty; exactpublicURL/publishable2 registered+readbackmatched withoutvalues. No serverkey/upload/APIwrite/GitHubpush. Existingserversnotstopped; dist nowproduction-config but publicsiteunchangeda4c5ee2.
+- ActiveP03-T03: officialAppleauth/team/signing required; userpaidmembershipreportnotactualverification. Next user-operated EAScredentials CLI (password/2FA onlylocally), then accurateIDs, archiveinspection/exportcompliance/sourcecommit, cloudbuild and exactIDsubmit. No build/review/Appleappcreated yet. Storetext/icon stilldraft; userfinalapprovalrequired. Privacy/supportURLspending and fullGo/Hermes/physicalQA not_run. T01notcompleted or waived. Do not markT03done withoutactualTestFlightavailable+QA.
+
 ## Latest checkpoint — EAS bootstrap completed; Apple app choice pending
 - Config task a7d0343 complete: EAS24.7.0 actualproject315e87a2-f405-4f65-ae45-c91f1d2c59bf @insoojeong/close-call-nyang created/verified; app.config owner+extra exactID, storeprofile(remoteversions/autoIncrement/Node24.19.0/Xcode26.6/ads+diagnosticsfalse), .easignore boundaries, config20/EAS2/typecheck/diffcheckpass.
 - Active originalP03-T02 remainingbranding/store/buildpreparation. UseraskedTestFlight, NOT AppReview. Asked async whether AppStoreConnect gameapp alreadyexists; noanswer yet. No Appleauth/team/appID/signing/build/submit/envupload done. Need useranswer then officialApplelogin, don't askpassword/2FAinchat. iPhoneQA remainsunverified; previousExpoGo task NOTcompleted. Existingexpo57.0.25package/lockdirtyretained deliberately, mustsourcecommitbeforeactualbuild; do not discard.
@@ -80,9 +85,10 @@
 [P03 출시 준비](./phases/2026-09-21-close-call-nyang/P03-release/phase.md)
 
 ## Active Task
-[T02 아이콘·스토어·빌드 준비](./phases/2026-09-21-close-call-nyang/P03-release/T02-store-preparation.md)
+[T03 실제 iOS 빌드·TestFlight·기기 검증](./phases/2026-09-21-close-call-nyang/P03-release/T03-ios-build-validation.md)
 
 ## Status
+- Active status: in_progress (P03-T03). Latest completed task: P03-T02 3a53ee3. Historical statuses below do not override this pointer.
 - Latest completed request (2026-09-22): rookie를 생성 이미지 PNG 부품(우측 3/4, 다리·팔 절반, 표정 평소/위험40도/넘어짐)으로 교체, commit 5cf570d. [결정](./decisions/2026-09-22-side-view-walk.md), [학습노트](../docs/learning-notes/2026-09-22-side-view-walk.md). Jest650, Chromium34pass/11skip/0fail(3.4min), rules f7245064c9459310 불변, 4173=dist index-298ee86edf82ff1bbdd0079e1339a79f.js. 보상 2종은 P02(시트 필요). 사용자 요청: 다른 사람이 테스트할 환경(예/아니오만 답함=네) — 방식 미정.
 - Latest completed request: 정면 연결 걷기 T01 커밋 7f6173f (Jest650, fullbrowser34pass/11skip/0fail 3.9min, 4173=dist index-d7faa3a667dbf16d952226333ed3dcd8.js). 옆모습 재설계 전 되돌아올 기준점.
 - Latest completed request: 승인된 회색 태비 신입사원 기본 rookie 구현 완료, source commit ce13976. 큰 밝은 눈·미소·회색 줄무늬·정장·사진/ID001 목걸이 사원증·맨발 젤리. 보상 두 종/해금/물리/15%커피 유지. 동일 SVG의 걷기/물병/달리기/메모 시트와 승인 원본을 docs/art에 저장. [학습노트](../docs/learning-notes/2026-09-22-grey-tabby-rookie.md).
@@ -123,7 +129,7 @@
 - T01 Pages CI gate 구현·검증 완료. Production bundle 검사 통과, typecheck/ranked/Jest/ranking/Playwright 통과. T02 원격 GitHub 인증/production backend preflight로 이동.
 
 ## Next Step (IMPORTANT)
-TestFlight요청에따라EASbootstrap a7d0343완료. 사용자에게질문한기존AppStoreConnect앱유무답변확인후P03-T02아이콘/운영publicenv/필수자료를준비한다. legacy청사진oldtitle/top100/vector를현재우당탕탕냥대리/top30/승인rookieart에맞춰명시적으로정합화한다. Apple로그인/팀/앱ID/서명은공식경로로사용자참여하에확인하고정확한build를TestFlight에업로드한다. 아직build/upload/Go실기기검증완료아님. 가격/지원처/문구/심사승인은미확정값을추측하지않음.
+P03-T02완료3a53ee3, 사용자새Apple앱선택확정. 사용자의PowerShell에서 `npx.cmd --yes eas-cli@24.7.0 credentials --platform ios` → production → 공식Apple로그인/팀확인. 암호/2FA는사용자터미널에만입력하고다음메뉴문구만공유; 기존인증서폐기/다운로드/푸시알림키생성금지. 다음P03-T03에서실제팀/앱ID, archive검사/암호화사용검토/source확정후클라우드빌드→정확한buildIDsubmit→TestFlightavailable/실기기검증. 아이콘/스토어draft최종승인과T01지원/개인정보는별도남음. 아직IPA업로드/Apple앱생성/기기QA실행아님. 공개심사제출·외부초대·과금·GitHubpush권한확대금지.
 
 ## Resume Existing T03 After Requested Change
 이 절은 과거 복귀 지시다. T03은4a56230으로 완료됐으며 현재 Active Task의 Pages T02를 따른다. Production 합성점수 삽입, 인증정보 덮어쓰기, 추가과금/프로젝트생성은 계속 금지한다. 자동푸시하지 않는다.
