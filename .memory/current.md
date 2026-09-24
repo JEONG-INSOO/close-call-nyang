@@ -1,5 +1,10 @@
 # Current Context
 
+## Latest checkpoint — uniform result buttons officially redeployed
+- User requested same-style single-column all result buttons then officialredeploy. UI1e0961f done and deploymentb7d8343 done. Normalpush a4c5ee250ff148f8c938682ccf8e39abc7b064a7 deployed through run36027176616 build/deploy success. CIJest665/ranking186/Chromium37pass11skip/types/parity/productionexport/envscan pass.
+- Actualpublic1280x720/844x390/667x375: 7buttons equalwidth/x/height50/radius/color, verticalgap>=9, allscrollreachable/retry, page/console/HTTPerrors0, productionwrites0. JSb317607e7c3e95f74779ba3c6c9296af HTTP200, normalizednewsuccesscopy included/oldreceiptcopy absent. Publicsite https://jeong-insoo.github.io/close-call-nyang/ now includes latestUI/copy. Result-only smoke is NOT fullPagesT03/native proof.
+- Resume existing PagesT03 below. This completion and bookkeeping docs remainlocal after deployedSHA; worktreeclean. No secret/remoteconfig/API/rules change, no productiontestidentity. OwnQA servers closed. Learningnotesupdated.
+
 ## Latest checkpoint — result button stack ready for approved redeployment
 - User explicitly requested equal single-column result buttons and official redeployment. T01completed1e0961f: UI73/typecheck/ranked8/webexport/3viewport Chromium pass, screenshot verified. Existing copy7a7e5b5 included. No API/game/data change.
 - Active new T02 deploy: normal mainpush to exact existingrepo, monitor exactSHA CI and actualpublic3viewport result controls. User authorized push/redeployment, not secret changes or production identity writes. Original PagesT03 fullpublic QA remains deferred, return after this subplan.
@@ -56,13 +61,13 @@
 - T03 remains in_progress. Next: Usage/backup-restore evidence and remaining operational checks; then Pages configuration/deploy and public-origin browser verification. Expo Go/iPhone/Hermes handoff remains P03. Live no-click browser retry is now verified; do not repeat account creation just to re-establish this result.
 
 ## Active Plan
-[결과 버튼 정렬 및 배포](./plans/2026-09-25-result-button-stack.md)
+[GitHub Pages 웹 배포 및 공개 검증](./plans/2026-09-24-pages-hosted-web.md)
 
 ## Active Phase
-[P01 UI와 배포](./phases/2026-09-25-result-button-stack/P01-release/phase.md)
+[P01 Pages release](./phases/2026-09-24-pages-hosted-web/P01-pages-release/phase.md)
 
 ## Active Task
-[T02 결과 화면 배포](./phases/2026-09-25-result-button-stack/P01-release/T02-deploy.md)
+[T03 Pages live smoke](./phases/2026-09-24-pages-hosted-web/P01-pages-release/T03-pages-live-smoke.md)
 
 ## Status
 - Latest completed request (2026-09-22): rookie를 생성 이미지 PNG 부품(우측 3/4, 다리·팔 절반, 표정 평소/위험40도/넘어짐)으로 교체, commit 5cf570d. [결정](./decisions/2026-09-22-side-view-walk.md), [학습노트](../docs/learning-notes/2026-09-22-side-view-walk.md). Jest650, Chromium34pass/11skip/0fail(3.4min), rules f7245064c9459310 불변, 4173=dist index-298ee86edf82ff1bbdd0079e1339a79f.js. 보상 2종은 P02(시트 필요). 사용자 요청: 다른 사람이 테스트할 환경(예/아니오만 답함=네) — 방식 미정.
@@ -105,7 +110,7 @@
 - T01 Pages CI gate 구현·검증 완료. Production bundle 검사 통과, typecheck/ranked/Jest/ranking/Playwright 통과. T02 원격 GitHub 인증/production backend preflight로 이동.
 
 ## Next Step (IMPORTANT)
-Pages T02 완료 bd2f322; 실제 배포 SHA1059db2/run36023721062 성공. 다음 Active T03 청사진대로 공개 URL에서3viewport 브라우저 게임/asset/공개랭킹/outage를 검증한다. 신규 production 계정/점수쓰기는 별도 승인 없이는 금지한다. 공개read와 로컬network simulation을 실제서버장애로 표현하지 않는다. Offline/reconnect와 Expo Go/Hermes·개인정보·스토어 최종승인은 별도 범위다.
+최신 결과UI 재배포b7d8343완료, 실제배포SHAa4c5ee2/run36027176616. 기존 PagesT03 청사진으로 복귀해 공개랭킹read/outage 등 남은범위를 검증한다. 결과화면3viewport/asset/retry는 새공개버전에서 이미 확인했으므로 근거를 재사용한다. 신규 production 계정/점수쓰기는 별도승인없이는 금지한다. 공개read와 로컬network simulation을 실제서버장애로 표현하지 않는다. Offline/reconnect와 Expo Go/Hermes·개인정보·스토어최종승인은 별도다.
 
 ## Resume Existing T03 After Requested Change
 이 절은 과거 복귀 지시다. T03은4a56230으로 완료됐으며 현재 Active Task의 Pages T02를 따른다. Production 합성점수 삽입, 인증정보 덮어쓰기, 추가과금/프로젝트생성은 계속 금지한다. 자동푸시하지 않는다.
