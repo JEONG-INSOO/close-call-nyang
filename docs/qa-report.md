@@ -1,5 +1,12 @@
 # 우당탕탕 냥대리 QA 기록
 
+## 2026-09-25 · T02 GitHub Pages 첫 공개 배포 성공
+
+- 승인된 대상 JEONG-INSOO/close-call-nyang PUBLIC/main. 운영 공개변수2개 등록/일치확인, Pages build_type=workflow. 비밀키 출력/등록 및 production 사용자 데이터 변경 없음.
+- 일반 push adacc499 -> `1059db2588b72dc2ce4f65c04d0de812205e728b`. [run36023721062](https://github.com/JEONG-INSOO/close-call-nyang/actions/runs/36023721062) build/deploy 모두success. 전체Jest659/44suites, ranking186/12suites, Chromium34passed/11의도적skip/실패0(3.2분), typecheck/ranked/productionexport/envscan 통과. 로컬QA dist를 업로드하지 않고 CI에서 새로 빌드했다.
+- 실제 GET https://jeong-insoo.github.io/close-call-nyang/ 최종URL 동일,200/text/html/root존재. 참조JS `index-c8206f2bbd30f58831acdcb59307d841.js`200/application/javascript,1849173bytes. 이는 HTTP와 CI 검증이며 공개origin 실제브라우저/랭킹/오프라인 복구는 다음T03에서 별도로 확인한다.
+- T02완료. 공개웹 전체검증/Expo Go·iPhone/Hermes/스토어 검증 완료 주장은 하지 않는다. 조회 도중 PowerShell jq 인용/Get-Date -AsUTC 지원 차이와 rg wildcard 오류는 조회명령 호환성 문제였으며, 실제CI/build/deploy는 실패하지 않았다.
+
 ## 2026-09-25 · T03 최종 인수 검증
 
 최종 결과: Chromium34passed/11의도적skip/0failed/0flaky(약3.5분), 3숫자재생golden 일치. 직접 시작한3개 QA서버 종료. Deno50/도구67/SQL27/전체Jest659·44suites/앱·서버타입/사본8/웹3종빌드·local-onlyenvscan/diff 통과. 최종 두환경 읽기 확인은 각각15:43:49/56UTC. T03 완료로 판정하며 공개Pages·iPhone/Hermes·스토어 검증은 인계 범위로 남긴다. 이번 dist는 local-only QA산출물이므로 production설정을 넣어 다시 빌드한 뒤 배포해야 한다.

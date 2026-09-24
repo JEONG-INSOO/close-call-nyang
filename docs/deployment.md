@@ -1,5 +1,13 @@
 # GitHub Pages 배포 준비
 
+## 2026-09-25 · 승인된 첫 공개 배포
+
+사용자가 공개 배포를 승인한 뒤 정확한 공개 저장소와 main을 재확인했다. 두 production 공개 변수만 등록하고 값 일치를 메모리에서 확인했으며, Pages API에서 `build_type: workflow`와 대상 URL을 확인했다. 서버 비밀키는 등록하지 않았다.
+
+`adacc499`에서 `1059db2588b72dc2ce4f65c04d0de812205e728b`로 일반 push를 완료했다. [실제 배포 실행](https://github.com/JEONG-INSOO/close-call-nyang/actions/runs/36023721062)의 build/deploy 모두 success다. CI에서 Jest659/44suites, ranking186/12suites, Chromium34passed/11의도적skip(3.2분), 타입·사본동기화·운영설정·번들 검사 통과. 2026-09-25 KST 공개 URL 최종 응답200/text/html, root 존재, HTML이 참조한 JS `index-c8206f2bbd30f58831acdcb59307d841.js`도200/application/javascript를 확인했다.
+
+상태: **웹 공개 배포 성공**. 실제 공개 origin의 브라우저 플레이/랭킹 및 네트워크 복구 검증은 다음 T03이며, iPhone/Expo Go나 App Store 출시완료를 의미하지 않는다. 배포 SHA는 위1059db2이고, 이후 검증기록 문서 커밋은 별도다. 아래의 Pages404/변수없음/승인대기는 이전 점검 당시의 기록이다.
+
 ## 대상
 
 - GitHub 저장소: `JEONG-INSOO/close-call-nyang`

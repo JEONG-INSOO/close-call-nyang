@@ -1,6 +1,6 @@
 # Task: T02 GitHub Pages 배포
 
-## Status: in_progress
+## Status: done
 
 ## Goal
 
@@ -37,10 +37,10 @@ GitHub repository Pages 설정을 Actions 방식으로 확인하고 main의 검�
 
 ## Acceptance Criteria
 
-- [ ] repository identity와 Actions Pages source가 확인된다.
+- [x] repository identity와 Actions Pages source가 확인된다.
 - [x] production backend와 공개 변수 준비를 검증했거나, 부족한 prerequisite를 정확하게 기록한다.
-- [ ] public deployment는 workflow 성공과 대상 commit SHA로 입증된다.
-- [ ] 공개 사이트가 검증되기 전 production-ready로 표시하지 않는다.
+- [x] public deployment는 workflow 성공과 대상 commit SHA로 입증된다.
+- [x] 공개 사이트가 검증되기 전 production-ready로 표시하지 않는다.
 
 ## Validation
 
@@ -62,9 +62,13 @@ Task: T02-pages-deploy
 
 ## Progress
 
+- Completed2026-09-25KST: Actions36023721062 build/deploy success, SHA1059db2588b72dc2ce4f65c04d0de812205e728b. CIJest659/ranking186/Chromium34pass11skip0fail plus types/parity/export/envscan. Actual expected HTTPS URL200/root and referencedJS200/application/javascript. Detailed public-origin browser smoke remainsT03; no native/Store readiness claim. docs/deployment.md,qa-report.md,learning-notes.md updated.
+
+- 2026-09-25 user approved publication. Two allowlisted production public variables registered/readback matched; Pages created with build_type=workflow and expected URL. Normal main push adacc499 -> 1059db2588b72dc2ce4f65c04d0de812205e728b succeeded. Actual Actions run36023721062 started; completion/live HTTP still pending. Earlier approval-wait below is historical. No secret upload or production data mutation.
+
 - 2026-09-25 read-only preflight: gh authenticated JEONG-INSOO/keyring, correct publicrepo/main. Live remote main adacc499f4a4addf7870fa68e250038ef048bb1d, before memory bookkeeping local5commits ahead including completedbackend4a56230. PagesGET404/unconfigured; repositoryvariables empty. Most recent workflow35820751694 failed at historical adacc499. No push/settings/variable/write/dispatch yet. Await explicit approval to push validated localmain (no force), register only production publicURL/publishablekey, enable Pages Actions and publish. Required variable names/formats already in docs/deployment.md; never send service key.
 - Backend prerequisite resolved by4a56230 and docs/ranking-release-handoff.md. Currentdist local-only QA; CI must productionexport after vars set. No public-site success claim. T02 completion commit remains pending actual deployment success/SHA.
 
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- commit: this task's completion commit (see git log)
