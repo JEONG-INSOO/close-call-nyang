@@ -6,6 +6,8 @@
 
 ## Decisions and constraints
 
+- 2026-09-25 최신: backend4a56230검증완료, 인증복구/사용자공개승인 후 publicvariables2/Pagesworkflow설정, SHA1059db2/run36023721062 공개배포성공(T02bd2f322). 다음T03 실제공개브라우저검증. 아래 미배포/인증실패 문장은 계획 당시 상태다.
+
 - 저장소: `JEONG-INSOO/close-call-nyang`; 공개 URL: `https://jeong-insoo.github.io/close-call-nyang/`.
 - 기존 `.github/workflows/deploy-pages.yml`를 점검·보강한다. Pages 배포는 검사 성공 뒤 `main`에서만 진행한다.
 - production 프로젝트는 준비됐지만 랭킹 migration/API 및 hosted 검증이 완료되지 않았다. staging 값을 공개 배포에 사용하지 않는다.

@@ -1,6 +1,6 @@
 # Task: T03 공개 Pages 사이트 검증
 
-## Status: pending
+## Status: in_progress
 
 ## Goal
 
@@ -51,6 +51,8 @@ Task: T03-pages-live-smoke
 ```
 
 ## Progress
+
+- Handoff2026-09-25: T02done/bd2f322; actualdeployment1059db2588b72dc2ce4f65c04d0de812205e728b/run36023721062 success, root/referenceJSHTTP200. Public-origin browser checks below are not yet run. No production identity/write approval inferred from publication approval.
 
 - [ ] 구현 완료
 - [ ] 검증 통과

@@ -1,5 +1,13 @@
 # Current Context
 
+## Latest checkpoint — Pages T02 completed; public browser smoke next
+- T02 completion commit bd2f322. User-approved normal push deployed1059db2588b72dc2ce4f65c04d0de812205e728b through run36023721062: build/deploy success; CIJest659/ranking186/Chromium34pass11skip, types/parity/export/envscan pass. Public URL https://jeong-insoo.github.io/close-call-nyang/ HTTP200/root; referencedJSc8206f2bbd30f58831acdcb59307d841 HTTP200/javascript. Publicvariables2readbackmatched, Pagesworkflow verified.
+- Active Pages T03: desktop+844x390+667x375 actualpublic browser core play/pause/retry, assets/console, guest publictop30 and friendlyoutage. Do not create production identity or submit scores without separate scoped write approval. CI/local-browser evidence is not public-origin QA. Offline/reconnect/native remain separate. Completion/docs/bookkeeping commits after1059db2 are LOCAL, not another deployed code revision. Earlier in-progress/approval-wait notes are historical.
+
+## Latest checkpoint — 2026-09-25 approved Pages publication in progress
+- User explicitly approved production public variables, Pages Actions configuration and normal main push. Registered only EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY from the validated production public env; readback matched without printing values. Pages build_type=workflow, correct public URL verified.
+- Normal push succeeded adacc499 -> 1059db2588b72dc2ce4f65c04d0de812205e728b. Actions run36023721062 is in_progress; do not claim deployed until build/deploy and live HTTPS pass. No server keys uploaded, production data untouched. Active task remains Pages T02. Earlier approval-waiting notes below are superseded.
+
 ## Latest checkpoint — T03 complete; resume Pages deployment
 - Pages T02 fresh read-only: authenticated JEONG-INSOO, correct PUBLICrepo/main; live remoteadacc499f4a4addf7870fa68e250038ef048bb1d. Pages404 and repositoryvariables[]; previousrun35820751694 failure. Need explicit userapproval for nonforcepush+productionpublicvars+PagesActions activation/publish. No external write performed. Do not ask for login again while auth remains valid.
 - 2026-09-25 P02-T03 completed as `4a56230` (19 scoped files). Acceptance evidence and privacy/native/operational limits: docs/ranking-release-handoff.md. FullJest659/44suites,Deno50,tools67,SQL27,typechecks/ranked8,3webbuilds/localenvscan,Chromium34pass/11intentional-skip/0fail/0flaky,3goldens passed. Finalread-only staging/production GET200/rules/CORS, Auth/game/pending0,2migrations,activecron+success>=1. No new hosted accounts this final review.
@@ -46,7 +54,7 @@
 [P01 Pages release](./phases/2026-09-24-pages-hosted-web/P01-pages-release/phase.md)
 
 ## Active Task
-[T02 Pages deploy](./phases/2026-09-24-pages-hosted-web/P01-pages-release/T02-pages-deploy.md)
+[T03 Pages live smoke](./phases/2026-09-24-pages-hosted-web/P01-pages-release/T03-pages-live-smoke.md)
 
 ## Status
 - Latest completed request (2026-09-22): rookie를 생성 이미지 PNG 부품(우측 3/4, 다리·팔 절반, 표정 평소/위험40도/넘어짐)으로 교체, commit 5cf570d. [결정](./decisions/2026-09-22-side-view-walk.md), [학습노트](../docs/learning-notes/2026-09-22-side-view-walk.md). Jest650, Chromium34pass/11skip/0fail(3.4min), rules f7245064c9459310 불변, 4173=dist index-298ee86edf82ff1bbdd0079e1339a79f.js. 보상 2종은 P02(시트 필요). 사용자 요청: 다른 사람이 테스트할 환경(예/아니오만 답함=네) — 방식 미정.
@@ -89,7 +97,7 @@
 - T01 Pages CI gate 구현·검증 완료. Production bundle 검사 통과, typecheck/ranked/Jest/ranking/Playwright 통과. T02 원격 GitHub 인증/production backend preflight로 이동.
 
 ## Next Step (IMPORTANT)
-P02-T03 완료 커밋4a56230. 대기했던 Pages T02 청사진을 읽고 GitHub 인증/main 상태/Pages 설정/공개변수를 읽기 전용 확인한다. Production backend는 이미 검증됐으므로 계정을 다시 만들지 않는다. 서버 비밀을 repo variable에 넣지 않고 public URL/publishable key만 사용한다. 로컬커밋 푸시와 공개 배포는 명시적 확인 후 진행하며, 인증·권한·공개 안내 승인이 없으면 해당 지점에서 멈춘다. 기존 Pages T01 workflow를 재사용하고 운영설정으로 새 export가 필요하다. Expo Go/Hermes·지원/개인정보·스토어 최종승인은 별도 범위다.
+Pages T02 완료 bd2f322; 실제 배포 SHA1059db2/run36023721062 성공. 다음 Active T03 청사진대로 공개 URL에서3viewport 브라우저 게임/asset/공개랭킹/outage를 검증한다. 신규 production 계정/점수쓰기는 별도 승인 없이는 금지한다. 공개read와 로컬network simulation을 실제서버장애로 표현하지 않는다. Offline/reconnect와 Expo Go/Hermes·개인정보·스토어 최종승인은 별도 범위다.
 
 ## Resume Existing T03 After Requested Change
 이 절은 과거 복귀 지시다. T03은4a56230으로 완료됐으며 현재 Active Task의 Pages T02를 따른다. Production 합성점수 삽입, 인증정보 덮어쓰기, 추가과금/프로젝트생성은 계속 금지한다. 자동푸시하지 않는다.
