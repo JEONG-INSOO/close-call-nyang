@@ -1,6 +1,6 @@
 # Task: T02 GitHub Pages 배포
 
-## Status: pending
+## Status: in_progress
 
 ## Goal
 
@@ -38,7 +38,7 @@ GitHub repository Pages 설정을 Actions 방식으로 확인하고 main의 검�
 ## Acceptance Criteria
 
 - [ ] repository identity와 Actions Pages source가 확인된다.
-- [ ] production backend와 공개 변수 준비를 검증했거나, 부족한 prerequisite를 정확하게 기록한다.
+- [x] production backend와 공개 변수 준비를 검증했거나, 부족한 prerequisite를 정확하게 기록한다.
 - [ ] public deployment는 workflow 성공과 대상 commit SHA로 입증된다.
 - [ ] 공개 사이트가 검증되기 전 production-ready로 표시하지 않는다.
 
@@ -61,6 +61,9 @@ Task: T02-pages-deploy
 ```
 
 ## Progress
+
+- 2026-09-25 read-only preflight: gh authenticated JEONG-INSOO/keyring, correct publicrepo/main. Live remote main adacc499f4a4addf7870fa68e250038ef048bb1d, before memory bookkeeping local5commits ahead including completedbackend4a56230. PagesGET404/unconfigured; repositoryvariables empty. Most recent workflow35820751694 failed at historical adacc499. No push/settings/variable/write/dispatch yet. Await explicit approval to push validated localmain (no force), register only production publicURL/publishablekey, enable Pages Actions and publish. Required variable names/formats already in docs/deployment.md; never send service key.
+- Backend prerequisite resolved by4a56230 and docs/ranking-release-handoff.md. Currentdist local-only QA; CI must productionexport after vars set. No public-site success claim. T02 completion commit remains pending actual deployment success/SHA.
 
 - [ ] 구현 완료
 - [ ] 검증 통과
