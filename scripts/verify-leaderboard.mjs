@@ -16,15 +16,24 @@ class CheckError extends Error { constructor(code) { super(code); this.code = co
 const requireCheck = (condition, code) => { if (!condition) throw new CheckError(code); };
 
 export function parseOptions(argv) {
-  const options = { allowTestWrites: false };
+  const options = { allowTestWrites: false, verifyCrossRunConcurrency: false, verifyStartRateLimit: false };
   for (let index = 0; index < argv.length; index += 1) {
     const key = argv[index];
     if (key === '--allow-test-writes') { requireCheck(!options.allowTestWrites, 'DUPLICATE_OPTION'); options.allowTestWrites = true; continue; }
+    if (key === '--verify-cross-run-concurrency') {
+      requireCheck(!options.verifyCrossRunConcurrency, 'DUPLICATE_OPTION'); options.verifyCrossRunConcurrency = true; continue;
+    }
+    if (key === '--verify-start-rate-limit') {
+      requireCheck(!options.verifyStartRateLimit, 'DUPLICATE_OPTION'); options.verifyStartRateLimit = true; continue;
+    }
     const name = { '--environment': 'environment', '--project-ref': 'projectRef', '--env-file': 'envFile' }[key];
     requireCheck(name && options[name] === undefined && argv[index + 1] && !argv[index + 1].startsWith('--'), 'INVALID_OPTION');
     options[name] = argv[++index];
   }
   requireCheck(['staging', 'production'].includes(options.environment), 'ENVIRONMENT_REQUIRED');
+  requireCheck(!options.verifyCrossRunConcurrency || options.environment === 'staging', 'DEEP_CHECK_STAGING_ONLY');
+  requireCheck(!options.verifyStartRateLimit || options.environment === 'staging', 'DEEP_CHECK_STAGING_ONLY');
+  requireCheck(!(options.verifyStartRateLimit && options.verifyCrossRunConcurrency), 'DEEP_CHECKS_MUTUALLY_EXCLUSIVE');
   return options;
 }
 
@@ -86,6 +95,113 @@ export function generateProof(kernel, challenge, direction = 1) {
   }
   requireCheck(state.screen === 'result', 'SMOKE_RUN_DID_NOT_FALL');
   return { chunks, ticks, score: Math.floor(state.run.distanceM) };
+}
+
+/** A deterministic feedback driver that produces a legal 101m terminal replay. */
+export function generateBalancedProof(kernel, challenge) {
+  requireCheck(UUID.test(challenge?.runId) && Number.isSafeInteger(challenge.engineRunId) && challenge.engineRunId > 0 &&
+    challenge.engineRunId <= 0x7fffffff && Number.isInteger(challenge.seed) && challenge.seed > 0 && challenge.seed <= 0xffffffff &&
+    challenge.rulesVersion === kernel.rulesVersion && Number.isFinite(Date.parse(challenge.issuedAt)) &&
+    Date.parse(challenge.expiresAt) > Date.parse(challenge.issuedAt), 'INVALID_CHALLENGE');
+  const flags = { mockAdsEnabled: false };
+  let state = kernel.transition(kernel.createInitialState(),
+    { type: 'START', runId: challenge.engineRunId, seed: challenge.seed }, flags).state;
+  for (let tick = 0; tick < 360; tick += 1) state = kernel.transition(state,
+    { type: 'TICK', dt: 1 / 120, input: { left: false, right: false } }, flags).state;
+  requireCheck(state.screen === 'playing', 'COUNTDOWN_MISMATCH');
+  const chunks = [];
+  let spans = []; let chunkTicks = 0; let ticks = 0; let eventWarnings = 0;
+  const flush = () => {
+    if (!chunkTicks) return;
+    const chunk = { runId: challenge.runId, seq: chunks.length, spans };
+    requireCheck(chunkTicks <= 1200 && spans.length <= 1200 &&
+      new TextEncoder().encode(JSON.stringify(chunk)).byteLength <= 64 * 1024, 'CHUNK_TOO_LARGE');
+    chunks.push(chunk); spans = []; chunkTicks = 0;
+  };
+  while (state.screen === 'playing' && ticks < 20_000) {
+    const correction = 4 * state.run.angleRad + state.run.angularVelocity;
+    const direction = state.run.distanceM >= 101 ? 1 : correction > 0.025 ? -1 : correction < -0.025 ? 1 : 0;
+    const previous = spans.at(-1);
+    if (previous?.direction === direction) previous.ticks += 1;
+    else spans.push({ direction, ticks: 1 });
+    const result = kernel.transition(state, { type: 'TICK', dt: 1 / 120,
+      input: { left: direction === -1, right: direction === 1 } }, flags);
+    state = result.state; ticks += 1; chunkTicks += 1;
+    eventWarnings += result.effects.filter(effect => effect.type === 'eventWarning').length;
+    if (chunkTicks === 1200 || state.screen === 'result') flush();
+  }
+  requireCheck(state.screen === 'result' && state.run.distanceM >= 101 && state.run.hasCoffee && eventWarnings > 0,
+    'BALANCED_REPLAY_NOT_QUALIFIED');
+  return { chunks, ticks, score: Math.floor(state.run.distanceM), eventWarnings };
+}
+
+/** Prove simultaneous equal-score runs converge, then a weaker retry preserves the owner's best/time. */
+export async function verifyCrossRunConcurrency({ kernel, users, api, monotonic, sleep, signal, progress = () => {} }) {
+  requireCheck(users.length === 2 && users[0].id !== users[1].id, 'TWO_OWNED_USERS_REQUIRED');
+  const ok = response => { requireCheck(response.status === 200, `UNEXPECTED_HTTP_${Number(response.status) || 0}`); return response.value; };
+  const started = await Promise.all(users.map(async user => {
+    const challenge = ok(await api('/runs', { method: 'POST', user, body: { rulesVersion: kernel.rulesVersion } }));
+    const receivedAt = monotonic();
+    return { user, challenge, receivedAt, proof: generateBalancedProof(kernel, challenge), acceptedTicks: 0 };
+  }));
+  requireCheck(started.every(run => run.proof.score === 101 && run.proof.chunks.length > 1), 'FIXTURE_SCORE_MISMATCH');
+  const chunkCount = Math.max(...started.map(run => run.proof.chunks.length));
+  for (let seq = 0; seq < chunkCount; seq += 1) {
+    const batch = started.filter(run => seq < run.proof.chunks.length).map(run => {
+      const chunk = run.proof.chunks[seq];
+      run.acceptedTicks += chunk.spans.reduce((sum, span) => sum + span.ticks, 0);
+      return { run, chunk };
+    });
+    const latestDeadline = batch.map(({ run }) => run.receivedAt + run.acceptedTicks / 120 * 1000)
+      .reduce((latest, value) => Math.max(latest, value), -Infinity);
+    const pacingRun = batch.find(({ run }) => run.receivedAt + run.acceptedTicks / 120 * 1000 === latestDeadline).run;
+    await waitForProofTicks(pacingRun.receivedAt, pacingRun.acceptedTicks, { monotonic, sleep, signal, progress });
+    const acks = await Promise.all(batch.map(({ run, chunk }) => api('/runs/chunks', { method: 'POST', user: run.user, body: chunk })));
+    acks.forEach((response, index) => {
+      const { run, chunk } = batch[index]; const ack = ok(response);
+      requireCheck(ack.acceptedSeq === chunk.seq && ack.totalTicks === run.acceptedTicks &&
+        ack.terminal === (chunk.seq === run.proof.chunks.length - 1), 'CROSS_RUN_ACK_MISMATCH');
+    });
+  }
+  const receipts = await Promise.all(started.map(run => api('/runs/finalize',
+    { method: 'POST', user: run.user, body: { runId: run.challenge.runId } })));
+  const finalized = receipts.map(ok);
+  requireCheck(finalized.every((receipt, index) => receipt.runId === started[index].challenge.runId &&
+    receipt.score === 101 && receipt.bestScore === 101 && receipt.improved === true && Number.isSafeInteger(receipt.rank) && receipt.rank > 0),
+  'CROSS_RUN_FINALIZE_MISMATCH');
+  const boards = await Promise.all(started.map(run => api(`/leaderboard?rulesVersion=${encodeURIComponent(kernel.rulesVersion)}`,
+    { user: run.user })));
+  const boardValues = boards.map(ok);
+  requireCheck(boardValues.every(board => board.me?.score === 101 && board.me?.rank === finalized[0].rank &&
+    typeof board.me.achievedAt === 'string' && Number.isFinite(Date.parse(board.me.achievedAt))), 'TIED_BOARD_MISMATCH');
+  const beforeLowerRun = boardValues[0].me.achievedAt;
+  const aId = started[0].user.publicId; const bId = started[1].user.publicId;
+  const tiedRows = boardValues[0].entries.filter(entry => entry.publicId === aId || entry.publicId === bId);
+  requireCheck(tiedRows.length === 2, 'TIED_PLAYERS_NOT_VISIBLE');
+  const byStableTieBreak = [...tiedRows].sort((a, b) => Date.parse(a.achievedAt) - Date.parse(b.achievedAt) ||
+    (a.publicId < b.publicId ? -1 : a.publicId > b.publicId ? 1 : 0));
+  requireCheck(tiedRows.every(entry => entry.score === 101 && entry.rank === finalized[0].rank) &&
+    tiedRows.every((entry, index) => entry.publicId === byStableTieBreak[index].publicId), 'TIE_ORDER_MISMATCH');
+  const lowerChallenge = ok(await api('/runs', { method: 'POST', user: started[0].user,
+    body: { rulesVersion: kernel.rulesVersion } }));
+  const lowerReceivedAt = monotonic(); const lowerProof = generateProof(kernel, lowerChallenge, 0);
+  requireCheck(lowerProof.score < 101, 'LOWER_RUN_FIXTURE_MISMATCH');
+  let lowerTicks = 0;
+  for (const chunk of lowerProof.chunks) {
+    lowerTicks += chunk.spans.reduce((sum, span) => sum + span.ticks, 0);
+    await waitForProofTicks(lowerReceivedAt, lowerTicks, { monotonic, sleep, signal, progress });
+    const ack = ok(await api('/runs/chunks', { method: 'POST', user: started[0].user, body: chunk }));
+    requireCheck(ack.acceptedSeq === chunk.seq && ack.totalTicks === lowerTicks && ack.terminal === (lowerTicks === lowerProof.ticks),
+      'LOWER_RUN_ACK_MISMATCH');
+  }
+  const lowerReceipt = ok(await api('/runs/finalize', { method: 'POST', user: started[0].user,
+    body: { runId: lowerChallenge.runId } }));
+  requireCheck(lowerReceipt.score === lowerProof.score && lowerReceipt.bestScore === 101 && lowerReceipt.improved === false,
+    'BEST_SCORE_REGRESSED');
+  const afterLowerRun = ok(await api(`/leaderboard?rulesVersion=${encodeURIComponent(kernel.rulesVersion)}`,
+    { user: started[0].user }));
+  requireCheck(afterLowerRun.me?.score === 101 && afterLowerRun.me.achievedAt === beforeLowerRun, 'BEST_TIME_REGRESSED');
+  return { score: 101, tiedRank: finalized[0].rank, preservedBestAt: true };
 }
 
 export async function waitForProofTicks(receivedAt, ticks, { monotonic, sleep, signal, progress = () => {} }) {
@@ -170,6 +286,19 @@ export async function runSmoke(target, options = {}) {
       requireCheck(users[0].id !== users[1].id && users[0].publicId !== users[1].publicId, 'IDENTITIES_NOT_DISTINCT');
     });
     const [a, b] = users;
+    if (options.verifyStartRateLimit) {
+      await check('STAGING_START_RATE_LIMIT_429', async () => {
+        const startedAt = monotonic();
+        for (let attempt = 0; attempt < 30; attempt += 1) {
+          ok(await api('/runs', { method: 'POST', user: b, body: { rulesVersion: kernel.rulesVersion } }));
+        }
+        requireCheck(monotonic() - startedAt < 60_000, 'RATE_LIMIT_WINDOW_ELAPSED');
+        const blocked = await api('/runs', { method: 'POST', user: b, body: { rulesVersion: kernel.rulesVersion } });
+        denied(blocked, 429, 'RATE_LIMITED');
+        const retryAfter = Number(blocked.headers.get('retry-after'));
+        requireCheck(Number.isInteger(retryAfter) && retryAfter > 0 && retryAfter <= 60, 'RETRY_AFTER_INVALID');
+      }, 'Thirty staging starts accepted; the 31st within one minute returned 429 with Retry-After. Only the temporary B profile was used.');
+    }
     await check('STRICT_FIELDS', async () => {
       denied(await api('/profile', { method: 'POST', user: a, body: { nickname: '검사냥대리', userId: b.id } }), 400, 'INVALID_INPUT');
       denied(await api('/runs', { method: 'POST', user: a, body: { rulesVersion: kernel.rulesVersion, score: 999 } }), 400, 'INVALID_INPUT');
@@ -235,6 +364,13 @@ export async function runSmoke(target, options = {}) {
       requireCheck(board.me?.publicId === a.publicId && board.me.nickname === '검사냥수정' && board.me.score === proof.score && board.me.rank > 0, 'MY_RANK_MISMATCH');
       requireCheck(ok(await api('/reports', { method: 'POST', user: a, body: { targetPublicId: b.publicId, reason: 'other' } })).reported === true, 'REPORT_NOT_CONFIRMED');
     });
+    if (options.verifyCrossRunConcurrency) {
+      await check('CROSS_RUN_MAX_CONCURRENCY', async () => {
+        const result = await verifyCrossRunConcurrency({ kernel, users: [a, b], api, monotonic, sleep,
+          signal: options.signal, progress });
+        requireCheck(result.score === 101 && result.preservedBestAt, 'CROSS_RUN_RESULT_MISMATCH');
+      }, 'Two separately paced 101m runs finalized together with tied rank; a later lower run preserved the owner score and achievedAt.');
+    }
   } catch (error) {
     if (!(error instanceof CheckError && error.code === 'SMOKE_STOPPED')) record('RUN_ABORTED', 'failed', error instanceof CheckError ? error.code : 'LOCAL_CHECK_FAILED');
   } finally {
@@ -255,7 +391,10 @@ export async function runSmoke(target, options = {}) {
       } catch { record(`DELETE_RETRY_AUTH_${user.label}`, 'failed', 'DELETE_RETRY_OR_AUTH_REMOVAL_UNVERIFIED'); }
     }
     if (report.signupResponseUncertain) record('UNCERTAIN_SIGNUP', 'not_run', 'A signup response was not confirmed; inspect provider logs without bulk user deletion.');
-    for (const id of MANUAL) record(id, 'not_run', 'Separate actual environment verification required; this smoke runner does not certify it.');
+    for (const id of MANUAL) {
+      if (id === 'CROSS_RUN_MAX_CONCURRENCY' && report.checks.some(check => check.id === id)) continue;
+      record(id, 'not_run', 'Separate actual environment verification required; this smoke runner does not certify it.');
+    }
   }
   report.smokePassed = report.checks.some(check => check.id === 'RENAME_RANK_AND_REPORT' && check.status === 'passed') &&
     !report.checks.some(check => check.status === 'failed') && !report.signupResponseUncertain;
@@ -273,7 +412,9 @@ export async function main(argv = process.argv.slice(2)) {
     // Print only validated, nonsecret target metadata before any network operation.
     console.log(`Target: ${target.environment} / ${target.projectRef}`);
     requireCheck(options.allowTestWrites, 'TEST_WRITES_NOT_AUTHORIZED');
-    report = await runSmoke(target, { allowTestWrites: true, signal: abort.signal, progress: message => console.log(message) });
+    report = await runSmoke(target, { allowTestWrites: true, verifyCrossRunConcurrency: options.verifyCrossRunConcurrency,
+      verifyStartRateLimit: options.verifyStartRateLimit,
+      signal: abort.signal, progress: message => console.log(message) });
   } catch (error) {
     const code = error instanceof CheckError ? error.code : 'LOCAL_CONFIGURATION_UNAVAILABLE';
     const environment = options?.environment ?? null; const projectRef = target?.projectRef ?? null;

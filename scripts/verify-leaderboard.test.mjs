@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseOptions, readTarget, loadKernel, generateProof, waitForProofTicks, runSmoke } from './verify-leaderboard.mjs';
+import { parseOptions, readTarget, loadKernel, generateProof, generateBalancedProof,
+  verifyCrossRunConcurrency, waitForProofTicks, runSmoke } from './verify-leaderboard.mjs';
 
 const ref = 'abcdefghijklmnopqrst';
 const other = 'zyxwvutsrqponmlkjihg';
@@ -18,6 +19,13 @@ test('CLI requires explicit environment, rejects unknown/duplicate options and d
   assert.throws(() => parseOptions(['--environment', 'staging', '--password', 'do-not-echo']), /INVALID_OPTION/);
   assert.throws(() => parseOptions(['--environment', 'staging', '--environment', 'production']), /INVALID_OPTION/);
   assert.equal(parseOptions(['--environment', 'staging']).allowTestWrites, false);
+  assert.throws(() => parseOptions(['--environment', 'production', '--verify-cross-run-concurrency']), /DEEP_CHECK_STAGING_ONLY/);
+  assert.equal(parseOptions(['--environment', 'staging', '--verify-cross-run-concurrency']).verifyCrossRunConcurrency, true);
+  assert.throws(() => parseOptions(['--environment', 'staging', '--verify-cross-run-concurrency', '--verify-cross-run-concurrency']), /DUPLICATE_OPTION/);
+  assert.throws(() => parseOptions(['--environment', 'production', '--verify-start-rate-limit']), /DEEP_CHECK_STAGING_ONLY/);
+  assert.equal(parseOptions(['--environment', 'staging', '--verify-start-rate-limit']).verifyStartRateLimit, true);
+  assert.throws(() => parseOptions(['--environment', 'staging', '--verify-start-rate-limit', '--verify-start-rate-limit']), /DUPLICATE_OPTION/);
+  assert.throws(() => parseOptions(['--environment', 'staging', '--verify-start-rate-limit', '--verify-cross-run-concurrency']), /DEEP_CHECKS_MUTUALLY_EXCLUSIVE/);
 });
 test('missing configuration, same projects, mismatched environment/ref/URL and privileged keys fail closed', () => {
   assert.throws(() => readTarget({}, options), /DISTINCT_PROJECT_REFS_REQUIRED/);
@@ -49,6 +57,64 @@ test('different server seeds remain legal bounded chunks with no score/user fiel
     proof.chunks.forEach((c, index) => { assert.equal(c.seq, index); assert.ok(c.spans[0].ticks <= 1200); assert.deepEqual(Object.keys(c), ['runId', 'seq', 'spans']); });
   }
 });
+test('balanced real-engine replay reaches 101m with legal bounded chunks', () => {
+  const proof = generateBalancedProof(kernel, challenge);
+  assert.equal(proof.score, 101); assert.equal(proof.ticks, 10947); assert.ok(proof.eventWarnings > 0);
+  assert.ok(proof.chunks.length > 1);
+  proof.chunks.forEach((chunk, index) => {
+    assert.equal(chunk.seq, index); assert.ok(chunk.spans.length <= 1200);
+    assert.ok(chunk.spans.reduce((sum, span) => sum + span.ticks, 0) <= 1200);
+    assert.ok(new TextEncoder().encode(JSON.stringify(chunk)).byteLength <= 64 * 1024);
+    assert.deepEqual(Object.keys(chunk), ['runId', 'seq', 'spans']);
+  });
+  assert.throws(() => generateBalancedProof(kernel, { ...challenge, seed: 0 }), /INVALID_CHALLENGE/);
+});
+
+test('deep hosted check races two legal equal scores and preserves best/time on a lower later run', async () => {
+  const users = [
+    { id: 'a0000000-0000-4000-8000-000000000001', publicId: 'b0000000-0000-4000-8000-000000000001', token: 'user-a' },
+    { id: 'a0000000-0000-4000-8000-000000000002', publicId: 'b0000000-0000-4000-8000-000000000002', token: 'user-b' },
+  ];
+  const runs = new Map(); const best = new Map(); let runNumber = 0; let clock = 5000; let finishNumber = 0;
+  const api = async (path, { method = 'GET', user, body } = {}) => {
+    if (path === '/runs' && method === 'POST') {
+      runNumber += 1;
+      const current = { ...challenge, runId: `c0000000-0000-4000-8000-${String(runNumber).padStart(12, '0')}`,
+        engineRunId: challenge.engineRunId + runNumber };
+      const proof = runNumber <= 2 ? generateBalancedProof(kernel, current) : generateProof(kernel, current, 0);
+      runs.set(current.runId, { userId: user.id, challenge: current, proof, ticks: 0 });
+      return { status: 200, value: current };
+    }
+    if (path === '/runs/chunks' && method === 'POST') {
+      const run = runs.get(body.runId);
+      if (!run || run.userId !== user.id) return { status: 403, value: { code: 'FORBIDDEN' } };
+      run.ticks += body.spans.reduce((sum, span) => sum + span.ticks, 0);
+      return { status: 200, value: { acceptedSeq: body.seq, totalTicks: run.ticks,
+        terminal: run.ticks === run.proof.ticks, expiresAt: run.challenge.expiresAt } };
+    }
+    if (path === '/runs/finalize' && method === 'POST') {
+      const run = runs.get(body.runId); assert.ok(run && run.userId === user.id);
+      const previous = best.get(user.id); const improved = !previous || run.proof.score > previous.score;
+      if (improved) best.set(user.id, { score: run.proof.score, achievedAt: new Date(Date.parse('2026-09-24T00:00:00Z') + ++finishNumber).toISOString() });
+      return { status: 200, value: { runId: body.runId, score: run.proof.score,
+        bestScore: best.get(user.id).score, rank: 1, improved } };
+    }
+    if (path.startsWith('/leaderboard?')) {
+      const entries = [...best].map(([userId, value]) => {
+        const owner = users.find(candidate => candidate.id === userId);
+        return { publicId: owner.publicId, nickname: '냥대리', score: value.score, rank: 1,
+          achievedAt: value.achievedAt, isMe: userId === user.id };
+      }).sort((a, b) => b.score - a.score || Date.parse(a.achievedAt) - Date.parse(b.achievedAt) || (a.publicId < b.publicId ? -1 : 1));
+      return { status: 200, value: { entries, me: entries.find(entry => entry.isMe) ?? null, rulesVersion: kernel.rulesVersion } };
+    }
+    throw new Error(`Unexpected fake route ${method} ${path}`);
+  };
+  const result = await verifyCrossRunConcurrency({ kernel, users, api, monotonic: () => clock,
+    sleep: async delay => { clock += delay; }, progress: () => {} });
+  assert.deepEqual(result, { score: 101, tiedRank: 1, preservedBestAt: true });
+  assert.equal(runs.size, 3);
+  assert.ok(best.values().every(value => value.score === 101));
+});
 test('pacing waits actual countdown+tick duration in short interruptible intervals', async () => {
   let time = 100; const delays = []; const notices = [];
   await waitForProofTicks(100, 1200, { monotonic: () => time, sleep: async delay => { delays.push(delay); time += delay; }, progress: m => notices.push(m) });
@@ -63,15 +129,16 @@ test('pacing handles user cancellation without waiting out a full replay', async
 
 // Every response below is explicitly simulated. No network call or hosted evidence.
 function fakeService({ failFinalize = false, failProfile = false, failCleanup = false, lostFirstDelete = false, badRetry = false, failedSignup = false,
-  directRestFailure, directRpcFailure } = {}) {
-  const users = []; const calls = []; let ticks = 0; let last = null; let terminal = false; let firstDeleteLost = false;
+  directRestFailure, directRpcFailure, enforceStartRateLimit = false } = {}) {
+  const users = []; const calls = []; const startCounts = new Map(); let ticks = 0; let last = null; let terminal = false; let firstDeleteLost = false;
   const proof = generateProof(kernel, challenge);
   const fetchImpl = async (url, init) => {
     const parsed = new URL(url); const path = parsed.pathname; const body = init.body ? JSON.parse(init.body) : undefined;
     const token = init.headers.Authorization?.slice(7); const user = users.find(u => u.token === token);
     calls.push({ path, search: parsed.search, method: init.method, body, redirect: init.redirect,
       hasAuth: !!init.headers.Authorization, schema: init.headers['Content-Profile'], actor: user?.id ?? null });
-    const reply = (value, status = 200) => new Response(JSON.stringify(value), { status, headers: { 'Access-Control-Allow-Origin': target.origin } });
+    const reply = (value, status = 200, extra = {}) => new Response(JSON.stringify(value), { status,
+      headers: { 'Access-Control-Allow-Origin': target.origin, ...extra } });
     const deny = (code, status) => reply({ code }, status);
     if (init.headers.Origin === 'https://untrusted.invalid') return deny('FORBIDDEN', 403);
     if (path === '/auth/v1/signup') {
@@ -104,6 +171,8 @@ function fakeService({ failFinalize = false, failProfile = false, failCleanup = 
     if (path.endsWith('/runs')) {
       if (Object.keys(body).length !== 1) return deny('INVALID_INPUT', 400);
       if (body.rulesVersion !== kernel.rulesVersion) return deny('RULES_MISMATCH', 409);
+      const count = (startCounts.get(user.id) ?? 0) + 1; startCounts.set(user.id, count);
+      if (enforceStartRateLimit && user === users[1] && count > 30) return reply({ code: 'RATE_LIMITED' }, 429, { 'Retry-After': '60' });
       return reply(challenge);
     }
     if (path.endsWith('/runs/chunks')) {
@@ -126,7 +195,8 @@ function fakeService({ failFinalize = false, failProfile = false, failCleanup = 
 async function simulate(settings = {}) {
   const service = fakeService(settings); let time = 0;
   const report = await runSmoke(target, { allowTestWrites: true, fetchImpl: service.fetchImpl, kernel,
-    monotonic: () => time, sleep: async delay => { time += delay; }, now: () => '2026-09-22T00:00:00Z' });
+    verifyStartRateLimit: settings.verifyStartRateLimit, monotonic: () => time,
+    sleep: async delay => { time += delay; }, now: () => '2026-09-22T00:00:00Z' });
   return { ...service, report, time };
 }
 test('no explicit write permission causes zero requests and cannot report success', async () => {
@@ -142,6 +212,15 @@ test('simulated complete smoke has real local replay pacing, scoped cleanup and 
   assert.ok(calls.every(c => c.redirect === 'error')); assert.ok(calls.every(c => !c.path.includes('/admin/')));
   assert.ok(!JSON.stringify(report).includes('fixture-access-token'));
   assert.ok(!JSON.stringify(report).includes(target.key));
+});
+test('staging start-rate deep check expects the documented 31st-call 429 and Retry-After', async () => {
+  const { report, users, calls } = await simulate({ verifyStartRateLimit: true, enforceStartRateLimit: true });
+  const check = report.checks.find(value => value.id === 'STAGING_START_RATE_LIMIT_429');
+  assert.equal(check.status, 'passed'); assert.equal(users[1].deleted, true);
+  assert.equal(calls.filter(call => call.path.endsWith('/runs') && call.actor === users[1].id).length, 31);
+  const failed = await simulate({ verifyStartRateLimit: true, enforceStartRateLimit: false });
+  assert.equal(failed.report.checks.find(value => value.id === 'STAGING_START_RATE_LIMIT_429').status, 'failed');
+  assert.ok(failed.users.every(user => user.deleted));
 });
 test('direct REST score denial probes target only existing A scores with anonymous or B identity', async () => {
   const { report, users, calls } = await simulate();

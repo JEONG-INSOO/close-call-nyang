@@ -399,12 +399,23 @@ Deno.test('Auth outages never enter deletion signature fallback', async () => {
   assert.equal(h.calls.some(call => call.method === 'verifyDeletionToken'), false);
 });
 
-Deno.test('rate limits return Retry-After and never place raw guest IPs in repository buckets', async () => {
+Deno.test('guest limiter uses Gateway client IP, ignores spoofable X-Forwarded-For, and never stores raw IPs', async () => {
   const h = harness();
-  await h.request(`/leaderboard?rulesVersion=${RULES_VERSION}`, 'GET', undefined, null, { 'x-forwarded-for': 'forged, 203.0.113.9' });
-  const bucket = h.calls.find(call => call.method === 'limit')!.args[0] as string;
+  await h.request(`/leaderboard?rulesVersion=${RULES_VERSION}`, 'GET', undefined, null, {
+    'cf-connecting-ip': '198.51.100.42', 'x-forwarded-for': 'forged, 203.0.113.9',
+  });
+  await h.request(`/leaderboard?rulesVersion=${RULES_VERSION}`, 'GET', undefined, null, {
+    'cf-connecting-ip': '198.51.100.42', 'x-forwarded-for': 'attacker, 192.0.2.77',
+  });
+  const buckets = h.calls.filter(call => call.method === 'limit').map(call => call.args[0] as string);
+  const bucket = buckets[0];
   assert.match(bucket, /^read:guest:[a-f0-9]{64}$/);
+  assert.equal(buckets[1], bucket);
+  assert.equal(bucket.includes('198.51.100.42'), false);
   assert.equal(bucket.includes('203.0.113.9'), false);
+  const missingGatewayHeader = harness();
+  await missingGatewayHeader.request(`/leaderboard?rulesVersion=${RULES_VERSION}`, 'GET', undefined, null, { 'x-forwarded-for': '198.51.100.42' });
+  assert.match(missingGatewayHeader.calls.find(call => call.method === 'limit')!.args[0] as string, /^read:guest:[a-f0-9]{64}$/);
   const limited = harness({ repository: { async limit() { return { allowed: false, retryAfterSeconds: 12 }; } } });
   const response = await limited.request('/profile');
   assert.equal(response.status, 429);

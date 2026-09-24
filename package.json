@@ -21,7 +21,7 @@
     "test:ranking": "jest --runInBand src/online/__tests__ src/game/__tests__/ranked-replay.test.ts",
     "server:check": "deno check --config supabase/deno.json supabase/functions/leaderboard-api/index.ts",
     "test:server-api": "deno test --config supabase/deno.json supabase/functions/_shared/__tests__",
-    "test:ranking-schema": "node --test scripts/leaderboard-schema.test.mjs",
+    "test:ranking-schema": "node --test scripts/leaderboard-schema.test.mjs scripts/retention-schedule.test.mjs scripts/backup-preflight.test.mjs",
     "online-fixtures:build": "node scripts/export-online-fixture.mjs",
     "ranking:verify": "node scripts/verify-leaderboard.mjs",
     "ranking:env-check": "node scripts/inspect-public-env.mjs",

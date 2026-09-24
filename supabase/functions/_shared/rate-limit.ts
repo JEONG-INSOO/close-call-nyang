@@ -13,9 +13,10 @@ export function createRateLimiter(repository: RankingRepository, salt: string) {
   return async (request: Request, userId: string | null, scope: LimitScope): Promise<void> => {
     let identity = userId ? `user:${userId}` : '';
     if (!identity) {
-      // Use only the last gateway-appended hop, never a client-supplied first hop.
-      // T03 must verify the deployed gateway header; missing IPs share a conservative bucket.
-      const ip = request.headers.get('x-forwarded-for')?.split(',').at(-1)?.trim() || 'unknown';
+      // Supabase's Cloudflare Gateway supplies cf-connecting-ip for the requester.
+      // X-Forwarded-For is client-controlled and may fan out requests into forged buckets.
+      // If the trusted Gateway header is absent, use one conservative shared guest bucket.
+      const ip = request.headers.get('cf-connecting-ip')?.trim() || 'unknown';
       const day = new Date().toISOString().slice(0, 10);
       const hashed = await crypto.subtle.sign('HMAC', await key, new TextEncoder().encode(`${day}:${ip}`));
       identity = `guest:${Array.from(new Uint8Array(hashed), byte => byte.toString(16).padStart(2, '0')).join('')}`;

@@ -1,5 +1,78 @@
 # 우당탕탕 냥대리 QA 기록
 
+## 2026-09-25 · T03 최종 인수 검증
+
+최종 결과: Chromium34passed/11의도적skip/0failed/0flaky(약3.5분), 3숫자재생golden 일치. 직접 시작한3개 QA서버 종료. Deno50/도구67/SQL27/전체Jest659·44suites/앱·서버타입/사본8/웹3종빌드·local-onlyenvscan/diff 통과. 최종 두환경 읽기 확인은 각각15:43:49/56UTC. T03 완료로 판정하며 공개Pages·iPhone/Hermes·스토어 검증은 인계 범위로 남긴다. 이번 dist는 local-only QA산출물이므로 production설정을 넣어 다시 빌드한 뒤 배포해야 한다.
+
+조건별 증거·known limits·P03 개인정보/Expo Go·Hermes 요구사항을 [인계표](./ranking-release-handoff.md)에 통합했다. 실제 보관 중인 production14pass/staging14pass/동시성보고서/브라우저자동복구8pass/로컬Auth복구5pass를 다시 읽고 판정했다. 신규 원격계정 생성 없이 최종 두환경GET200/CORS/규칙일치·게임/Auth/pending0·cron active/성공이력을 확인했다.
+
+현재 소스에서 전체Jest659/44suites, Deno서버테스트, ranking-tools67, schema27, 앱·서버타입, canonical8파일동기화 통과. local-only웹 export/공개설정검사, scene/online fixture 빌드 통과. Chromium 최종 결과는 아래에 별도로 기록한다. 기존 hosted 보고서 manual not_run을 일괄passed로 덮어쓰지 않았다.
+
+## 2026-09-25 · 실제 합성 계정 백업·격리 복구 통과
+
+최종 회귀: `ranked:check`8파일/규칙bc732af6f2a7ea66, `test:ranking-schema`27, `test:ranking`186/12suites, `server:check`, `typecheck` 재실행, scratch Deno check, `git diff --check` 통과. 첫 typecheck는 ignored output의 Deno `.ts` entrypoint가 Expo include에 들어가 실패했다. 해당 임시 파일만 `.mts`로 바꾸고 양쪽 타입 검사 재통과; 앱 tsconfig/게임 규칙은 바꾸지 않았다. 전체 Jest/전체 브라우저/실기기 검사를 이번에 재실행했다는 뜻은 아니다.
+
+Docker D: 이동과 기존15컨테이너 유지 확인. 독립 Supabase PG17.6/Auth2.197.0, 최종API55321/DB55322/handler55325는127.0.0.1 전용. 실제 staging 전용guest1/정상재생score0 → auth/private/public/migrations 단일 custom archive → Windows DPAPI 보호/재읽기·복호화 SHA256 일치 → 소유권 유지 transactional restore 성공.
+
+첫 카탈로그 비교는 동적 `fetchedAt`를 포함해 실패했다. 원격 테스트 계정은 finally DELETE200/Auth403으로 정리. 이미 복원된 로컬 데이터로 후속5검사 모두 통과: (1)원본 API receipt와 profile/best 일치 및 user/session/refresh/profile/best/run 각1, (2)private6/RLS6/service RPC12/anon·authenticated0/FK/migration2, (3)복원된refresh→동일 사용자JWT/getUser, (4)실제 handler 통한profile/board/무인증401/유효재생, (5)정상삭제/Auth403/로컬user·profile·best·run0. 새 원격 계정 생성 없이 재개했다.
+
+2026-09-24 15:29:41UTC 독립 hosted 후조회: Auth/identity/session/refresh/profile/best/run/report/pending deletion0, completed18/rate buckets77 정상 보존. 격리4서비스·보존원본3컨테이너 종료,55321/55322/55325 리스너 없음. 보고서2개와 archive는 ignored `output/nyang-recovery-20260925/`, 상세 [범위·실패·보관](./backup-recovery.md). 로컬 Deno 실제 handler 검증이며 hosted Edge Gateway 재해복구나 iPhone/Hermes 결과는 아니다. T03 전체 최종 증거 대조/인수·완료 커밋은 아직 별도다.
+
+## 2026-09-24 · Docker 기존 설치 발견 및 엔진 연결
+
+사용자 설치 확인 후 권한을 갖춘 registry/경로 조회로 `C:/Users/mocca/AppData/Local/Programs/DockerDesktop`의 Docker Desktop을 확인했다. 앞선 PATH/표준 경로 검사만으로 미설치라 단정한 판단을 정정한다. 사용자별 경로는 기본 sandbox에서 Access denied였다.
+
+실행 전 client29.7.2는 보였지만 Server=null/엔진 pipe 없음. 기존 Desktop을 Hidden으로 실행한 후 실제 Server29.7.2/Desktop4.90.0/Linux amd64/WSL2 연결 성공,18CPU/8071057408bytes 메모리, 실행 중 컨테이너0개. 재설치/WSL 설정/컨테이너·볼륨 생성·삭제/원격 변경 없음. 엔진만 준비됐으며 계정/데이터 복원 성공이 아니다. 메모리·운영 기록 정정, 문서 diff 검사만 수행했다.
+
+## 2026-09-24 · 계정 포함 복구 사전 점검
+
+- staging14:39:06UTC 읽기 전용 preflight 성공: PG17.6/DB11988115bytes, Auth27테이블/users·identities·sessions·refresh_tokens0. players/best_scores/runs/reports0, pending deletion0/completed17/rate bucket72. Auth FK와 예상 migration2개 확인. token/원본 사용자 행 없이 집계만 조회했다.
+- 새 preflight SQL·정적 검사2개·package 연결, schema27/27 통과. 실제 dump/restore/계정 생성/원격 데이터 변경은 이번에 수행하지 않았다. 빈 Auth 백업 복원을 로그인 복구 검증으로 주장하지 않는다.
+- Docker 명령/표준 실행 경로 부재 확인. 네이티브 PostgreSQL만으로 Auth HTTP 복구를 검증할 수 없어 격리 Supabase 환경이 필요하다. 사용자에게 Docker Desktop 설치 여부 질문, 답변 전 시스템 변경 없음. [실행 조건](./backup-recovery.md) 기록, T03 in_progress/완료 커밋 없음.
+
+## 2026-09-24 · production 정리 예약과 첫 스케줄러 실행 통과
+
+- 대상 ref `fgojrxmpxpzdiwsktjsx`. 원격 config pull dry-run을 임시 파일(auth.jwt_expiry3599)과 비교해 실제 remote3600 확인, dry_run=true/wrote=false. 실제 config/원격 Auth 설정과 secret은 변경하지 않았다.
+- 읽기 사전 점검: cron timezoneGMT, pg_cron 미설치, Auth/player/best0, 삭제 대상 expired run/90일 report/24시간 bucket0, pending deletion0. 기존 cleanup 함수 본문 digest가 검토한 코드와 일치한 경우만 예약하도록 SQL에 보호 장치를 넣었다.
+- pg_cron 설치 및 job1 `nyang-production-rank-cleanup` 등록. 최초 검증 도구는 PowerShell 단일 행의 배열 변환 문제로 UNEXPECTED_JOB에서 중단했고 일일 예약은 유지됐다. `@(...)` 수정 후 같은 job을 단일 날짜/분으로 앞당겼다. 실제 runid1:14:34:00.084849UTC 시작,14:34:00.092564 종료, succeeded, return_message=`1 row`. 이는 삭제1건이라는 뜻이 아니다.
+- 최종 별도 조회: job1/active=true/schedule=`15 3 * * *`/timezoneGMT/command=`select private.rank_cleanup(3600)`. 매일 한국시간12:15이며 임시 일정은 남기지 않았다. 사후 Auth0/player0/best0/run0/pending deletion0, completed deletion2는 기간 미경과로 보존됐다. 운영에 합성 사용자/점수를 넣지 않았고 staging에는 변경 없음. 만료된 실제 데이터 삭제 건수까지 입증하는 fixture 검사는 아니다.
+- 변경: 운영별 SQL, 정적 회귀2개, package 스키마 검사 연결, 운영/학습/메모리 기록. schema25/25, ranking186/186(12suites), typecheck/ranked sync/server check/diff check 통과. 전체 데이터·Auth 복구와 최종 인계가 남아 T03은 in_progress/완료 커밋 없음.
+
+## 2026-09-24 · 사용자 Usage 화면 증거 수신
+
+제공된 캡처 상단은 이번 결제 주기에 Free 한도를 초과하지 않았다고 표시한다. DB0.027/0.5GB(5%), Edge 호출437/500000(<1%), egress0.002/5GB(<1%), cached egress0/5GB, MAU0/50000, third-party MAU0/50000, Storage0/1GB, Realtime 동시접속 peak0/200, 메시지0/2000000. SSO MAU와 Storage Image Transformations는 해당 플랜에서 unavailable이다.
+
+사용자가 요청받은 Usage 화면을 제공한 증거로 기록한다. 캡처에는 조직명/ref·프로젝트 필터·정확한 결제 기간/촬영 시각이 없어 이를 추정하지 않는다. 표시 수치의 여유는 현재 사용량에 관한 것이며 향후 동접 수용량·공급자 부하 한도·백업 성공을 증명하지 않는다. MAU0을 DB Auth 사용자0의 증거로 사용하지 않는다. 스크린샷 대기는 해소됐고 production 정리 예약 및 데이터/Auth 복구 검증은 남았다. 문서 변경만 수행했으며 새 런타임 테스트/서버 변경/완료 커밋은 없다.
+
+## 2026-09-24 · 운영 읽기 점검과 제한된 구조 복원
+
+- 실제 CLI 읽기 점검: 두 서버 모두 PostgreSQL17.6. staging11988115bytes, production11578515bytes; 각 Auth 사용자0/프로필0. 월간 MAU/egress/Edge 호출량이나 청구 용량을 대신하지 않는 DB 순간 집계다.
+- staging에는 pg_cron1.6.4 및 active `nyang-staging-rank-cleanup` (`15 3 * * *`, `select private.rank_cleanup(3600)`)이 있다. production은 pg_cron 미설치(null). 운영 정리 예약과 첫 실행은 아직 검증되지 않았으며 출시 전 처리해야 한다. 이번에는 production에 아무 설정/쓰기 변경을 하지 않았다.
+- 이전 도구 부재 판단 정정: `C:/Program Files/PostgreSQL/18/bin/pg_dump.exe`, `pg_restore.exe`18.6가 설치돼 있었고 PATH에서만 발견되지 않았다. 기존 Windows PostgreSQL 서비스는 Running이며 건드리지 않았다.
+- 실제 staging `private,public` **schema-only** custom archive53400bytes를 백업했다. 공식 CLI dry-run의 단기 로그인 연결값은 메모리에서만 사용했으며 출력/저장하지 않았다. 처음 pg_dump는 권한 부족으로 실패; `--role=postgres`를 사용해 성공했다.
+- 별도 임시 로컬 PostgreSQL18,127.0.0.1:55439에서 복원했다. 전제 역할과 빈 `auth.users(id)`는 합성 생성, 소유자는 `--no-owner`로 로컬화했다. 초기 Windows 하위 프로세스 대기 및 기본 public 스키마 충돌을 분리해 해결했다. 빈 public 제거는 데이터 디렉터리를 정확히 확인한 **이번 임시 클러스터에만** 수행했다. 원격 DB와 기존 로컬 서비스는 보존했다.
+- 최종 실제 복원 점검: private6테이블/RLS6, public rank RPC12, service_role execute12/anon0/authenticated0. `rank_get_board`는 빈 보드와 일치하는 규칙 버전을 반환했다. 임시 클러스터는 정상 종료했다. 결과 경로 `output/schema-restore-781ae9c9e54b43329ee4d8ef560c847c/`.
+- **범위 제한:** 사용자 데이터 없음, Auth/세션 복원 없음, 역할/소유자 완전 복원 없음, Edge/secrets/cron 복원 없음, 실제 Supabase17 원격 복원 없음. 구조·권한 일부의 복원 증거이지 전체 서비스 복구나 백업 운영 완료가 아니다. 코드 migration 재실행을 백업 복원으로 가장하지 않고 실제 archive를 사용했다.
+- Dashboard 도구는 Node runtime 경로 오류. 사용자가 다음 채팅에 Usage 캡처를 보내기로 했다. T03 미완료 유지, 완료 커밋 없음.
+
+## 2026-09-24 · 실제 staging 브라우저 자동 복구 확인
+
+- 실행 시각14:02UTC, Chromium1280×720, Origin `http://127.0.0.1:4173`, ref `tadokcpealpwjfyjovuy`. 최신 소스로 별도 `output/nyang-staging-auto-retry-20260924` export, JS `index-ca2e32eacf64fe97129b9ea3a34184a8.js`, 공개 환경 검사10/10 통과. 기존 dist와 사용자 저장 데이터는 건드리지 않았다.
+- 실제 UI로 익명 계정1개/닉네임 생성 → 실제 `/runs`200 및 카운트다운 후 인터넷 차단 → 방향키로 짧은 판 종료. 결과는0%, 보관된 proof는 terminal=true/failureCount1/chunk1이고 발급된 runId와 일치했다.
+- 연결만 복구한 뒤2012ms에 `/runs/chunks`200, `/runs/finalize`200 및 ‘랭킹 등록 완료’를 확인했다. 수동 재시도 클릭/포커스 이벤트 주입/새로고침/시간 조작/가짜 API 없음. 서버 receipt의 runId·점수가 원래 판·화면과 일치했고 local proof는 지워졌다.
+- 설정 UI에서 계정 삭제: 실제 DELETE200/deleted=true 및 local session/deletion key 제거 확인. 같은 토큰으로 DELETE 재시도200, Auth `/user`403도 별도 확인. 보고서 `output/staging-browser-auto-retry-20260924.json`:8개 통과, 실패0, signupAttempts1, cleanupRequired0, signupResponseUncertain=false. 이번 계정의 삭제 증거이며 전체 DB가 비었다는 검사는 아니다. 세션 토큰은 메모리에서만 사용하고 보고서/trace에 보관하지 않았다.
+- `npm.cmd run test:ranking`:186/12suites, `ranked:check`:8개 정본/규칙 `nyang-v1-bc732af6f2a7ea66`, `server:check`, `typecheck` 통과. 자동 복구는 기존 코드가 정상이라 앱/서버 코드를 바꾸지 않았다. 짧은0% 판 검증이므로 장시간·고득점·실제 iPhone/Hermes·다른 브라우저로 일반화하지 않는다.
+- 기존 ‘수동 재시도만 검증, 자동 재시도 미검증’ 기록을 대체한다. T03은 Usage/공급자 한도·백업복구 등 남은 운영 항목 때문에 미완료이며 완료 커밋/포인터 전진 없음.
+
+## 2026-09-24 · 운영 smoke 완료와 다음 웹 준비
+
+- 실제 파일로 확인한 최신 hosted report: `output/ranking-production-14c82633-59f9-42b2-87d4-f82a739f651b.json`, checkedAt13:38:09UTC, production `fgojrxmpxpzdiwsktjsx`, 14passed/0failed/8manual not_run, smokePassed=true, cleanupRequired=0, signupResponseUncertain=false. 공개 보드·익명 가입·쓰기 차단·유효 replay·중복 finalize·개명/신고·두 테스트 계정 삭제와 삭제 재시도 검증이 통과했다. `taskComplete=false`는 남은 수동 항목이 있음을 뜻한다.
+- 운영 공개 URL/key만 명시적으로 주입하고 mock-ad/진단=false, dotenv 자동 로딩 off로 별도 `output/nyang-production-preflight-20260924`를 export했다. env 검사10개 모두 통과(텍스트3개 검사, 바이너리17개 제외). 로컬 HTTP index/base path/JS1개/asset17개 모두200. Bundle `index-15a8e625f14e347be6f924196475d0f3.js`. 정적 검사이며 실제 Pages 배포/브라우저 조작 증거는 아니다. 기존 dist/server 보존.
+- 네트워크 허용 실행에서 운영 공개 GET200, Pages Origin 일치, 규칙 일치 확인. 초기 로컬 경로 오기(src/game 대신 src/online)로 네트워크 호출 전에 실패한 진단은 경로 수정 후 재실행했다.
+- Staging 공개 GET은 처음503/UNAVAILABLE이었다. 설정 이름 세 개 존재를 확인한 뒤 문서화된 `RANKING_ENVIRONMENT=staging`과 `RANKING_ALLOWED_ORIGINS=http://127.0.0.1:4173,http://localhost:4173`만 복구했다. 이후 두 Origin 모두200/CORS/규칙 일치. salt/운영 설정은 변경하지 않았다. 기존 값의 정확한 내용이나 누가 변경했는지는 확인되지 않았으므로 특정 오타/변경 주체를 원인으로 단정하지 않는다.
+- GitHub read-only: 공개 repo JEONG-INSOO/close-call-nyang/main 확인, Pages API404, repository variables빈 배열. 기본 sandbox에서는 소켓 접근이 차단되지만 승인된 실행에서는 네트워크 조회가 가능하다. 원격 Pages/Variables/워크플로 실행/푸시 없음.
+- 다음: 실제 staging 브라우저의 수동 버튼 없는 자동 재전송·정리, Usage/backup-restore와 남은 운영 검증. Docker/pg_dump 없음. Expo Go/iPhone/Hermes는 P03 실기기 항목. T03 완료/커밋/포인터 전진은 아직 하지 않는다.
+
 ## 2026-09-24 · GitHub Pages workflow gate 준비
 
 `deploy-pages.yml`을 PR 검사와 main 배포로 분리했다. PR은 typecheck/Jest/ranking/browser 검사와 local-only export를 수행하며 Pages write/OIDC 권한이나 artifact upload를 받지 않는다. main push/manual run은 승인된 production Supabase URL과 `sb_publishable_` 키를 요구하고, canonical rules·typecheck·Jest·ranking·bundle 검사·Playwright를 모두 통과해야 배포 artifact를 만든다. `dist/`만 업로드하고 QA fixture `output/`는 포함하지 않는다.
@@ -256,3 +329,116 @@ Metro가 이전 공개 환경변수를 재사용한 실패는 두 export의 `--c
 도구 검사는 명시적 쓰기 허가/대상 불일치 차단, 실제 엔진 기반 proof 생성, 누적 실제 시간 대기, ACK 변조·재전송, 가입/확정/삭제 실패·응답 유실과 자기 계정 정리, 보고서 비밀값 제외를 확인합니다. 정적 키 검사 오탐(SDK 필드명 상수)은 좁게 수정했습니다. 호스팅 보고서는 항상 `taskComplete=false`이며 미구현 수동 검사는 `not_run`으로 남습니다.
 
 **아직 not_run:** 프로젝트 생성, 실제 SQL 문법 실행/카탈로그 권한/직접 REST·RPC 차단, 동시 트랜잭션·공동순위101명 fixture, 실제 Auth/서명키/탈퇴/호스팅 proof, Gateway·CPU·한도, cron/백업/복구, 실제 staging 웹 연결·통신 복구, production 연결, iPhone/Hermes. 기존 E2E28pass11skip과 SQL 정적21/Doctor는 해당 이전 기록일 뿐 이번에 다시 실행한 증거가 아닙니다. 실제 프로젝트 비밀값·키를 발급/저장하지 않았고 배포·푸시·Task 완료 커밋도 하지 않았습니다.
+## 2026-09-24 · staging cleanup cron
+
+- staging 전용 read-only 조회에서 cleanup 함수는 존재했지만 pg_cron extension/schema가 없음을 확인했습니다.
+- 승인 후 pg_cron을 활성화하고 job `nyang-staging-rank-cleanup`을 매일 03:15 UTC에 `private.rank_cleanup(3600)`를 호출하도록 등록했습니다. 재조회 결과 extension=true, jobid=1, active=true, 설정된 명령/일정이 일치했습니다.
+- 이어서 staging에서 `private.rank_cleanup(3600)`을 한 번 직접 실행해 오류 없이 완료했습니다. 사후 조회에서 만료 active/terminal/finalized runs, 신고, rate bucket, 정리 가능 completed deletion receipt는 각각 0건이며 pending deletion receipt도 0건이었습니다.
+- 직접 함수 호출은 cron scheduler 실행 이력이 아니므로 등록된 job의 첫 주기 실행은 아직 **not_run**입니다. 영향받은 삭제 행 수는 호출 전 개별 계수 없이 실행해 알 수 없으며, backup/restore 역시 **not_run**입니다. Production 프로젝트는 조회 외 변경하지 않았습니다.
+
+## 2026-09-24 · GitHub Pages 배포 preflight
+
+- Read-only GitHub 확인: `JEONG-INSOO/close-call-nyang` 공개 저장소, `main` 기본 브랜치, GitHub CLI 인증 유효.
+- Pages API 404, production repository variables 없음. Workflow run `35820751694`은 `Configure Pages` 단계 실패, artifact upload/deploy skipped.
+- Production Supabase는 생성만 완료했고 migration/function은 미배포이므로 Pages 공개를 재시도하지 않았습니다. 이 preflight는 온라인 production 준비나 공개 URL 검증이 아닙니다.
+
+## 2026-09-24 · staging hosted smoke 재검증
+
+- `ranked:check`, `test:ranking` 186/186, `server:check` 통과. staging용 별도 웹 export의 `ranking:env-check`도 통과했습니다. dist 설정 불일치로 처음 scan한 기본 local export는 실패했으며, 사용자 dist를 덮지 않고 전용 ignored output 디렉터리로 다시 export해 검사했습니다.
+- sandbox 내 API 요청은 `PUBLIC_BOARD` 네트워크 타임아웃으로 끝나고 이후 항목은 `not_run`이었습니다. 동일 검사를 네트워크 허용 환경에서 재실행해 `smokePassed=true`, 14개 실제 smoke assertion pass, `cleanupRequired=[]`, `signupResponseUncertain=false`를 확인했습니다. 최신 무시된 보고서는 `output/ranking-staging-<UUID>.json`입니다.
+- 이 smoke의 동시 중복 finalize는 통과했지만, 서로 다른 run/user의 최고점·동점 최초 시각 경쟁 검증은 별도이며 여전히 not_run입니다. DB catalog/RLS/다른 top-30 fixture·Gateway limits·cron scheduled 첫 실행·backup/restore·실제 웹 오프라인 복구도 미완료입니다.
+
+## 2026-09-24 · staging cross-run 최고점/동점 심층 검증
+
+- Staging 전용 verifier 실행 결과 `CROSS_RUN_MAX_CONCURRENCY:passed`; 두 별도 익명 사용자의 paced legal 101m proof를 동시 finalize해 tied rank 및 정렬을 확인했습니다. 이후 한 사용자의 낮은 점수 run이 개인 최고점 101m와 `achievedAt`을 바꾸지 않는 것도 확인했습니다.
+- 생성한 두 Auth 사용자는 정상 삭제됐고 동일 토큰 삭제 재시도/인증 무효화 확인도 통과했습니다. 최종 보고서 `smokePassed=true`, `taskComplete=false`, `cleanupRequired=[]`, `signupResponseUncertain=false`. 검사는 staging ref `tadokcpealpwjfyjovuy`에만 수행했습니다.
+- `test:ranking-tools` 66/66 통과. 이는 서로 다른 사용자 사이 동점/최고점 보존 증거이지 same-player 동시 run 검증은 아닙니다. API의 플레이어별 단일 active run 제약을 따릅니다.
+- 남은 hosted 항목: expiry/moderation races, Gateway/provider limits, cron scheduler 첫 예약 실행, 백업/복구, 실제 브라우저 온라인/오프라인 복구. Production과 iPhone/Hermes도 별도 미검증입니다.
+
+## 2026-09-24 · 만료·운영 상태 staging fixture 준비 및 실제 실행
+
+- `scripts/sql/ranking-staging-lifecycle.sql`을 추가했습니다. 지정 staging ref/실행 owner/non-internal trigger guard를 확인하고, 새 임의 Auth stub만 대상으로 active-vs-hidden/banned board filtering, hidden/banned write denial, banned read denial, expired-run `EXPIRED` 검사를 시도한 뒤 전체 transaction rollback을 요구합니다.
+- `npm.cmd run test:ranking-schema` 23/23 통과와 `git diff --check` 통과. 이는 스크립트 정적 guard 검사뿐으로 SQL parser/실제 Postgres/hosted 결과가 아닙니다.
+- 후속 실제 실행(10:14 UTC): CLI 2.117.0 네트워크 허용 실행에서 로그인과 `nyang-staging` ref를 확인한 뒤 `db query --linked --project-ref tadokcpealpwjfyjovuy --file scripts/sql/ranking-staging-lifecycle.sql`로 파일 전체를 실행했습니다. 실제 결과: `assertionsPassed=true`, `rollbackCompleted=true`, `intentGucsCleared=true`, `expiredRun=rejected`, `protectedWrites=hidden-and-banned-rejected`, `taskComplete=false`.
+- 별도 사전/사후 읽기 전용 조회에서 Auth/players/bests/runs 및 lifecycle rules prefix 행 수는 모두 0으로 동일했습니다. 합성 데이터가 남지 않았습니다. 단일 트랜잭션 SQL 검증이며 별도 세션 동시성, HTTP middleware, 실제 Auth 가입 검증은 아닙니다. Production 데이터/스키마 변경 없음.
+- CLI 최초 `--project-ref`만 지정한 시도는 `--linked` 필요 오류로 쿼리 실행 전에 중단됐고, help와 오류를 확인해 `--linked`를 추가했습니다. cron은 active=true, schedule=`15 3 * * *`, 실행 이력은 여전히 NULL입니다.
+
+## 2026-09-24 · staging cron 첫 예약 실행 이력 조회
+
+- 사용자가 staging SQL Editor에서 읽기 전용으로 `cron.job`과 `cron.job_run_details`를 조인해 확인한 결과, `nyang-staging-rank-cleanup` jobid 1은 있지만 연결된 run 이력의 runid/status/start/end/result가 모두 NULL이었습니다.
+- 해석: 해당 조회에서 실행 기록을 찾지 못했습니다. 실패한 run도 성공한 run도 확인된 것이 아니므로 cron 예약 실행 검증은 계속 미완료입니다. 이전 수동 `rank_cleanup(3600)` 호출은 scheduler 기록을 만들지 않습니다.
+- Production은 조회/변경하지 않았습니다. 다음 검증은 예정된 주기 이후 같은 읽기 전용 조회에서 실제 run의 status와 결과를 확인하는 것입니다.
+
+## 2026-09-24 · staging Gateway 설정 및 시작 제한 실검증
+
+Staging ref `tadokcpealpwjfyjovuy`의 Supabase CLI `functions list --output json` 결과 `leaderboard-api`는 ACTIVE version 4, `verify_jwt=false`였습니다. Gateway JWT 검사를 끄므로 보호 요청 인증은 Edge Function의 Auth 검증으로 처리됩니다. 익명 쓰기 및 잘못된 JWT 거부는 별도 hosted smoke에서 확인했습니다. 공급자 레벨 호출 한도는 이 설정 조회만으로 검증되지 않습니다.
+
+Staging 전용 `--verify-start-rate-limit`을 추가해 실제 HTTP를 검사했습니다. 새 임시 사용자로 1분 안에 `/runs` 시작 30회를 보낸 뒤 31번째가 HTTP 429 `RATE_LIMITED`와 양수 `Retry-After`(60초 이하)를 반환했습니다. `npm.cmd run test:ranking-tools`: 67/67 통과. 보고서 `output/ranking-staging-4934e936-1665-48a7-acde-aa95f863f413.json`: `smokePassed=true`, `cleanupRequired=0`, `signupResponseUncertain=false`, `taskComplete=false`. Auth/players/best_scores/runs/reports는 각 0건이며 24시간 내 rate bucket 37건, 24시간 초과 0건입니다.
+
+남은 T03: provider/Gateway 실효 한도 및 forwarded-IP 신뢰 경로, cron 예약 실행 이력, 백업/복구 연습, staging 웹 실제 오프라인 복구. Production 및 iPhone/Hermes는 이번 작업에서 변경/검증하지 않았습니다.
+
+## 2026-09-24 · staging cron 가속 실행과 일정 복구
+
+Staging job `nyang-staging-rank-cleanup`(jobid 1)의 기존 schedule=`15 3 * * *`, active=true 및 command=`select private.rank_cleanup(3600)`를 읽기 전용 확인한 뒤, 동일한 job/command 조건으로 일정만 잠시 `* * * * *`로 변경했습니다. `cron.job_run_details`에 runid=1, start=`2026-09-24 10:34:00.122915+00`, end=`10:34:00.137984+00`, status=`succeeded`, return_message=`1 row`가 기록됐습니다. 원래 일정으로 복구하고 active=true임을 재확인했습니다. Production은 변경하지 않았습니다.
+
+## 2026-09-24 · forwarded IP limiter 조사·수정
+
+수정 전 staging 공개 GET 61회에 X-Forwarded-For를 두 값으로 바꿔 보내자 모두 200이었고, 익명 read bucket은 12개로 나뉘어 총 61회가 기록됐습니다. 이를 곧바로 취약점으로 단정하지는 않았지만, 마지막 forwarded hop 신뢰 가정은 입증되지 않았습니다. 코드는 `x-forwarded-for` 대신 Supabase Gateway `cf-connecting-ip`를 limiter identity로 사용하도록 변경했습니다. Supabase 로그 필드는 `request.headers.cf_connecting_ip`를 요청자 IP로 기록합니다: [Log field reference](https://supabase.com/docs/guides/observability/log-field-reference). Cloudflare header semantics: [HTTP headers](https://developers.cloudflare.com/fundamentals/reference/http-headers/).
+
+`leaderboard-api`만 staging version 5로 재배포한 뒤 XFF를 바꾼 실제 61회 요청에서 1~60회 200, 61회 429 `RATE_LIMITED`, `Retry-After: 40`을 확인했습니다. 임의 `cf-connecting-ip` 변경 probe는 첫 호출 403으로 Gateway가 거부했으며 limiter pass 근거로 쓰지 않았습니다. Deno server API 50/50, `server:check`, `git diff --check` 통과. 이 429는 앱 limiter 검증이지 공급자 전체 quota/CPU 한도 증거는 아닙니다.
+
+## 2026-09-24 · 실제 브라우저 staging/offline 경로 및 cleanup 이슈
+
+공개 설정을 별도 `output/nyang-staging-offline-check`에 빌드하고 정적 env 검사를 통과했습니다. 허용 origin `http://127.0.0.1:4173`에서 Playwright Chromium으로 실제 staging API 가입, 순위 읽기, ranked run, 오프라인 종료의 `랭킹 등록 대기`, 재연결 후 수동 `등록 다시 시도` 경유 chunk/finalize(각 200)를 확인했습니다. 별도 오프라인 시작은 기기 로컬 기록만 남고 재연결 후 chunk/finalize 요청이 없었습니다. 자동 재연결 업로드는 확인하지 않았습니다. GitHub Pages URL과 iPhone/Hermes도 미검증입니다.
+
+중요: 자동화가 삭제 확인 버튼이 사라진 즉시 cleanup 성공으로 오판했으나, 사후 DB 검증에서 이번 turn의 테스트 사용자가 남은 것을 발견했습니다. 정확한 synthetic 대상은 `검증냥` profile 5개(user IDs: `e0053120-ece7-4d77-b709-fec9b1736660`, `aff05fd6-6384-4c00-84fe-7526af9a78ee`, `a3f4d547-2e9b-4c35-bcf4-b8742ada4c85`, `abb74487-6d77-46d1-bdb6-aa8f329fdd5c`, `00d1fdaf-82b8-4244-bcf1-f1ff3a299dca`)와 profile 없는 anonymous Auth user `7c9521df-5e62-400d-935b-309edeed8ccb`입니다. 삭제 영수증은 없고 Postgres `auth.delete_user` 함수도 없습니다. 앱 API 세션을 보유한 브라우저는 종료됐으므로 임의 SQL 삭제는 하지 않았습니다. Dashboard Authentication > Users에서 staging project만 사용해 이 6개 ID를 지우고, Auth/profile/best/run 수가 0인지 재조회해야 합니다. 현재 aggregate Auth=6, players=5, best=1, runs=1, reports=0입니다. Production 영향은 없습니다.
+
+## 2026-09-24 · 후속 로컬 검증 및 원격 확인 재시도
+
+T03 후속 전체 로컬 회귀 재실행 통과: Jest 44 suites / 659 tests, `typecheck`, `ranked:check` (8 canonical files / `nyang-v1-bc732af6f2a7ea66`), `test:ranking-tools` 67/67, `server:check`. Staging public GET 재시도는 Node `fetch` `TypeError`, PowerShell `Invoke-WebRequest` `WebException`으로 둘 다 HTTP 응답 전에 실패했습니다. 이는 원격 서비스 실패 상태를 나타내지 않으며 네트워크 증거만 제공합니다.
+
+사용자 실행 exact-ID SELECT 결과: `auth_users=6`, `players=5`, `best_scores=1`, `runs=1`, `related_reports=0`, `pending_deletions=0`, `completed_tombstones=0`. 이전 여섯 browser-test 계정이 아직 남아 있음이 확인됐습니다(익명 Auth-only 1개 포함). `pending_deletions=0`은 이 여섯 계정의 삭제 요청이 대기 중이지 않다는 뜻이지, 삭제 완료 증거가 아닙니다. 이 여섯 ID만 staging Dashboard Authentication > Users에서 제거한 뒤 같은 query로 0건을 확인해야 합니다. 새 테스트 데이터는 만들지 않았습니다.
+
+## 2026-09-24 · 최신 사용자 실행 staging smoke
+
+사용자가 개발 PC PowerShell에서 staging smoke를 다시 실행했습니다. Ignored report `output/ranking-staging-3eefa6e3-4769-4abd-af45-e3b6f2b72de4.json`: `tadokcpealpwjfyjovuy`, 14 passed / 0 failed / 8 not_run, `cleanupRequired=0`, `signupResponseUncertain=false`, `taskComplete=false`. Public board, unauth/bad-JWT denial, two anonymous profiles, strict fields, issued run/ownership, paced replay/idempotent ack, duplicate finalize, private schema/RPC denial, rename/report, and both *new smoke users'* cleanup/delete-retry passed. The `not_run` entries are separate manual checks, not failures.
+
+This report proves cleanup only for the two users created by this run. It does **not** establish that the previous six browser-test IDs were deleted; run `scripts/sql/ranking-staging-cleanup-check.sql` read-only and retain that exact-ID post-count evidence before production rollout. T03 remains incomplete.
+
+네트워크 원인 구분: `Resolve-DnsName tadokcpealpwjfyjovuy.supabase.co`는 A record 2개를 얻었으나 `Test-NetConnection ... -Port 443`는 false였습니다. DNS는 되지만 이 실행 환경에서 Supabase HTTPS 연결 경로는 현재 차단/실패합니다. 로컬 앱 테스트로 실제 계정/usage를 대체하지 않습니다.
+
+운영 문서 Free 백업 설명은 공식 Supabase 문서와 대조해 업데이트했습니다: Free 한도/Usage 보기, 낮은 DB 활동에 따른 정지·resume, `db dump`가 Docker 안에서 실행되는 점, 기본 dump의 Supabase 관리 `auth`/`storage` 제외 및 데이터·roles 비포함을 기록했습니다. 이 발견에 따라 Postgres dump만으로 anonymous Auth ID 포함 전체 서비스 복구를 주장하지 않도록 경고를 추가했습니다. 실제 backup/restore는 아직 미실행입니다.
+
+추가 public leaderboard GET 시도는 Node fetch 네트워크 `TypeError`로 응답을 받지 못했습니다. Secret을 출력하지 않았고 원격 계정/순위 상태에 대한 새 증거는 없습니다. 운영 문서에는 exact-ID read-only post-cleanup SQL을 추가했습니다.
+
+`npm.cmd test -- --runInBand src/online/__tests__/rankedSession.test.ts` 통과(28/28): 같은 proof 요청 재시도, 1/2/4/8/16/30초 backoff, 429 `Retry-After`, 화면 비활성 중 재시도 금지, 만료 및 영구 오류 처리를 가상 시간으로 확인했습니다. `npm.cmd run test:ranking-tools` 67/67, `npm.cmd run server:check`, `git diff --check`도 통과했습니다. 이는 클라이언트 로직/회귀검사 증거이며 실제 브라우저가 재연결 후 아무 조작 없이 재업로드하는 증거는 아닙니다.
+
+원격 확인 재시도는 막혔습니다: `npx.cmd --yes supabase@2.117.0 projects list`가 30초 동안 출력 없이 대기했고 중단했습니다. Dashboard CUA도 Node runtime 경로 오류로 열리지 않았습니다. staging의 최신 사용자 수와 provider Usage는 갱신 확인하지 못했으며, 마지막 알려진 상태는 Auth6/Profile5/Best1/Run1/Report0입니다. 사용자가 정확히 여섯 staging Auth ID를 Dashboard에서 지운 뒤 재집계를 제공하거나 브라우저 대시보드 접근이 복구되어야 이어갈 수 있습니다.
+
+Cleanup resolution (user-reported): user confirmed Dashboard ref `tadokcpealpwjfyjovuy`, searched/deleted exactly the six synthetic IDs through Auth Users, then reports the exact-ID SQL query returned zero. This supersedes the stale Auth6/Profile5/Best1/Run1 count above. Agent cannot independently query hosted DB because its HTTPS route is blocked. Production env config was checked without printing values: environment/ref/url/public-key shape all match expected `fgojrxmpxpzdiwsktjsx`; the hosted runner deliberately stopped at `TEST_WRITES_NOT_AUTHORIZED`, so no production request or write was made. Docker/pg_dump absent. Remaining T03 evidence: Usage, backup/restore, live no-click browser retry, production migration/API/smoke.
+
+User's production migration dry-run for `fgojrxmpxpzdiwsktjsx` reports only `202609210001_leaderboard.sql` and `202609230002_leaderboard_top30.sql`. Source review: creates private leaderboard schema/tables/restricted RPCs and replaces board list cap with30; no DROP/TRUNCATE; retention function definition is not invoked by migration apply. Local gates passed: `test:ranking-schema`23/23, `ranked:check`, `server:check`, `ranking:env-check -- --env-file .env.ranking.production`, `git diff --check`. No production migration or API deployment performed yet.
+
+User subsequently reports `Finished supabase db push.` for production. Full output/version rows were not included, so independently confirm the applied versions via read-only `supabase_migrations.schema_migrations` query in ref `fgojrxmpxpzdiwsktjsx` before proceeding to production function configuration. No Edge Function deploy or production smoke performed in this step.
+
+User then queried `supabase_migrations.schema_migrations` in production and returned exactly the expected versions `202609210001` and `202609230002`. Record as user-provided evidence for database migration application; catalog privilege/RLS audit, Edge Function configuration/deploy, and production smoke remain outstanding.
+
+Production read-only `ranking-hosted-audit.sql` output (user attachment) parsed successfully: expected migration present and both versions listed; all six private relations exist with RLS enabled, zero policies, no direct role/column grants; 12 RPCs exist, use SECURITY DEFINER/empty search_path, no PUBLIC execute, service_role-only execution; 8 helpers have empty search_path and no execute grants (only cleanup is SECURITY DEFINER); no PUBLIC schema grant; no unexpected private relations or ranking routines. Next: verify production `rank_get_board` is Top-30, then Auth/Edge secret config, deploy function, production smoke.
+
+User confirmed the production `rank_get_board` definition check returned `true` for the Top-30 cap. This completes the read-only production database/catalog checks. Remaining T03 work: confirm production anonymous Auth setting and Edge Function secret names/configuration (never reveal secret values), deploy `leaderboard-api`, then run and inspect a production-scoped disposable smoke. Provider/Gateway quota, backup/restore, and remaining browser/device checks must be reported separately and not implied by the DB audit.
+
+Production `supabase secrets list --project-ref fgojrxmpxpzdiwsktjsx` returned an empty table (user-provided CLI output), so no custom Edge Function secrets are currently configured. Built-in Supabase environment variables are platform-provided and should not be manually copied. Next configure only the three app variables and verify anonymous Auth, then deploy/smoke.
+
+User confirms the three app-specific production secrets were saved in Dashboard and anonymous sign-ins are enabled. Values were not shared. Ready for a targeted production deploy of `leaderboard-api`; afterward verify its active version/JWT setting and run the scoped smoke. No deployment result has been reported yet.
+
+User reports successful production deployment output for `leaderboard-api` to `fgojrxmpxpzdiwsktjsx`. Deployment uploaded only the expected function and its source dependencies. Next verify the remote function list shows ACTIVE and `verify_jwt=false`; then run the production smoke. Deployment success alone does not prove runtime secrets or API behavior.
+
+User-provided production function listing now shows `leaderboard-api` / slug `leaderboard-api`, status `ACTIVE`, version `1` (updated 2026-09-24 13:05:41 UTC). The table omitted `verify_jwt`, so confirm that single flag via JSON listing or Dashboard before smoke. No production API smoke result yet.
+
+User confirms production `verify_jwt=false` from JSON listing. The production function is active/version1 and configured to let public reads reach the handler; handler-level auth checks remain required for protected routes. Proceed to the explicitly scoped production smoke; do not infer runtime success from the flag alone.
+
+First production smoke attempt reported `PUBLIC_BOARD:failed`. In `scripts/verify-leaderboard.mjs`, this check runs before either anonymous signup; a failure exits to `finally` while the temporary-user list is empty, so this attempt cannot have created test profiles/scores. Exact sanitized report evidence (HTTP status/code) is still needed before diagnosis/retry. Do not rerun until the failure code is inspected.
+
+User-provided sanitized report evidence: `PUBLIC_BOARD` failed with `UNEXPECTED_HTTP_503`; all subsequent checks were `not_run` because the runner stops at the first failed assertion; `cleanupRequiredCount=0`, `signupResponseUncertain=false`, `smokePassed=false`. No test signup/score was attempted. Code review: startup guard returns 503 if Supabase URL/service-role key is unavailable, rate salt is missing/shorter than32 chars, or allowed origins are invalid; the repository also maps unexpected database/RPC errors to generic `UNAVAILABLE`/503. Exact root cause remains unknown. Do not rerun until configuration is checked.
+
+Follow-up production `supabase secrets list` showed only Supabase platform variables (`SUPABASE_URL`, legacy service-role key and other defaults); none of the three app variables appeared. User now reports that all three names are present in Dashboard Edge Functions > Secrets. Therefore the CLI/Dashboard evidence conflicts, and the earlier inference that the salt was definitely absent is withdrawn. Exact root cause is unresolved: verify the Dashboard project ref and the three value constraints locally, then inspect safe runtime/DB evidence before retry. No smoke test writes occurred.

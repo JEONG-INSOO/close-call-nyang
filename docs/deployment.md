@@ -24,9 +24,11 @@ GitHub 저장소 Settings → Secrets and variables → Actions → Variables에
 
 ## 현재 prerequisite
 
-production Supabase 프로젝트는 만들어졌지만 leaderboard migration/API와 hosted 검증은 아직 적용·완료되지 않았습니다. 따라서 공개 variables를 등록하고 workflow를 통과시켜도 실제 온라인 랭킹 서비스가 준비됐다는 뜻은 아닙니다. Production backend 준비, GitHub Pages의 Source=GitHub Actions 설정, 유효한 GitHub 인증을 확인하고 배포 Task에서 별도로 진행해야 합니다.
+2026-09-24 최신 상태: production migration/catalog/Top-30와 API v1 배포 확인 후 실제 hosted smoke14개가 통과했고 테스트 계정 두 개의 삭제도 확인했습니다. 보고서는 `output/ranking-production-14c82633-59f9-42b2-87d4-f82a739f651b.json`입니다. 별도 폴더 `output/nyang-production-preflight-20260924`에 운영용 공개 설정을 넣은 웹을 export하여 공개 설정 검사10개와 로컬 HTTP index/base path/JS1개/asset17개를 통과했습니다. 기존 `dist`와 서버는 유지했습니다.
 
-현재 GitHub CLI credential은 무효 상태였습니다. 다시 인증할 때는 PowerShell에서 `gh auth login -h github.com -p https -w`를 실행하고, 브라우저에서 표시된 일회용 코드를 입력합니다. 토큰이나 일회용 코드는 채팅에 보내지 않습니다.
+최신 GitHub 읽기 전용 조회에서도 공개 저장소/main은 확인되지만 Pages API는404이며 repository variables는 빈 배열입니다. 따라서 위 두 공개 변수 설정과 Pages Source=GitHub Actions가 다음 배포 준비입니다. T03의 실제 브라우저 자동 재전송·Usage·백업/복구 등 남은 운영 검증을 마무리하고 배포 단계에서 진행합니다. 아래 원격 점검 문장은 당시 상태를 보존한 과거 기록입니다.
+
+2026-09-24 원격 점검: GitHub CLI는 `JEONG-INSOO`로 인증되어 있고 저장소는 공개, 기본 브랜치는 `main`입니다. GitHub Pages API는 404(사이트 미설정), production 공개 repository variables는 아직 없습니다. 최신 workflow run `35820751694`은 export 다음 `Configure Pages` 단계에서 실패했고 upload/deploy는 실행되지 않았습니다. 앞선 Supabase preflight에서 production ref `fgojrxmpxpzdiwsktjsx`에 적용된 leaderboard migration과 Edge Function이 없음을 확인했습니다. 따라서 현재는 Pages deploy를 재시도하지 않습니다.
 
 ## 결과 해석
 

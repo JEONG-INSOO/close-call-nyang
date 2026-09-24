@@ -7,6 +7,7 @@ import { test } from 'node:test';
 // and exercise separate anon/authenticated/service-role sessions on a real DB.
 const baseSource = await readFile(new URL('../supabase/migrations/202609210001_leaderboard.sql', import.meta.url), 'utf8');
 const top30Source = await readFile(new URL('../supabase/migrations/202609230002_leaderboard_top30.sql', import.meta.url), 'utf8');
+const lifecycleFixture = await readFile(new URL('./sql/ranking-staging-lifecycle.sql', import.meta.url), 'utf8');
 const source = `${baseSource}\n${top30Source}`;
 const sql = source.replace(/--[^\r\n]*/g, '').replace(/\r\n/g, '\n');
 const compact = value => value.replace(/\s+/g, ' ').trim();
@@ -272,4 +273,24 @@ test('static: retention keeps pending tombstones/bests and uses configured JWT l
 test('static: API failures use exact error message and structured optional expectedSeq', () => {
   assert.match(body('private.rank_fail'), /errcode = 'P0001', message = p_code/);
   assert.match(body('private.rank_fail'), /jsonb_strip_nulls\(pg_catalog.jsonb_build_object\( 'code', p_code, 'expectedSeq', p_expected_seq\)\)::text/);
+});
+
+test('static: staging lifecycle fixture is isolated, transactional, and checks expired/moderated behavior', () => {
+  const fixture = lifecycleFixture.replace(/--[^\r\n]*/g, '').replace(/\r\n/g, '\n');
+  assert.match(fixture, /^\s*begin;[\s\S]*set local nyang\.verification_environment = 'staging';/);
+  assert.match(fixture, /set local nyang\.verified_project_ref = 'tadokcpealpwjfyjovuy';/);
+  assert.match(fixture, /current_user is distinct from[\s\S]*STAGING_LIFECYCLE_REQUIRES_MIGRATION_OWNER/);
+  assert.match(fixture, /STAGING_LIFECYCLE_UNREVIEWED_TRIGGER/);
+  assert.match(fixture, /update private\.players set status = 'hidden' where user_id = v_hidden/);
+  assert.match(fixture, /update private\.players set status = 'banned' where user_id = v_banned/);
+  for (const check of [
+    'STAGING_LIFECYCLE_ACTIVE_BOARD_ASSERTION', 'STAGING_LIFECYCLE_MODERATED_ROW_VISIBLE',
+    'STAGING_LIFECYCLE_BANNED_READ_NOT_BLOCKED', 'STAGING_LIFECYCLE_HIDDEN_WRITE_NOT_BLOCKED',
+    'STAGING_LIFECYCLE_BANNED_WRITE_NOT_BLOCKED', 'STAGING_LIFECYCLE_EXPIRED_RUN_NOT_REJECTED',
+  ]) assert.ok(fixture.includes(check), check);
+  assert.match(fixture, /public\.rank_get_run\(v_expired, v_run\)/);
+  assert.match(fixture, /if v_error is distinct from 'EXPIRED'/);
+  assert.match(fixture, /rollback;[\s\S]*'rollbackCompleted', true/);
+  assert.doesNotMatch(fixture, /\bcommit\s*;/i);
+  assert.match(fixture, /'taskComplete', false/);
 });

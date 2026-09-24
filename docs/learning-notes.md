@@ -1,5 +1,39 @@
 # 우당탕탕 냥대리 학습노트
 
+## 2026-09-25 · T03의 완료 조건과 출시 조건을 분리하기
+
+최종 브라우저도34통과/11의도적skip/실패0, 숫자재생golden3개 일치로 마무리했다. 서버Deno50개, 전체Jest659개, 도구67개, SQL27개가 통과했고 관련 코드·운영 절차·학습노트를 T03 완료 커밋으로 묶는다. 완료 조건이 충족된 지금만 task를 `done`으로 바꾸고 다음 포인터로 이동한다. 서버완료를 웹공개/앱스토어 출시완료라고 보고하지 않는 것이 핵심이다.
+
+서버API 검증, DB권한, 브라우저자동재전송, 정기정리, 복구 보고서가 서로 다른 범위를 증명하므로 [인계표](./ranking-release-handoff.md)에서 완료 조건별로 연결했다. smoke의 `taskComplete:false`와 수동검사 `not_run`은 그 실행기의 범위 표시다. 별도 실제 증거를 확인해야 하며, 보고서를 수정해 '모두 통과'처럼 만들면 안 된다.
+
+이번 서버 변경의 핵심은 `request.headers.get('cf-connecting-ip')`로 Gateway가 제공하는 클라이언트IP를 사용하고, 위조 가능한 `x-forwarded-for`를 bucket 기준에서 뺀 점이다. 헤더가 없으면 공통unknown bucket으로 제한한다. 실제 staging에서 위조XFF를 바꿔도61번째 요청이429가 되는 것을 확인했고, 재현용 테스트도 함께 남겼다. 이것이 봇방지나 공식 앱 인증을 보장하지는 않는다.
+
+실제 학습 흐름: 실패 재현 → 신뢰할 데이터 출처 확인 → 좁은 코드 수정 → 회귀테스트 → 실제환경 확인 → 운영문서/출시 인계. 현재 전체Jest659·도구67·SQL27과 서버/타입 검사 통과, 웹3종 빌드 완료. 브라우저 결과는 QA 기록에 남긴다. 임시Auth/복구 데이터를 Git에 넣지 않고 코드·검증방법·비밀값 없는 증거만 커밋한다.
+
+다음 연습은 인계표에서 서버 완료와 별개인 항목(공개Pages, 개인정보/지원처, Expo Go/Hermes, EAS/TestFlight,스토어승인)을 골라 어떤 증거가 필요한지 설명하는 것이다. 추가 발견 사항: 트래픽 규모별 부하시험과 완전한 봇방지는 미완료 운영과제이며, 이번 범위에서 몰래 요금제/CAPTCHA를 변경하지 않는다.
+
+## 2026-09-25 · 백업 성공은 파일 생성이 아니라 실제 사용 가능 여부로 확인한다
+
+검증 결과: 랭킹186개/12suites, SQL스키마27개, 서버타입·게임사본동기화·앱타입(재실행)·diff 검사 통과. 임시 Deno `.ts`가 Git에서 ignored여도 TypeScript의 `**/*.ts` 검색에는 포함되어 앱 검사에 영향을 줬다. scratch entrypoint만 `.mts`로 분리하고 Deno 검사도 별도로 통과시켰다. `.gitignore`는 모든 도구의 제외 목록이 아니라는 점을 배웠다. 앱 tsconfig를 느슨하게 바꾸지는 않았다.
+
+이번에는 실제 staging 익명 계정과 서버가 검증한 게임 기록을 만들고 `pg_dump → DPAPI 암호화 → 파일 재읽기/복호화 → 격리 Supabase 복원 → Auth 갱신 → 기록 조회·새 판 제출 → 계정 삭제`까지 실행했다. 원격과 로컬 모두 테스트 사용자/게임 기록0건으로 정리됐고, 운영 서버는 변경하지 않았다. 상세 범위·보고서·보관 기한은 [복구 기록](./backup-recovery.md)에 남겼다.
+
+핵심 개념은 세 가지다. 첫째, `--single-transaction`과 `--exit-on-error`는 복원 오류를 무시한 반쪽 성공을 막는다. 둘째, RLS뿐 아니라 service_role만 RPC를 호출할 수 있는 권한과 Auth 외래키도 복원되어야 한다. 셋째, 사용자 ID를 복원하는 것과 기존 JWT가 새 서버에서도 유효한 것은 다르다. 이번에는 복원된 refresh token으로 같은 사용자의 새 로컬 JWT를 발급받았다. 앱에 계정 동기화 기능을 추가한 것은 아니다.
+
+첫 비교는 실패했다. 원인은 데이터가 아니라 `board.fetchedAt`였다. 이 값은 조회할 때 만들어져 원본/복원 조회 시점이 다르면 반드시 달라진다. 비교에서는 `delete expected.board.fetchedAt`과 실제 결과의 같은 필드만 제외하도록 고쳤고, 저장된 기록 시각인 `achievedAt`은 제외하지 않는다. 원격 계정을 다시 만들지 않고 이미 복원된 계정으로 후속 인증/기록/삭제 검사를 통과했다. 최초 실패와 후속 성공 보고서는 둘 다 남겼다.
+
+환경에서도 배운 점: Docker network의 localhost 기본 설정만 믿지 말고 실제 포트 바인딩을 확인해야 한다. 이 PC에서는 최초0.0.0.0으로 열려 데이터 투입 전에 정지·127.0.0.1로 재생성했다. 또 로컬 Auth와 hosted Auth의 버전이 달랐으므로 먼저 일치시켰다. 다른 프로젝트 컨테이너15개는 삭제하지 않았다.
+
+검증 범위는 전용 합성 계정1개/짧은 판 score0 및 로컬 실제 Auth·DB·Deno handler다. 전체 클라우드 재해복구, 기존 access token 유지, iPhone/Hermes 동작까지 통과한 것은 아니다. 연습: API 응답 필드를 '저장된 데이터'와 '조회 순간 생성된 데이터'로 분류하고, 백업에서 빠지는 서버 설정·서명키·Storage 객체를 설명해 보기. 추가 게임 코드 결함은 발견하지 않았다.
+
+## 2026-09-25 · 프로젝트 위치와 Docker 저장 위치는 다르다
+
+격리 Supabase 복구 환경을 만들기 전 디스크와 기존 컨테이너를 조회했다. 프로젝트는 D:에 있지만 Docker의 이미지·볼륨은 C:의 가상 디스크에 저장되어 있었다. C: 여유는 약2.45GiB, D:는 약999GB다. `--workdir`는 프로젝트 설정 위치일 뿐 Docker 저장 디스크를 바꾸지 않는다. 따라서 대용량 이미지 다운로드 전에 멈췄다.
+
+핵심 명령 `docker ps -a`는 중지된 컨테이너도 보여준다. 앞서 `docker ps`가 비어 있었지만 전체 조회에서는 다른 프로젝트 컨테이너15개가 있었다. 컨테이너가 중지돼 있다고 삭제해도 되는 데이터는 아니다. 이번에는 조회와 문서 기록만 했고, 설치·다운로드·prune·복원·운영 DB 변경은 하지 않았다.
+
+다음 연습: Docker Desktop의 디스크 위치와 Windows 여유 공간을 함께 확인하고, 설정 파일 위치/이미지 저장소/컨테이너 볼륨의 차이를 설명해 보기. Docker 전체 저장 위치 이동은 타 프로젝트에도 영향을 주므로 사용자 선택 후 지원되는 UI로 진행한다. 실제 Auth·게임 기록 복원은 아직 미검증이며 T03 완료로 기록하지 않는다. 추가 게임 코드 결함은 발견하지 않았다.
+
 ## 2026-09-24 · GitHub Pages CI gate
 
 Pages workflow를 PR 검사와 main 배포로 나눴다. PR은 production backend를 건드리지 않고 local-only 웹 bundle을 검사한다. main 배포는 public Supabase URL과 publishable key를 요구하고 production project host를 고정 확인한다. GitHub Actions의 `vars.*` 값은 공개 빌드에 들어가므로 비밀 저장소가 아니다. `pages:write`와 OIDC `id-token:write`는 deploy job에만 주고, 테스트 artifact를 `dist/` 하나로 제한했다.
@@ -632,3 +666,231 @@ AppState background / 일시정지 / 홈
 - [Expo 프로젝트 시작](https://docs.expo.dev/get-started/create-a-project/)
 - [Expo 단위 테스트](https://docs.expo.dev/develop/unit-testing/)
 - [Expo Reanimated](https://docs.expo.dev/versions/latest/sdk/reanimated/)
+## 2026-09-24 · 운영 cron 예약과 검증의 차이
+
+Supabase staging에서 만료 데이터 정리 함수는 있어도 스케줄러가 없으면 실제 자동 정리는 일어나지 않는다. 이번에는 pg_cron과 매일 03:15 UTC job을 staging에만 설정하고, 3600초 JWT 최대 수명을 인자로 전달했다. `cron.job`의 active/schedule/command 확인은 **설정 검증**이지, 실제 job 실행 성공 증거는 아니다. staging 함수는 별도로 한 번 직접 실행해 성공했고, 사후 eligible row 수가 모두 0임을 확인했다. 단, 이 수동 호출은 cron scheduler 실행 이력을 만들지 않으므로 예약 job의 첫 실행은 추후 확인해야 한다. 정리 작업은 행을 삭제하므로 먼저 대상 환경과 함수의 보존 조건을 읽고 staging에서만 검증한다; pending deletion 표식은 함수가 보존한다. Production은 그대로 두었다.
+
+### 복습 질문
+
+1. 왜 cron job이 `active=true`인 것만으로 정리 동작이 검증됐다고 할 수 없을까?
+2. `rank_cleanup(3600)`의 3600은 어떤 운영 사실과 연결되어야 할까?
+3. 삭제 함수 설정 전에 왜 환경 ref와 보존 조건을 각각 확인해야 할까?
+
+## 2026-09-24 · Pages CI 성공과 Pages 공개는 별개
+
+GitHub 저장소와 인증이 정상이어도 Pages 기능/Source 설정이 없으면 workflow의 `Configure Pages` 단계에서 멈추고 실제 배포는 일어나지 않는다. production URL/key 변수가 비어 있는 상태도 별도 선행조건이다. workflow의 build/export 성공만으로 공개 사이트가 생겼다고 판단하지 말고, `deploy` job의 성공과 공개 주소 HTTP/온라인 스모크를 각각 확인해야 한다. 이번에는 Pages API 404와 실패 step 이름을 확인했지만 build log의 비밀값은 조회하지 않았고, production backend 미준비라 재시도하지 않았다.
+
+## 2026-09-24 · hosted smoke에서 네트워크 실패와 앱 실패 구분하기
+
+staging smoke의 첫 시도는 공개 보드 요청에서 network timeout이 났다. 보고서에서 이 시도는 실패로 보존하되, sandbox 네트워크 제약일 수 있으므로 네트워크 허용 조건에서 동일 검사를 다시 실행했다. 그 재시도는 14개 assertion 통과, 임시 두 계정의 자체 삭제 성공으로 끝났다. 그렇다고 staging 전체 검증 완료는 아니다. runner가 나열한 `not_run`과 별도 경쟁/운영 검증을 보존해야 한다. 특히 같은 판의 중복 finalize는 두 다른 판의 최고점 경쟁과 다른 보장이다.
+
+## 2026-09-24 · staging에서 동점 최고점과 보존 규칙 검증하기
+
+도구 테스트(모의 API)는 runner의 요청 순서와 오류 처리를 빠르게 확인하지만, 서버가 실제 시간 경과를 어떻게 판정하는지는 staging에서 확인해야 한다. 이번 심층 검증은 canonical 게임 엔진의 seed와 run ID로 합법적인 101m proof를 만들고, 서버가 준 시간 기준으로 chunk를 나눠 제출했다. 별도 사용자 두 명의 finalize를 동시에 실행해 동점 순위와 보드 순서를 확인했고, 한 사용자의 후속 낮은 점수 run이 최고점과 최초 달성 시각 `achievedAt`을 덮지 않는 것도 확인했다.
+
+여기서 동시성 범위를 정확히 말하는 게 중요하다. API는 한 플레이어에게 active run 하나만 허용하며 새 run 시작은 이전 run을 무효화한다. 따라서 이번 테스트는 **서로 다른 플레이어의 동시 동점 제출**이지, 같은 플레이어가 두 게임을 동시에 기록하는 상황을 증명하지 않는다. 또한 이 결과는 만료/운영자 숨김·정지 경쟁, 공급자 한도, cron의 실제 예약 실행이나 백업 복구를 대신하지 않는다. 실제 계정 삭제까지 검사해 임시 테스트 데이터가 남지 않았는지 확인했다.
+
+### 배운 점
+
+- mock 테스트 성공과 hosted 서버 동작 증거는 서로 보완적이며 대체 관계가 아니다.
+- 시간 의존 검증은 서버 challenge의 단조 시각과 실제 게임 tick 제출 속도를 맞춰야 한다. proof를 한꺼번에 올리면 서버 anti-cheat 시간 검증을 시험하지 못한다.
+- 순위 동점, 개인 최고점, 최고점 달성 시각은 서로 다른 불변식이므로 각각 assertion으로 확인한다.
+
+### 복습 질문
+
+1. 두 사용자의 finalize를 동시에 보내는 테스트가 같은 사용자의 동시 run을 증명하지 못하는 이유는 무엇일까?
+2. 왜 낮은 후속 점수에서 최고점뿐 아니라 `achievedAt`도 보존되는지 확인해야 할까?
+3. 실제 staging 성공 뒤에도 `taskComplete=false`를 유지해야 하는 미검증 운영 항목은 무엇일까?
+
+## 2026-09-24 · cron 실행 기록이 없는 결과 해석하기
+
+SQL Editor에서 job 목록과 실행 이력을 `LEFT JOIN`했을 때 job 행은 나오지만 run 쪽 열이 전부 `NULL`이면, 확인한 것은 **예약 설정의 존재**뿐이고 실행 여부는 아직 입증되지 않았다. `status='failed'`가 아니므로 실행 실패라고 단정해서도 안 된다. 이번 staging 결과는 첫 실행 이력이 조회되지 않아 미검증으로 남겼다. 앞서 수동으로 cleanup 함수를 호출한 성공은 scheduler가 실행했다는 뜻이 아니다. 다음 예약 시각이 지난 뒤 run 이력의 상태, 시작/종료 시각, 결과를 다시 확인해야 한다.
+
+### 복습 질문
+
+1. `LEFT JOIN` 결과에서 job 정보는 있고 run 정보가 `NULL`이면 무엇을 결론 내릴 수 있을까?
+2. 수동 함수 실행 성공이 예약 실행 성공을 증명하지 않는 이유는 무엇일까?
+
+## 2026-09-24 · staging fixture를 transaction rollback으로 격리하기
+
+만료/운영 상태 로직을 실제 DB에서 시험할 때 기존 플레이어를 임시로 숨기거나 점수를 바꾸면 안 된다. 그래서 새 UUID의 Auth stub과 fixture 행만 만들고 테스트 후 `ROLLBACK`하는 SQL을 준비했다. 첫 부분에서 transaction을 열고, staging project ref와 DB owner를 검사하며, 관련 테이블의 예상 밖 사용자 trigger가 발견되면 중단한다. 성공 시에도 테스트 데이터는 commit하지 않는다.
+
+처음에는 `ranking-staging-lifecycle.sql`의 정적 안전장치 검사만 통과했다. 이후 CLI 연결을 복구하고 `db query --linked --project-ref ... --file scripts/sql/ranking-staging-lifecycle.sql`로 파일 전체를 실제 staging DB에서 실행했다. `assertionsPassed`, `rollbackCompleted`, `intentGucsCleared`가 모두 true였고, 사전/사후 별도 조회에서도 계정·프로필·점수·판 개수가 모두 0으로 동일했다. 이제 이 검사는 실제 DB 동작 증거를 갖는다. 단일 트랜잭션 검사라 다른 연결에서 동시에 운영 상태를 바꾸는 상황까지 검증한 것은 아니다.
+
+SQL Editor와 CLI는 같은 원격 DB에 SQL을 보내는 두 가지 입구다. 결과가 한 행인 이유는 임시 행을 검사하고 되돌린 후 마지막 SELECT로 검사 결과 JSON 하나를 반환하기 때문이다. `taskComplete=false`는 이 fixture 하나로 T03 전체가 완료되지 않았다는 표시다. CLI의 `--project-ref`는 이번 버전에서 `--linked`와 함께 사용해야 하며, `--file`로 전달하면 Windows 다중행 명령 인수의 인용 문제를 피할 수 있다.
+
+### 복습 질문
+
+1. staging GUC marker가 있어도 Dashboard의 실제 project ref 확인이 필요한 이유는 무엇일까?
+2. `ROLLBACK`이 있어도 예상 밖 trigger guard가 필요한 이유는 무엇일까?
+3. 정적 테스트 통과와 실제 DB SQL 실행 통과는 어떤 점에서 다른가?
+
+## 2026-09-24 · Gateway 인증과 앱 rate limit 구별하기
+
+이번에는 staging Edge Function 설정을 확인하고 `/runs` 시작 API의 limiter를 실제 HTTP로 시험했다. Gateway의 `verify_jwt=false`는 Gateway 층에서 JWT를 일괄 검사하지 않는다는 뜻이다. 공개 leaderboard 읽기와 보호 API를 같은 정책으로 취급하면 안 된다. 보호 API는 함수 코드에서 사용자 토큰을 검증해야 하며, 익명 쓰기와 잘못된 JWT를 거부하는 smoke로 그 경계를 확인했다.
+
+앱 limiter는 같은 플레이어가 짧은 시간에 run을 무한 생성하지 못하게 하는 애플리케이션 규칙이다. 30회 허용 뒤 31번째에 429와 `Retry-After`가 온 결과는 이 규칙의 증거이지 Supabase 공급자 호출량이나 CPU 한도가 넉넉하다는 증거는 아니다. IP 추출이 프록시 헤더를 사용하면 신뢰할 마지막 proxy hop을 확인해야 한다. 임의 전달 헤더를 신뢰하면 제한을 우회할 수 있다.
+
+실행 후 테스트 계정과 게임 행은 삭제됐지만 24시간 안의 limiter bucket 37개는 남아 있었다. 24시간 초과 bucket은 0개였다. 이는 예상된 운영 흔적이다. Auth/players/best_scores/runs/reports는 모두 0건이었다. 삭제 범위를 검증할 때는 의도적으로 남겨야 할 rate-limit 상태와 게임 데이터를 구분한다.
+
+검증: `npm.cmd run test:ranking-tools` 67/67; staging `--verify-start-rate-limit` 실제 요청 통과; hosted report `smokePassed=true`, `cleanupRequired=0`, `taskComplete=false`. T03는 provider/Gateway 한도와 forwarded-IP 경로, cron 실제 예약 run, 백업/복구, 브라우저 오프라인 복구가 남아 미완료다.
+
+### 복습 질문
+
+1. Gateway가 `verify_jwt=false`여도 보호 API에서 인증 검증이 필요한 이유는?
+2. 앱에서 429를 확인한 것과 provider 호출 한도 검증은 왜 다른가?
+3. rate bucket을 게임 데이터와 같은 시점에 삭제하지 않아도 되는 이유는?
+
+## 2026-09-24 · Cron을 가속 검증하고 되돌리기
+
+pg_cron job을 읽기 전용 확인한 다음 staging job 한 건의 schedule만 `* * * * *`로 잠시 바꿔 실제 scheduler가 실행 이력을 쓰는지 확인했다. runid/status/start/end/result가 기록된 뒤 원래 schedule `15 3 * * *`로 즉시 되돌렸다. 수동 `rank_cleanup()` 호출은 함수 결과만 증명하고 scheduler 자체는 시험하지 않으므로 `cron.job_run_details` 성공 행이 핵심 증거다. Production 일정에는 손대지 않았다.
+
+## 2026-09-24 · 프록시 IP 헤더는 이름만 보고 신뢰하지 않기
+
+처음 구현은 X-Forwarded-For의 마지막 값을 썼다. staging에서 spoofed 값을 바꿔 보내자 61회 요청이 모두 허용되고 hash bucket이 여러 개로 갈라졌다. 수정 후 함수는 Supabase Gateway가 전달하는 `cf-connecting-ip`만 사용한다. 실제 staging에서는 XFF를 바꿔 60회는 허용되고 61회는 429와 `Retry-After`를 받았다. 이 결과는 앱 limiter 범위의 증거이지 전체 플랫폼 quota 검증은 아니다.
+
+## 2026-09-24 · 삭제 테스트도 완료 증거가 필요하다
+
+실제 staging 브라우저 테스트는 offline 결과 대기·수동 재시도 등록과 offline-start 미소급을 확인했다. 하지만 Playwright가 확인 버튼 자체가 상태 전환 순간 사라진 것을 Auth 삭제 완료로 오판했다. 최종 DB 집계가 Auth6/Profile5/Best1/Run1을 보인 뒤에야 누락을 알았다. 인증 세션이 사라진 뒤에는 그 테스트 사용자를 정상 API로 더 이상 삭제할 수 없어 임의 SQL을 사용하지 않았다. 이제 삭제 확인은 UI 문구만으로 끝내지 말고 exact Auth/profile/run/score 사후 집계까지 확인해야 한다.
+
+### 복습 질문
+
+1. schedule 변경 후 `cron.job_run_details` 성공 행이 수동 함수 호출보다 강한 증거인 이유는?
+2. X-Forwarded-For 마지막 항목은 왜 신뢰 경계가 될 수 있을까?
+3. 확인 버튼이 닫힌 것과 서버 데이터가 삭제된 것은 어떻게 다른가?
+
+## 2026-09-24 · 업로드 재시도 검증은 단위와 실제환경을 구분한다
+
+`rankedSession`의 클라이언트는 임시 네트워크 오류 뒤 같은 저장 proof를 재시도한다. Jest에서 가상 타이머를 써서 backoff와 `Retry-After`를 빠르고 결정적으로 검사할 수 있고 이번에는 28개 테스트가 통과했다. 가상 시간 검사는 브라우저/운영망이 실제로 다시 연결됐을 때 자동 요청이 나가는지와는 다른 종류의 증거다. 그 동작을 실제 staging에서 더 확인하려면 이전 테스트 계정을 먼저 정리하고, 브라우저 Network 패널과 서버의 run/chunk/finalize 상태를 함께 확인해야 한다.
+
+### 복습 질문
+
+1. 가상 타이머 테스트는 어떤 오류를 잡고, 어떤 운영 문제는 잡지 못할까?
+2. 재시도에서 응답을 잃은 경우에도 동일 proof를 써야 하는 이유는?
+3. 서버의 `Retry-After`가 있으면 클라이언트 backoff와 어떻게 합쳐야 할까?
+
+## 2026-09-24 · 테스트 계정 정리는 계정 단위로 읽기 검증한다
+
+대시보드 삭제 버튼의 상태만 보지 말고, staging 프로젝트 ref를 먼저 확인한 뒤 테스트 계정의 UUID 집합을 기준으로 Auth/profile/score/run/report를 다시 세어야 한다. 삭제 완료 후에도 보안 tombstone은 이전 JWT가 만료되기까지 보존될 수 있으므로, 이것을 테스트 데이터 누수와 혼동하지 않도록 `pending_auth_delete`와 `complete`를 별도로 집계한다. 운영 문서에 추가한 SQL은 전부 `SELECT`이며 삭제 작업은 하지 않는다.
+
+### 복습 질문
+
+1. 특정 테스트 UUID만 세는 것이 전체 테이블 `TRUNCATE`보다 안전한 이유는?
+2. 완료된 deletion tombstone을 곧바로 없애면 어떤 보안 문제가 생길 수 있을까?
+
+## 2026-09-24 · 데이터베이스 dump와 서비스 백업은 다르다
+
+Supabase CLI `db dump`는 원격 Postgres에 `pg_dump`를 실행하지만 기본적으로 Supabase 관리 `auth`와 `storage` 스키마를 제외한다. 이 게임의 서버 프로필은 `auth.users.id`를 기준으로 묶이므로, DB dump만 복원하면 익명 계정과 순위 소유권 관계가 완전하게 돌아오지 않는다. 또한 Free 프로젝트는 자동 일일 백업이 있다고 가정하지 말고 논리 export와 별도 프로젝트 복구 시험을 계획해야 한다. 이번 작업환경에는 Docker와 `pg_dump`가 없어 실제 backup/restore 검증은 미실행이다. 기능을 구현했다고 복구력을 입증한 것은 아니다.
+
+### 복습 질문
+
+1. `private.players`만 백업하고 `auth.users`를 복원하지 않으면 외래키/로그인 관점에서 어떤 문제가 생길까?
+2. 왜 운영 DB에 직접 restore하는 대신 disposable staging을 써야 할까?
+
+## 2026-09-24 · hosted smoke의 cleanup 범위는 이번 실행으로 한정된다
+
+최신 staging runner report에서 `CLEANUP_A/B:passed`, `cleanupRequired=0`, `signupResponseUncertain=false`가 나왔다. 이는 runner가 이번 실행에서 새로 만든 두 계정의 서버 삭제 재시도가 성공했다는 강한 증거다. 앞선 브라우저 검증에서 남은 계정까지 자동으로 지웠다는 뜻은 아니다. 각 자동화는 자기 소유 사용자만 지우기 때문에 이전 테스트 ID는 별도의 읽기 전용 사후 집계로 확인해야 한다. `taskComplete=false`도 보고서가 전체 운영·브라우저·provider·기기 검증을 대신하지 않는다는 안전 표시다.
+
+### 복습 질문
+
+1. 테스트가 생성한 리소스만 삭제하는 원칙이 다른 사람 데이터 보호에 왜 중요한가?
+2. 한 smoke 실행의 cleanup 성공만으로 과거 실행 계정을 지웠다고 할 수 없는 이유는?
+
+## 2026-09-24 · SQL Editor에는 파일명이 아니라 SQL 내용을 실행한다
+
+Supabase Dashboard SQL Editor에 `scripts/sql/ranking-staging-cleanup-check.sql`라는 경로만 입력하면 PostgreSQL은 이를 SQL 문장으로 해석하다가 syntax error를 낸다. 두 가지 올바른 방법은 (1) 파일을 열어 SQL 전체를 복사해 SQL Editor에 붙여넣기, 또는 (2) PowerShell 프로젝트 루트에서 `supabase db query --file <파일경로>`를 실행하는 것이다. 어느 방법이든 먼저 Dashboard URL의 `/project/<ref>/`와 의도한 환경 ref가 같은지 확인한다. 이름이 staging이어도 참조 ID를 확인하기 전에는 운영 환경을 확신할 수 없다.
+
+이번에는 staging ref `tadokcpealpwjfyjovuy`임을 확인한 뒤 여섯 테스트 Auth ID를 Dashboard에서 각각 찾아 삭제했고, 사용자가 같은 exact-ID SQL 재조회에서 0건을 보고했다. UI 목록이 0처럼 보여도 DB 쿼리가 대상을 찾으면 두 화면의 프로젝트/검색/필터/시점을 다시 확인해야 한다. `pending_deletions=0`도 실제 사용자 행 삭제를 뜻하지 않는다.
+
+Production smoke 도구에는 `--allow-test-writes`가 없으면 hosted 요청을 보내지 않는 preflight가 있다. 따라서 정확한 환경/ref/env-file을 명시한 실행이 `TEST_WRITES_NOT_AUTHORIZED`에서 멈추는 것은 연결 성공/실패가 아니라 “설정이 맞고, 쓰기 전 안전하게 중단했다”는 뜻이다. 이번 production env preflight에서 target/ref/URL/public-key 형식은 통과했지만 실제 원격 서버 연결을 검사한 것은 아니다. `ranking:env-check` 역시 export 파일의 공개 설정 경계만 검사하며 API가 동작하는지 증명하지 않는다.
+
+2026-09-24 production smoke 학습: 요청이 `PUBLIC_BOARD=UNEXPECTED_HTTP_503`으로 실패했고, 검증 보고서는 이후 점검을 `not_run`으로 표시했다. cleanupRequired=0, signupResponseUncertain=false였으므로 테스트 가입/점수 쓰기는 시작되지 않았다. 운영 Edge Function `secrets list`에는 자동 제공 `SUPABASE_*` 항목만 있고 앱 설정인 `RANKING_RATE_LIMIT_SALT`가 없었다. 서버 시작 시 이 salt는 필수이므로 함수가 503을 내는 원인이었다. 즉 DB migration/catalog 통과와 HTTP 함수 시작 성공은 별개다. 다음부터는 코드/DB뿐 아니라 정확한 project ref의 서버 secret 이름을 목록으로 확인한 뒤 smoke를 한다. Secret 값은 로그나 채팅에 출력하지 않는다.
+
+`supabase db push --dry-run`은 원격 DB에 아직 적용되지 않은 migration 파일의 목록을 보여주는 사전 미리보기다. 파일 목록이 예상과 같아도 실제 SQL 문법/호환성 실행이나 원격 스키마 검증을 대신하지 않으므로, source/static review와 구분해야 한다. 이번 production 미리보기는 초기 schema migration과 별도 Top-30 forward migration 두 개였고, 실제 적용은 이 기록 시점에는 하지 않았다. 이미 적용한 migration을 편집하기보다 새 migration으로 변경을 추가하는 것이 staging/production 간 재현성을 보장한다.
+
+실제 `db push` 뒤에는 `supabase_migrations.schema_migrations`를 SELECT해 적용 버전을 확인할 수 있다. 이번에는 production에서 `202609210001`과 `202609230002` 두 행이 확인됐다. 이 이력은 migration이 적용됐음을 말해주지만, 테이블/RLS/grant가 의도와 일치하는지는 별도의 catalog audit로 검증해야 한다. migration version과 실제 permission 검증은 서로 다른 증거다.
+
+Catalog audit는 migration 기록만 보지 않고 실제 Postgres 객체를 조회한다. production에서 6개 private table의 RLS/policy/grant, 12개 RPC의 SECURITY DEFINER와 실행 권한, 8개 helper의 고정 search_path 및 실행 불가 상태를 확인했다. 이 통과는 DB catalog 보안 상태에 관한 증거이지, HTTP Edge Function/API가 배포되어 동작하거나 브라우저에서 호출된다는 증거는 아니다. 다음에는 공개 API 동작을 별도로 검증해야 한다.
+
+### 복습 질문
+
+1. SQL Editor와 PowerShell CLI가 각각 입력으로 기대하는 것은 무엇인가?
+2. 같은 프로젝트인지 판단할 때 프로젝트 이름보다 ref가 더 믿을 만한 이유는?
+
+### 운영 503 원인 확인: 서로 다른 프로젝트를 보고 있었다
+
+Dashboard에서 세 secret이 보였지만 주소의 ref는 staging `tadokcpealpwjfyjovuy`였고, CLI와 실패한 smoke는 production `fgojrxmpxpzdiwsktjsx`를 대상으로 했다. 두 결과는 같은 환경을 조회한 것이 아니었다. 사용자는 프로젝트를 전환한 뒤 운영 설정 저장을 보고했다. 아직 재검증 결과는 없으므로 해결 완료로 기록하지 않는다. 익명 로그인도 프로젝트별 설정이므로 운영 프로젝트에서 별도로 확인해야 한다.
+
+배운 점: 저장 버튼을 누른 사실과 실행할 서버에 설정이 반영된 사실은 다르다. Dashboard URL, CLI의 `--project-ref`, runner의 `Target`을 같은 ref로 맞춘 다음 HTTP 검사와 정리 결과로 확인한다. 이 점검은 secret 값을 공유하지 않고도 가능하다.
+
+### 운영 서버 통과 이후: 배포 파일과 테스트 환경 준비
+
+최종 운영 보고서를 직접 열어14개 통과, 실패0, cleanupRequired0, 가입 불확실성false를 확인했다. 앞선503 이후 설정을 바로잡아 실제 가입/점수 검증/삭제까지 통과한 증거다. 보고서의8개 `not_run`은 이 도구가 실행하지 않는 별도 검사이며, 전체 출시 완료를 뜻하지 않는다.
+
+웹에서는 `EXPO_PUBLIC_` 값이 빌드된 JavaScript에 포함된다. 그래서 운영 URL/공개 키를 명시적으로 넣어 별도 폴더에 새 빌드를 만들었고, 서버용 키·salt의 알려진 패턴이 섞이지 않았는지 검사했다. GitHub Pages 경로 `/close-call-nyang/`로 시작 페이지와JS1개·asset17개가 모두200을 반환했다. 로컬 미리보기의 Origin은 GitHub Pages와 다르므로 이것만으로 실제 공개 사이트의 랭킹 동작을 입증할 수는 없다.
+
+추가로 staging의503을 발견해 환경값과 로컬 허용 주소를 문서에 맞게 복구했다. 같은 코드라도 서로 다른 환경 설정 때문에 시작에 실패할 수 있다. 복구 후 두 로컬 주소 모두 정상 응답했다. 기존 salt나 운영 설정은 바꾸지 않았으며, 이전 값의 정확한 오류를 알아냈다고 주장하지 않는다. 기능을 고친 뒤에는 같은 요청을 다시 보내 결과가 달라졌는지 확인하는 과정까지가 검증이다.
+
+다음 연습: 코드 배포 성공, 서버 smoke 통과, 정적 웹 빌드 성공, 공개 사이트에서의 실제 플레이 검증이 각각 무엇을 증명하는지 설명해 보자.
+
+### 실제 인터넷 복구와 자동 랭킹 등록 검증
+
+이번 핵심은 새 기능을 추가하는 것이 아니라 기존 자동 재시도가 실제 서버에서도 작동한다는 것을 확인하는 일이었다. `src/online/rankedSession.ts`는 실패한 입력 기록을 저장하고 다음 시도 시각을 정한다. `const BACKOFF_SECONDS = [1, 2, 4, 8, 16, 30]`처럼 실패할수록 대기 시간을 늘리는 방식을 **백오프**라고 한다. 오프라인일 때 서버에 계속 요청을 몰아보내지 않으면서 복구 기회를 남긴다.
+
+데이터 흐름은 ‘서버가 판 발급 → 플레이 입력 기록 → 인터넷 차단 상태에서 종료/기기 보관 → 재연결 → 타이머가 입력 조각 재전송 → 서버가 점수 계산 → 등록 확인 후 보관 기록 제거’다. 브라우저 테스트는 버튼을 누르거나 시간을 빠르게 돌리지 않았다. 실제 staging에서 연결 복구 후 약2.0초 만에 등록됐고, 같은 판의 화면 점수와 서버 점수0%가 일치했다. 짧게 넘어지는 판은 통신/복구를 검사하기 위한 것이며 고득점이나 장시간 안정성의 증거가 아니다.
+
+수정 파일은 QA/운영 문서와 `.memory/current.md`·Task·Phase 진행 기록이다. 기존 코드가 통과했으므로 게임이나 서버 구현은 변경하지 않았다. 테스트용 빌드/실행 스크립트/비밀 없는 보고서는 Git 제외 `output/`에 두었다. 랭킹 테스트186개와 타입/서버/규칙 동기화 검사도 통과했다.
+
+주의할 점: ‘삭제 확인창이 닫혔다’와 ‘서버 데이터가 삭제됐다’는 다르다. 이번에는 실제 DELETE 응답200과 `deleted: true`, 로컬 세션 제거, 삭제 후 Auth403까지 확인했다. 같은 요청을 다시 보내도 DELETE200으로 안전하게 끝나는 것을 **멱등성**이라 한다. 테스트가 만든 계정1개만 지웠고 토큰은 보고서에 남기지 않았다. 예전에 UI만 보고 삭제됐다고 추정했던 검증 실수를 바로잡은 방법이다.
+
+범위 밖에서 발견한 새 결함은 특이사항 없음. 다만 Usage/백업복구·실제 iPhone Expo Go 검증이 아직 남아 있어 전체 서버 Task를 완료 처리하거나 커밋하지 않았다.
+
+복습: 서버 등록 확인 전에 로컬 입력 기록을 지우면 어떤 문제가 생길까? 삭제 API가 멱등적이어야 응답을 잃어버린 상황에서도 안전한 이유는 무엇일까?
+
+### 구조 백업과 전체 서비스 복구는 다르다
+
+이번에는 `pg_dump --schema-only`로 **실제 staging DB의 현재 테이블·함수 정의와 권한**을 저장하고, 그 archive를 새 로컬 PostgreSQL에 `pg_restore`했다. 코드의 migration 파일을 새 DB에 실행하는 것과 달리, 실제 서버 구조를 백업 파일에서 복원했다는 증거다. 테스트 데이터는 사용하지 않았고 별도의 빈 Auth 참조 테이블과 로컬 역할을 만들어 의존성만 충족했다.
+
+배운 개념: `schema`는 DB 구조, `data`는 구조 안의 실제 기록이다. 구조 복원 성공만으로 플레이어 계정/순위/로그인 세션을 되살릴 수 있다고 말하면 안 된다. 이번에는6테이블의 RLS와12RPC 권한, 빈 보드 실행을 확인했지만 전체 Auth·데이터·서버 설정 복구는 남았다. 원격17.6→로컬18.6, 소유자 로컬화라는 차이도 기록했다.
+
+실패에서 배운 점: PATH는 프로그램 검색 경로일 뿐이다. `Get-Command pg_dump`가 없다고 설치 자체가 없다고 단정하지 말고 설치 경로도 확인하자. 실제18.6 도구를 발견했다. CLI 임시 로그인은 바로 dump하면 권한 부족이었고, 허용된 `--role=postgres`로 구조를 읽을 수 있었다. 비밀번호/연결값은 로그 없이 프로세스 메모리에서만 사용했다. 기본 public 스키마 충돌은 이번 임시 DB 경로를 확인한 뒤 빈 스키마만 제거해 해결했으며 사용자 DB에 삭제 명령을 보내지 않았다.
+
+핵심 변경은 QA/운영 문서와 current·Task·Phase 상태다. 게임 코드는 변경하지 않았다. 관련 추가 발견은 **production pg_cron 미설치**다. staging에서 cron이 성공해도 production에 예약이 생기지는 않는다. 운영 JWT 수명/정리 정책을 확인한 뒤 별도 예약 검증이 필요하다. 사용량 화면은 사용자가 다음 채팅에 제공할 예정이다.
+
+복습: 구조·데이터·Auth 신원·서버 환경설정 각각을 백업해야 하는 이유는? 복원 시험을 운영 DB가 아닌 격리 DB에서 해야 하는 이유는?
+
+### Usage 화면 읽기: 사용량 여유와 성능 보장은 다르다
+
+사용자가 보낸 화면에서 Free 한도 미초과, DB5%, Edge437/500000회, egress0.002/5GB를 확인했다. `사용량 / 할당량`은 표시된 기간·범위의 소비량을 의미한다. Edge 호출 수는 게임을 한 사람 수와 같지 않으며, 호출이 적다고 많은 동시 사용자를 감당한다는 성능 검증이 되지는 않는다. MAU 표시0도 DB 사용자 테이블이 비었다는 뜻으로 해석하지 않는다.
+
+QA/운영 문서와 current·Task·Phase에 실제 수치를 기록하고 스크린샷 대기를 해제했다. 조직/ref·조회 기간은 캡처에 없어 추정하지 않았다. 코드 변경이 없으므로 런타임 테스트를 새로 통과했다고 쓰지 않고 문서 diff만 검사한다. 새 결함은 특이사항 없음; 이미 확인한 production 정리 예약 부재와 전체 데이터/Auth 복구 검증은 계속 남아 있다.
+
+복습: DB 용량은 작지만 호출량이 커질 수 있는 상황은 무엇일까? 사용량 화면을 증거로 남길 때 기간·프로젝트 필터도 함께 보관해야 하는 이유는?
+
+### 운영 정리 예약: 등록과 실제 실행을 따로 확인한다
+
+`scripts/sql/ranking-production-retention.sql`은 운영 프로젝트에 일일 정리 예약을 등록한다. 핵심은 `cron.schedule('nyang-production-rank-cleanup', '15 3 * * *', 'select private.rank_cleanup(3600)')`다. 확인된 cron 시간대는 GMT여서03:15는 한국 시간12:15다. 이 운영별 설정은 두 환경에 자동 적용하는 공통 migration과 분리했다.
+
+기존 cleanup 함수는 만료 판, 오래된 완료 판/신고/요청 횟수 기록과 안전기간이 지난 삭제 완료 표식을 대상으로 한다. 사용자/최고 기록과 `pending_auth_delete`는 지우지 않는다. 운영 토큰 수명3600초는 실제 원격 config dry-run 비교로 확인했다. 기본값과 같은 설정은 변경 목록에 안 나타나므로, 별도 임시 파일에만3599를 넣고 비교해 remote3600을 읽었다. 실제 config/서버 설정은 건드리지 않았다.
+
+안전장치: 실행 계정·시간대·기존 job 충돌을 검사하고, 원격 함수 본문의 공백 정규화 MD5가 검토한 소스와 다르면 중단한다. MD5는 여기서 보안 인증이 아니라 변경 감지용이다. `scripts/retention-schedule.test.mjs`의 두 검사도 `package.json`의 스키마 테스트에 연결했다. 검증 도구는 첫 실행을 가까운 한 날짜/분으로만 옮기고 `finally`에서 일일 예약으로 복원한다. 매분 무한 반복을 남기지 않도록 하기 위해서다.
+
+실패에서 배운 점: PowerShell 함수가 JSON의 한 행만 반환하면 배열 대신 단일 객체가 될 수 있다. 초기 검증은 `.Count` 비교에서 멈췄고, `@(조회결과)`로 배열 형태를 고정했다. 그 실패를 스케줄러 실패라고 기록하지 않았다.
+
+주의: cron의 `1 row`는 SELECT 함수 호출의 반환 행 수이지 삭제 건수가 아니다. 예약 성공·실행 이력 succeeded·보존 대상 사후 집계를 따로 확인해야 한다. 함수나 JWT 수명을 바꾸면 예약 조건도 다시 검토한다. 추가 관찰: cron 실행 이력 자체는 별도 보관 관리가 필요하므로 향후 운영 정책으로 검토하되 이번에 임의로 로그 삭제 예약을 추가하지 않았다.
+
+실제 결과:2026-09-24 14:34UTC 운영 첫 예약 실행 succeeded, 일일12:15KST active 복원 확인. 삭제 완료 표식2건은 보존됐다. 스키마25개·랭킹186개·타입/규칙/서버 검사가 통과했다. 전체 데이터/Auth 복구까지 검증한 것은 아니어서 T03 완료 커밋은 아직 하지 않았다.
+
+### 계정 복구 전에 데이터 연결부터 확인하기
+
+`scripts/sql/ranking-backup-preflight.sql`은 `begin transaction read only`로 시작한다. 데이터 변경이 섞여도 DB가 거부하도록 하는 보호 장치다. `count(*)`로 계정/세션/게임 기록 수만 확인해 token과 개인정보 내용을 노출하지 않는다. 새 정적 검사2개를 package 검사에 연결해 schema27개 통과, 실제 staging 읽기 검사도 통과했다.
+
+외래키 때문에 닉네임/점수만 복사하고 Auth ID를 빼먹으면 온전한 복구가 아니다. 현재 사용자와 세션은0건이었다. 빈 DB 복원 성공만으로 실제 계정이 돌아온다고 말할 수 없어 환경 준비 후 전용 계정으로 검증해야 한다. `docs/backup-recovery.md`에 백업 범위·격리 복원·인증/권한 확인·정리 순서를 정리했다.
+
+PostgreSQL은 DB이고 Supabase Auth는 로그인 HTTP 서비스다. DB만 설치된 PC에서는 로그인 복구까지 통과했다고 할 수 없다. Docker 설치는 시스템 변경이므로 사용자에게 선택을 요청하고 설치 직전에서 멈춘다. 새 앱 결함은 특이사항 없음; 완료 표식17건과 요청 횟수 기록72건은 불필요하다고 추정해 삭제하지 않았다. 다음 연습: DB 계정이 복원돼도 기존 토큰이 동작하지 않을 수 있는 이유를 서명키/발급 주소 관점에서 설명해 보자.
+
+### 설치 여부·검색 경로·엔진 실행을 구분하기
+
+사용자는 Docker가 이미 설치됐다고 알려줬다. 재확인 결과 사용자별 LocalAppData/Programs/DockerDesktop에 있었고, PATH와 표준 Program Files 경로 검사에서 찾지 못했을 뿐이었다. sandbox의 Access denied 역시 파일 부재가 아니다. registry/정확한 경로를 읽기 권한으로 확인해 기존 설치를 찾았다.
+
+`docker version`의 Client만 있는 상태는 CLI가 설치됐다는 뜻이며 Server 연결 성공과 다르다. 기존 Desktop을 실행한 뒤 Client/Server29.7.2와 Linux/WSL2 엔진 연결을 확인했다. 재설치·전역 PATH 변경·WSL 설정 변경은 하지 않았다. 이번 변경은 잘못된 설치 대기 기록을 current/Task/Phase/운영 문서에서 정정한 것이다. 아직 복구용 컨테이너나 Auth 복구를 검증한 것은 아니다. 새 앱 결함은 특이사항 없음.
