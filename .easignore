@@ -25,6 +25,7 @@ supabase/.branches/
 Thumbs.db
 
 # Private working notes and non-app tooling are not build inputs.
+.git
 /.agents/
 /.memory/
 /docs/

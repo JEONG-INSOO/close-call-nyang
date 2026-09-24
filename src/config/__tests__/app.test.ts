@@ -18,10 +18,11 @@ describe('getFeatureFlags', () => {
 });
 
 describe('Expo configuration', () => {
-  it('links to the verified EAS project without inventing Apple signing identities', () => {
+  it('links to the verified EAS project and registered Apple signing team', () => {
     expect(expoConfig.owner).toBe('insoojeong');
     expect(expoConfig.extra?.eas?.projectId).toBe('315e87a2-f405-4f65-ae45-c91f1d2c59bf');
-    expect(expoConfig.ios?.appleTeamId).toBeUndefined();
+    expect(expoConfig.ios?.appleTeamId).toBe('S9RLQ8474U');
+    expect(expoConfig.ios?.config?.usesNonExemptEncryption).toBe(false);
   });
   const originalGithubPages = process.env.GITHUB_PAGES;
   afterEach(() => {

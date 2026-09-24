@@ -22,6 +22,6 @@ test('upload exclusions preserve git credential and generated-file boundaries', 
   const git = rules(await readFile(new URL('../.gitignore', import.meta.url), 'utf8'));
   const eas = rules(await readFile(new URL('../.easignore', import.meta.url), 'utf8'));
   for (const rule of git) assert.ok(eas.includes(rule), `Missing EAS exclusion: ${rule}`);
-  for (const rule of ['/.agents/', '/.memory/', '/docs/', '/supabase/']) assert.ok(eas.includes(rule));
+  for (const rule of ['.git', '/.agents/', '/.memory/', '/docs/', '/supabase/']) assert.ok(eas.includes(rule));
   for (const rule of ['/src/', '/assets/', '/test-fixtures/']) assert.ok(!eas.includes(rule));
 });

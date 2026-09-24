@@ -29,7 +29,8 @@ test('draft metadata respects Apple field limits without inventing operator inpu
   assert.equal(draft.madeForKids, false);
   const input = JSON.parse(await read('store/release-inputs.json'));
   assert.equal(input.schemaVersion, 1);
-  for (const name of ['supportEmail', 'copyrightHolder', 'price', 'territories', 'appleTeamId', 'ascAppId']) assert.equal(input[name], null);
+  for (const name of ['supportEmail', 'copyrightHolder', 'price', 'territories', 'ascAppId']) assert.equal(input[name], null);
+  assert.equal(input.appleTeamId, 'S9RLQ8474U');
 });
 test('app config points at original opaque source-matched branding', async () => {
   const config = await read('app.config.ts');

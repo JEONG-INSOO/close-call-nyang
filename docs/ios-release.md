@@ -1,5 +1,13 @@
 # iOS 출시 준비와 Expo Go 검사
 
+## 2026-09-25 · 실제 서명 확인과 업로드 요청
+
+EAS credentials 읽기 조회로 bundle `com.mocca.closecallnyang`의 Apple Team `S9RLQ8474U`, 배포 인증서 및 active provisioning profile을 확인했다. 프로필은 조회 직전 갱신되어 있었고 두 항목 만료는 2027-09-13이다. 인증서/개인키를 다운로드하거나 재생성·폐기하지 않았다. 사용자가 TestFlight 업로드를 명시적으로 요청했다.
+
+암호화 검토: 앱은 Supabase HTTPS 인증/요청을 사용하며 자체 암호화 프로토콜·VPN·암호화 메시징 기능은 없다. expo-crypto iOS의 digest는 Apple CommonCrypto, 포함된 AES 구현은 CryptoKit을 호출한다. 앱의 digest 사용은 개발 재현 검사이며 Supabase helper는 WebCrypto SHA-256을 사용한다. 플랫폼 암호화만 사용하는 현재 소스/의존성 검토에 따라 `ios.config.usesNonExemptEncryption: false`로 설정했다. 이는 HTTPS를 쓰지 않는다는 뜻이 아니며, 암호 라이브러리/기능 추가 시 다시 검토해야 한다. [Apple 기준](https://developer.apple.com/documentation/security/complying-with-encryption-export-regulations), [plist 의미](https://developer.apple.com/documentation/bundleresources/information-property-list/itsappusesnonexemptencryption).
+
+빌드 준비 소스의 Team ID만 실제 확인값으로 반영했다. ASC 앱 ID는 아직 추측하지 않는다. archive 비밀 파일 제외·환경·검사 후 source-only commit → cloud build → 정확한 성공 build ID submit 순서. 빌드 성공·업로드 접수·Apple 처리 완료·실기기 QA는 각각 따로 기록한다.
+
 ## 2026-09-25 · 새 앱 선택 / P03-T02 준비 완료
 
 사용자는 기존 App Store Connect 앱이 없어 새 앱 준비를 선택했다. **아직 Apple 앱 생성·서명·IPA 빌드·TestFlight 업로드를 실행한 것은 아니다.** 다음 P03-T03에서 공식 인증과 팀/앱 식별자를 실제 확인한다. 비밀번호/2FA는 채팅에 보내지 않는다.

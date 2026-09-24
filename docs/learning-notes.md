@@ -1,5 +1,15 @@
 # 우당탕탕 냥대리 학습노트
 
+## 2026-09-25 · TestFlight 업로드 전 서명과 소스 고정
+
+EAS에서 확인된 Apple Team `S9RLQ8474U`와 active 프로비저닝 프로필을 사용한다. 배포 인증서는 앱 서명용이고 App Store Connect 업로드 권한/API 키는 별개다. 인증서가 등록됐다는 사실만으로 TestFlight 업로드가 끝났다고 판단하면 안 된다.
+
+`app.config.ts`의 `appleTeamId`는 확인값을 기록하고, `usesNonExemptEncryption: false`는 HTTPS가 없다는 뜻이 아니라 현재 Apple OS 암호 API 사용에 대한 판단이다. expo-crypto의 CommonCrypto/CryptoKit 및 Supabase 요청/해시 사용을 검토했다. 라이브러리/암호화 기능을 바꾸면 다시 검토한다.
+
+실제 `build:inspect --stage archive`에서 파일을 확인하니 Git 이력이 남았다. EAS Git 복제 처리의 `ignore.ignores('.git')`는 `.git/`와 다르므로 `.easignore`에 `.git`을 넣고 결과를 다시 검사한다. 설정 파일만 검사하는 테스트와 실제 산출물 검사는 서로 보완한다. 검사 사본의 package.json 때문에 Jest가 이름 충돌 경고를 냈지만 44 suites/666 tests는 통과했다. 사본은 검사 후 제거해 소스 검색을 오염시키지 않는다.
+
+검증 후 source-only 커밋을 먼저 만들고 그 SHA로 클라우드 빌드를 식별한다. 이 커밋은 T03 전체 완료가 아니다. 실제 업로드/Apple 처리/실기기 결과가 없으면 각각 미완료로 남긴다. 추가 발견한 archive Git 이력 포함 문제는 업로드 경계에 직접 관련되어 함께 보강했다. 기존 지원·개인정보 페이지와 물리 기기 QA는 별도 남는다.
+
 ## 2026-09-25 · 원본 아이콘에서 배포 파일까지 검증하기 (P03-T02)
 
 ### 핵심 변경과 이유

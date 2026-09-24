@@ -16,6 +16,8 @@ const config: ExpoConfig = {
   platforms: ['ios', 'web'],
   ios: {
     bundleIdentifier: 'com.mocca.closecallnyang',
+    appleTeamId: 'S9RLQ8474U',
+    config: { usesNonExemptEncryption: false },
     supportsTablet: false,
     buildNumber: '1',
   },
