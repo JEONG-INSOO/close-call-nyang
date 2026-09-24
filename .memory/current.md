@@ -1,13 +1,13 @@
 # Current Context
 
 ## Active Plan
-[2026-09-23 Release Readiness](./plans/2026-09-23-release-readiness.md)
+[GitHub Pages 웹 배포 및 공개 검증](./plans/2026-09-24-pages-hosted-web.md)
 
 ## Active Phase
-[P01 Web preflight](./phases/2026-09-23-release-readiness/phase.md)
+[P01 Pages workflow와 공개 웹 검증](./phases/2026-09-24-pages-hosted-web/P01-pages-release/phase.md)
 
 ## Active Task
-[T01 Web preflight](./phases/2026-09-23-release-readiness/T01-web-preflight.md)
+[T02 GitHub Pages 배포](./phases/2026-09-24-pages-hosted-web/P01-pages-release/T02-pages-deploy.md)
 
 ## Status
 - Latest completed request (2026-09-22): rookie를 생성 이미지 PNG 부품(우측 3/4, 다리·팔 절반, 표정 평소/위험40도/넘어짐)으로 교체, commit 5cf570d. [결정](./decisions/2026-09-22-side-view-walk.md), [학습노트](../docs/learning-notes/2026-09-22-side-view-walk.md). Jest650, Chromium34pass/11skip/0fail(3.4min), rules f7245064c9459310 불변, 4173=dist index-298ee86edf82ff1bbdd0079e1339a79f.js. 보상 2종은 P02(시트 필요). 사용자 요청: 다른 사람이 테스트할 환경(예/아니오만 답함=네) — 방식 미정.
@@ -40,9 +40,11 @@
 - staging migration/API, 31명 top-30 fixture, hosted catalog audit, SQL 권한 거부 96개와 rollback/GUC 정리, 기존 smoke 14개 통과를 보존함
 - 실제 경쟁/만료·운영 변경, Gateway/한도, cron·백업, 브라우저 오프라인 복구, production, iPhone/Hermes는 아직 미검증
 - Release P01 웹 preflight 완료: staging-config export/env-check, 4173 HTTP 200, desktop 3개 및 phone-landscape 터치 테스트 통과
+- GitHub Pages 다음 계획 생성: T01 CI gate, T02 원격 배포, T03 공개 사이트 스모크. GitHub CLI 인증 만료 및 production backend 미배포 상태를 배포 전제조건으로 기록함.
+- T01 Pages CI gate 구현·검증 완료. Production bundle 검사 통과, typecheck/ranked/Jest/ranking/Playwright 통과. T02 원격 GitHub 인증/production backend preflight로 이동.
 
 ## Next Step (IMPORTANT)
-Release Readiness P02(GitHub Pages hosted web) 계획·청사진이 아직 없으므로, 다음 구현 전 `memory-plan`으로 P02 배포/접속 검증 Task를 만든다. production 배포는 별도 승인 전 수행하지 않는다.
+T02 청사진을 읽고 GitHub 인증 및 Pages/Variables 설정, production Supabase backend readiness를 확인한다. production backend가 미완료이거나 인증이 무효이면 공개 배포를 실행하지 말고 정확한 blocker를 기록한다.
 
 ## Resume Existing T03 After Requested Change
 P02-T03을 유지한다. 가입/선택/프로젝트 생성/기본smoke/권한/101순위 검사는 끝났다. 다음은 staging의 서로 다른 판 최고값·동점시간/만료·운영자 상태변경 경쟁, 실제 Gateway/한도, JWT3600초를 반영한 정리 cron, 실제 공개 설정으로 빌드한 웹의 연결·오프라인 복구 검증이다. scripts/sql의 역할/101fixture는 전체 단일 배치+ROLLBACK용이며 production 실행 금지. 다중행 SQL을 Windows npx.cmd 위치 인자로 넘긴 결과 rows[]는 증거로 인정하지 않았고 공식 Management API JSON 단일 배치에서 최종 assertionsPassed/intentGucsCleared를 확인했다. 운영 프로젝트 fgojrxmpxpzdiwsktjsx는 생성만 완료했으므로 남은 staging 검증 전 스키마/API 배포 금지. Windows Credential Manager의 전용 production DB 비밀번호는 덮어쓰지 않는다. 추가 과금/유료리전/추가프로젝트 생성은 승인하지 않았다. 실제 완료 전 완료커밋/P03 전진/자동푸시는 하지 않는다.

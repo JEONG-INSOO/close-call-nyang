@@ -51,7 +51,7 @@ npx.cmd expo install --check
 
 명령은 한 줄씩(try/finally만 하나의 블록으로) 실행하고, 실패하면 멈춰 원인을 해결합니다. PowerShell에서 native 명령의 실패가 다음 줄을 자동 중단시키지는 않으므로 전체 블록을 무작정 연속 실행하지 마세요. `e2e`는 이미 생성된 세 번들을 사용하므로 소스 변경 후 export/fixtures/online-fixtures 빌드를 다시 실행해야 합니다. 기본 앱 검사는 Supabase 공개 환경변수를 비운 로컬 빌드 기준입니다. `EXPO_PUBLIC_ENABLE_MOCK_AD=true`는 production 광고 차단을 시험하기 위한 의도적인 입력이지 출시 광고 활성화 설정이 아닙니다.
 
-- Playwright가 `127.0.0.1:4173/close-call-nyang/`(기본 앱), `127.0.0.1:4174/fixtures/`(합성 그림), `127.0.0.1:4175/close-call-nyang/`(모의 API 연결 앱)의 서버를 시작·종료합니다. 해당 포트가 사용 중이면 기존 프로세스를 임의로 종료하지 말고 먼저 확인하세요.
+- 기본적으로 Playwright가 `127.0.0.1:4173/close-call-nyang/`(기본 앱), `127.0.0.1:4174/fixtures/`(합성 그림), `127.0.0.1:4175/close-call-nyang/`(모의 API 연결 앱)의 서버를 시작·종료합니다. 해당 포트가 사용 중이면 기존 프로세스를 임의로 종료하지 말고 먼저 확인하세요. Windows에서 테스트가 모두 끝난 뒤 Playwright가 관리 서버를 종료하지 못하는 경우, 세 서버를 별도로 띄운 뒤 `PLAYWRIGHT_REUSE_EXISTING_SERVER=true`로 설정해 기존 서버를 재사용할 수 있습니다. 이 옵션은 로컬 실행 전용이며 CI에서는 설정하지 않습니다.
 - 직접 웹을 볼 때는 `npm.cmd run web:serve` 후 첫 주소를 엽니다. 로컬 전용 서버이므로 휴대폰 LAN 접속용이 아닙니다. iPhone 개발은 위 Expo QR 절차를 사용하세요.
 - `npx.cmd playwright show-report`로 결과를 엽니다. `test-results/results.json`, 스크린샷, `playwright-report/`는 생성 결과이고 Git에서 제외합니다. 다음 실행 시 이전 결과가 교체될 수 있습니다.
 - `e2e/fixtures/index.tsx`는 실제 앱과 독립된 진입점입니다. 합성 거리/포즈를 렌더링할 뿐 저장·해금·엔진을 조작하지 않습니다. `output/qa-fixtures`를 배포 dist에 복사하거나 iOS 스토어 캡처로 사용하지 마세요.

@@ -1,5 +1,9 @@
 import { defineConfig } from '@playwright/test';
 
+// CI owns its servers; the explicit switch supports local runs with detached servers
+// when a Windows shell keeps Playwright's child-process cleanup alive after tests pass.
+const reuseExistingServer = process.env.PLAYWRIGHT_REUSE_EXISTING_SERVER === 'true';
+
 export default defineConfig({
   testDir: './e2e', testMatch: '*.spec.ts', fullyParallel: false, workers: 1,
   forbidOnly: !!process.env.CI, retries: 0, timeout: 45000,
@@ -16,10 +20,10 @@ export default defineConfig({
   ],
   webServer: [
     { command: 'node scripts/serve-web.mjs --port 4173 --base /close-call-nyang',
-      url: 'http://127.0.0.1:4173/close-call-nyang/', reuseExistingServer: false, timeout: 15000 },
+      url: 'http://127.0.0.1:4173/close-call-nyang/', reuseExistingServer, timeout: 15000 },
     { command: 'node scripts/serve-web.mjs --port 4174 --base /fixtures --dir output/qa-fixtures',
-      url: 'http://127.0.0.1:4174/fixtures/', reuseExistingServer: false, timeout: 15000 },
+      url: 'http://127.0.0.1:4174/fixtures/', reuseExistingServer, timeout: 15000 },
     { command: 'node scripts/serve-web.mjs --port 4175 --base /close-call-nyang --dir output/online-web',
-      url: 'http://127.0.0.1:4175/close-call-nyang/', reuseExistingServer: false, timeout: 15000 },
+      url: 'http://127.0.0.1:4175/close-call-nyang/', reuseExistingServer, timeout: 15000 },
   ],
 });

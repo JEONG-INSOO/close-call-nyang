@@ -1,5 +1,13 @@
 # 우당탕탕 냥대리 QA 기록
 
+## 2026-09-24 · GitHub Pages workflow gate 준비
+
+`deploy-pages.yml`을 PR 검사와 main 배포로 분리했다. PR은 typecheck/Jest/ranking/browser 검사와 local-only export를 수행하며 Pages write/OIDC 권한이나 artifact upload를 받지 않는다. main push/manual run은 승인된 production Supabase URL과 `sb_publishable_` 키를 요구하고, canonical rules·typecheck·Jest·ranking·bundle 검사·Playwright를 모두 통과해야 배포 artifact를 만든다. `dist/`만 업로드하고 QA fixture `output/`는 포함하지 않는다.
+
+로컬 production-config export와 `ranking:env-check` 통과. 정적 workflow YAML 검사에서 PR/main triggers, deploy `needs: build`, main 조건, job별 permissions와 필수 gates를 확인했다. `ranked:check`, `typecheck`, 전체 Jest 659/659(44 suites), ranking 186/186(12 suites), Chromium E2E 34 passed/11 intentional skipped/0 failed(3.7분)가 통과했다. Windows Playwright가 관리 server 종료 후 멈추는 현상은 명시적 `PLAYWRIGHT_REUSE_EXISTING_SERVER=true` 로컬 옵션을 추가해 해결했고, 같은 세 로컬 서버 재사용 실행은 exit 0으로 끝났다. 임시 로컬 서버는 실행 후 종료했다.
+
+이번 기록은 workflow 코드의 로컬 검증이며 GitHub Actions hosted run/Pages 공개 성공 증거가 아니다. Production Supabase migration/API와 hosted rollout이 미완료이고 GitHub CLI credential도 만료되어 원격 repository Variables/Pages 설정을 조회하지 못했다. Push/deploy는 하지 않았다.
+
 ## 2026-09-23 최신: 상위 30명 staging 계약 검증
 
 새 migration `202609230002_leaderboard_top30.sql`과 top-30 Edge Function을 staging에 적용했다. 31명 전용 rollback fixture가 공동순위 1·1·3, 공개 `entries` 30개, 31위 `me`, `rollbackCompleted=true`, `intentGucsCleared=true`로 통과했다. 후속 실제 smoke는 14개 통과·0개 실패·정리 대상 0개였다. 기존 101명 fixture는 이전 top-100 계약의 역사적 증거로 남기며 새 요구사항의 통과 기준으로 사용하지 않는다.

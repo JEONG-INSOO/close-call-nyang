@@ -1,5 +1,15 @@
 # 우당탕탕 냥대리 학습노트
 
+## 2026-09-24 · GitHub Pages CI gate
+
+Pages workflow를 PR 검사와 main 배포로 나눴다. PR은 production backend를 건드리지 않고 local-only 웹 bundle을 검사한다. main 배포는 public Supabase URL과 publishable key를 요구하고 production project host를 고정 확인한다. GitHub Actions의 `vars.*` 값은 공개 빌드에 들어가므로 비밀 저장소가 아니다. `pages:write`와 OIDC `id-token:write`는 deploy job에만 주고, 테스트 artifact를 `dist/` 하나로 제한했다.
+
+핵심 흐름은 `build 성공 → Pages artifact 업로드 → deploy job`이다. `needs: build`가 있어서 검사나 export 중 하나라도 실패하면 deploy가 시작되지 않는다. PR에는 `pages:write`/`id-token:write`를 주지 않으며 Pages artifact도 만들지 않는다.
+
+이번 수정은 workflow 구조와 로컬 공개 설정 검사까지만 확인했다. GitHub 원격 인증이 무효이고 production backend API도 아직 올라가지 않아 hosted workflow/실제 Pages 공개는 검증하지 않았다. 텍스트 스캐너 통과를 모든 바이너리의 secret-free 증거나 live server 연결로 해석하면 안 된다.
+
+Playwright 테스트는 첫 로컬 실행에서 개별 케이스가 끝난 뒤 Windows webServer 프로세스 정리 때문에 명령이 종료되지 않았다. 정확한 원인은 서버 프로세스의 소유권이 분리된 경우 제어하기 어렵다는 점이었다. `PLAYWRIGHT_REUSE_EXISTING_SERVER=true`를 명시한 로컬 옵션을 추가하고 내가 시작한 4173/4174/4175 서버를 먼저 띄워 실행하자, 전체 45개 케이스가 34 passed/11 intentional skip으로 끝나며 명령도 exit 0을 반환했다. CI는 기본값으로 Playwright가 서버를 시작·종료하므로 이 옵션의 영향을 받지 않는다.
+
 실제로 실행한 작업과 계획을 구분해 누적합니다. 게임 완성·배포·실기기 검증을 미리 완료로 적지 않습니다.
 
 ## 2026-09-23 · staging 규칙 동기화와 실제 smoke 재검증

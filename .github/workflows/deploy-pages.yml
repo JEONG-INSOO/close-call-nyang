@@ -1,22 +1,22 @@
 name: Deploy web to GitHub Pages
 
 on:
+  pull_request:
+    branches: [main]
   push:
     branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 35
+    permissions:
+      contents: read
+      pages: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,20 +30,98 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Export web app
+      - name: Check ranked engine parity
+        run: npm run ranked:check
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm run test:ci
+
+      - name: Ranking client tests
+        run: npm run test:ranking
+
+      - name: Validate production public configuration
+        if: github.event_name != 'pull_request'
+        env:
+          EXPO_PUBLIC_SUPABASE_URL: ${{ vars.EXPO_PUBLIC_SUPABASE_URL }}
+          EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          if [[ "$EXPO_PUBLIC_SUPABASE_URL" != "https://fgojrxmpxpzdiwsktjsx.supabase.co" ]]; then
+            echo "The production Supabase URL is missing or does not match the approved project."
+            exit 1
+          fi
+          if [[ ! "$EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY" =~ ^sb_publishable_[A-Za-z0-9_-]{8,}$ ]]; then
+            echo "A Supabase publishable key is required; secret and legacy keys are not accepted."
+            exit 1
+          fi
+
+      - name: Export production web app
+        if: github.event_name != 'pull_request'
+        env:
+          EXPO_PUBLIC_SUPABASE_URL: ${{ vars.EXPO_PUBLIC_SUPABASE_URL }}
+          EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+          EXPO_PUBLIC_ENABLE_MOCK_AD: 'false'
+          EXPO_PUBLIC_REPLAY_DIAGNOSTICS: 'false'
         run: npm run web:export
 
+      - name: Export unconfigured PR web app
+        if: github.event_name == 'pull_request'
+        env:
+          EXPO_PUBLIC_ENABLE_MOCK_AD: 'false'
+          EXPO_PUBLIC_REPLAY_DIAGNOSTICS: 'false'
+        run: npm run web:export
+
+      - name: Inspect production bundle
+        if: github.event_name != 'pull_request'
+        env:
+          EXPO_PUBLIC_SUPABASE_URL: ${{ vars.EXPO_PUBLIC_SUPABASE_URL }}
+          EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+          EXPO_PUBLIC_ENABLE_MOCK_AD: 'false'
+          EXPO_PUBLIC_REPLAY_DIAGNOSTICS: 'false'
+        run: npm run ranking:env-check
+
+      - name: Inspect local-only PR bundle
+        if: github.event_name == 'pull_request'
+        env:
+          EXPO_PUBLIC_ENABLE_MOCK_AD: 'false'
+          EXPO_PUBLIC_REPLAY_DIAGNOSTICS: 'false'
+        run: npm run ranking:env-check -- --allow-unconfigured
+
+      - name: Build isolated browser fixtures
+        run: |
+          npm run fixtures:build
+          npm run online-fixtures:build
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser tests
+        run: npm run e2e
+
       - name: Configure Pages
+        if: github.event_name != 'pull_request'
         uses: actions/configure-pages@v5
 
       - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
   deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: true
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
