@@ -1,5 +1,5 @@
 # Task: T02 공식 사이트 재배포
-## Status: pending
+## Status: in_progress
 ## Goal
 새 결과 버튼과 랭킹등록완료! 문구를 기존 Pages에 배포.
 ## Implementation

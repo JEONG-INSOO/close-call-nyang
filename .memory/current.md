@@ -1,5 +1,9 @@
 # Current Context
 
+## Latest checkpoint — result button stack ready for approved redeployment
+- User explicitly requested equal single-column result buttons and official redeployment. T01completed1e0961f: UI73/typecheck/ranked8/webexport/3viewport Chromium pass, screenshot verified. Existing copy7a7e5b5 included. No API/game/data change.
+- Active new T02 deploy: normal mainpush to exact existingrepo, monitor exactSHA CI and actualpublic3viewport result controls. User authorized push/redeployment, not secret changes or production identity writes. Original PagesT03 fullpublic QA remains deferred, return after this subplan.
+
 ## Latest checkpoint — result ranking notice simplified
 - User-requested UI task completed7a7e5b5: exact 랭킹등록완료! only; removed receipt score/best/rank detail row and unused copy. Server-confirmed submitted+receipt guard, local scores, leaderboard/API untouched. UI72/ranking186/typecheck/ranked8/mockexport/phone-landscape online2pass(exit0), screenshot/diffcheck pass. Own3QA servers stopped after Windows cleanup wait; no existing server/data changes.
 - Resume Pages T03 below. New UI exists in local source/mockfixture only; public Pages remains1059db2. No push/deployment this task. Learning note/decision/plan recorded. Fullpublic/native/offline checks still separate.
@@ -52,13 +56,13 @@
 - T03 remains in_progress. Next: Usage/backup-restore evidence and remaining operational checks; then Pages configuration/deploy and public-origin browser verification. Expo Go/iPhone/Hermes handoff remains P03. Live no-click browser retry is now verified; do not repeat account creation just to re-establish this result.
 
 ## Active Plan
-[GitHub Pages 웹 배포 및 공개 검증](./plans/2026-09-24-pages-hosted-web.md)
+[결과 버튼 정렬 및 배포](./plans/2026-09-25-result-button-stack.md)
 
 ## Active Phase
-[P01 Pages release](./phases/2026-09-24-pages-hosted-web/P01-pages-release/phase.md)
+[P01 UI와 배포](./phases/2026-09-25-result-button-stack/P01-release/phase.md)
 
 ## Active Task
-[T03 Pages live smoke](./phases/2026-09-24-pages-hosted-web/P01-pages-release/T03-pages-live-smoke.md)
+[T02 결과 화면 배포](./phases/2026-09-25-result-button-stack/P01-release/T02-deploy.md)
 
 ## Status
 - Latest completed request (2026-09-22): rookie를 생성 이미지 PNG 부품(우측 3/4, 다리·팔 절반, 표정 평소/위험40도/넘어짐)으로 교체, commit 5cf570d. [결정](./decisions/2026-09-22-side-view-walk.md), [학습노트](../docs/learning-notes/2026-09-22-side-view-walk.md). Jest650, Chromium34pass/11skip/0fail(3.4min), rules f7245064c9459310 불변, 4173=dist index-298ee86edf82ff1bbdd0079e1339a79f.js. 보상 2종은 P02(시트 필요). 사용자 요청: 다른 사람이 테스트할 환경(예/아니오만 답함=네) — 방식 미정.
