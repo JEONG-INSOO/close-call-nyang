@@ -131,16 +131,27 @@ describe('ranking entry and result presentation', () => {
     expect(start).toHaveBeenCalledTimes(1); expect(nickname).toHaveBeenCalledTimes(1); expect(ranking).toHaveBeenCalledTimes(1);
   });
 
-  it('shows pending then actual server receipt without replacing the local best', async () => {
+  it.each([3, null])('shows only confirmed success without receipt details for rank %s', async (rank) => {
     const retry = jest.fn();
     const props = { score: 101, bestScore: 145, canRevive: false, onRetry: jest.fn(), onHome: jest.fn(), onShare: jest.fn(), onRevive: jest.fn() };
     const view = await render(<ResultScreen {...props} submissionState="pending" onRetrySubmission={retry} />);
     expect(screen.getByText(ko.rankingPending)).toBeOnTheScreen();
     await fireEvent.press(screen.getByTestId('retry-ranking-submission')); expect(retry).toHaveBeenCalledTimes(1);
-    await view.rerender(<ResultScreen {...props} submissionState="submitted" receipt={{ runId: 'server-run', score: 101, bestScore: 120, rank: 3, improved: false }} />);
-    expect(screen.getByText(ko.rankingSubmitted)).toBeOnTheScreen();
-    expect(screen.getByTestId('ranking-receipt')).toHaveTextContent('검증된 성공률 101% · 온라인 최고 기록 120% · 3위');
+    await view.rerender(<ResultScreen {...props} submissionState="submitted" receipt={{ runId: 'server-run', score: 101, bestScore: 120, rank, improved: false }} />);
+    expect(screen.getByText('랭킹등록완료!')).toBeOnTheScreen();
+    expect(screen.getByTestId('ranking-submission-status')).toHaveTextContent(/^랭킹등록완료!$/);
+    expect(screen.queryByTestId('ranking-receipt')).toBeNull();
+    expect(screen.queryByText(/검증된 성공률|온라인 최고 기록|3위/)).toBeNull();
+    expect(screen.queryByTestId('retry-ranking-submission')).toBeNull();
+    expect(screen.getByTestId('result-score')).toHaveTextContent('101%');
     expect(screen.getByTestId('result-best')).toHaveTextContent('145%');
+  });
+
+  it.each(['submitted', 'recording', 'local', 'unranked'] as const)('does not announce success without a receipt in %s state', async (submissionState) => {
+    await render(<ResultScreen score={10} bestScore={20} canRevive={false} onRetry={jest.fn()}
+      onHome={jest.fn()} onShare={jest.fn()} onRevive={jest.fn()} submissionState={submissionState} receipt={null} />);
+    expect(screen.queryByText('랭킹등록완료!')).toBeNull();
+    expect(screen.getByText(submissionState === 'recording' ? ko.rankingPending : ko.rankingLocal)).toBeOnTheScreen();
   });
 
   it('offers three explicit pending-upload choices without silently discarding', async () => {

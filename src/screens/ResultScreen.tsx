@@ -52,9 +52,6 @@ export function ResultScreen({ score, bestScore, canRevive, onRetry, onHome, onS
         {submissionState && <View testID="ranking-submission-status" style={styles.notice}>
           <Text accessibilityLiveRegion="polite" style={styles.noticeText}>{submissionState === 'submitted' && receipt
             ? ko.rankingSubmitted : submissionState === 'pending' || submissionState === 'recording' ? ko.rankingPending : ko.rankingLocal}</Text>
-          {submissionState === 'submitted' && receipt && <Text testID="ranking-receipt" style={styles.noticeText}>
-            {ko.rankingVerifiedScore} {receipt.score}% · {ko.rankingBestScore} {receipt.bestScore}%{receipt.rank === null ? '' : ` · ${receipt.rank}위`}
-          </Text>}
           {submissionState === 'pending' && onRetrySubmission && <Pressable testID="retry-ranking-submission" accessibilityRole="button"
             accessibilityLabel={ko.retrySubmission} onPress={onRetrySubmission} style={({ pressed }) => [styles.serviceButton, pressed && styles.pressed]}>
             <Text style={styles.serviceText}>{ko.retrySubmission}</Text>

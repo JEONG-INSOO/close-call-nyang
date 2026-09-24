@@ -126,7 +126,8 @@ test('simulated API: genuine short run submits inputs, then start outage falls b
   await page.getByTestId('start-button').click();
   await expect(page.getByTestId('control-right')).toBeEnabled();
   await page.keyboard.down('ArrowRight'); await expect(page.getByTestId('result-screen')).toBeVisible(); await page.keyboard.up('ArrowRight');
-  await expect(page.getByText('랭킹 등록 완료', { exact: false })).toBeVisible();
+  await expect(page.getByText('랭킹등록완료!', { exact: true })).toBeVisible();
+  await expect(page.getByTestId('ranking-receipt')).toHaveCount(0);
   await page.screenshot({ path: info.outputPath('simulated-submission.png'), fullPage: true });
   expect(api.writes.some(path => path.endsWith('/runs/chunks'))).toBe(true);
   await expect(page.getByTestId('revive-button')).toHaveCount(0);
