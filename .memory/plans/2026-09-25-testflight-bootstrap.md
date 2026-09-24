@@ -4,5 +4,5 @@
 ## Phases
 | Phase | Status | Blueprint |
 | :--- | :--- | :--- |
-| P01 | in_progress | [프로젝트준비](../phases/2026-09-25-testflight-bootstrap/P01-config/phase.md) |
+| P01 | done | [프로젝트준비](../phases/2026-09-25-testflight-bootstrap/P01-config/phase.md) a7d0343 |
 기존dirtyGoQA문서/Expo패치는보존. 원격push/스토어심사/과금없음.

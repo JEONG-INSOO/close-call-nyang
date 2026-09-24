@@ -1,6 +1,6 @@
 # Task: T02 아이콘·스토어 초안·EAS 설정
 
-## Status: pending
+## Status: in_progress
 
 ## Goal
 게임과 일관된 벡터 아이콘, 사용자가 검토할 한국어 스토어 초안, Windows에서 사용할 EAS 배포 설정을 로컬에서 재현 가능하게 준비한다.
@@ -115,6 +115,7 @@ Task: T02-store-preparation
 ```
 
 ## Progress
+- 2026-09-25 TestFlight bootstrap a7d0343 완료: 실제EAS연결/storeprofile/ignore경계/configtests 준비. 전체Task아님. 사용자existingAppleapp질문답변대기; 아이콘/운영publicenv/필수자료 미완료. 현재제목우당탕탕냥대리/Top30/승인rookiePNGart가위legacy문구를우선한다. 실제서명/빌드업로드미실행. ExpoGo실기기결과not_run유지.
 - [ ] 구현 완료
 - [ ] 검증 통과
 - commit: pending

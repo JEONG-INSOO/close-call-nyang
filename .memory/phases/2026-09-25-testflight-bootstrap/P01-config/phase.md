@@ -2,6 +2,6 @@
 ## Tasks
 | Task | Status | Blueprint |
 | :--- | :--- | :--- |
-| T01 | in_progress | [EAS연결과설정](./T01-config.md) |
+| T01 | done | [EAS연결과설정](./T01-config.md) a7d0343 |
 ## Progress
-- done: 0/1 (active: T01)
+- done: 1/1 (return to original P03-T02 remaining preparation)

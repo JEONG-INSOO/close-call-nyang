@@ -1,5 +1,18 @@
 # Current Context
 
+## Latest checkpoint — EAS bootstrap completed; Apple app choice pending
+- Config task a7d0343 complete: EAS24.7.0 actualproject315e87a2-f405-4f65-ae45-c91f1d2c59bf @insoojeong/close-call-nyang created/verified; app.config owner+extra exactID, storeprofile(remoteversions/autoIncrement/Node24.19.0/Xcode26.6/ads+diagnosticsfalse), .easignore boundaries, config20/EAS2/typecheck/diffcheckpass.
+- Active originalP03-T02 remainingbranding/store/buildpreparation. UseraskedTestFlight, NOT AppReview. Asked async whether AppStoreConnect gameapp alreadyexists; noanswer yet. No Appleauth/team/appID/signing/build/submit/envupload done. Need useranswer then officialApplelogin, don't askpassword/2FAinchat. iPhoneQA remainsunverified; previousExpoGo task NOTcompleted. Existingexpo57.0.25package/lockdirtyretained deliberately, mustsourcecommitbeforeactualbuild; do not discard.
+- OriginalP03-T01policy/publicQA remainspending, not skippedforAppStorerelease. Metadata currenttitle우당탕탕냥대리/Top30 overrideslegacyT02oldtitleTop100. Currentrookieart is PNGsprite, not oldvector; reconcilebrandingbeforeimplementation. Onlyconfigprep completed, not wholeT02 or TestFlightupload. NoGitHubpush.
+
+## Latest checkpoint — TestFlight requested
+- User requests actualTestFlightupload; setup first, no AppReview. EASwhoami insoojeong, projectnotconfigured (noninteractiveinfo failed as expected). ExistingGoQA remainsnot_run foractualdevice/Hermes, preserve dirtypatch/docs. Activebootstrap task preparesstoreconfig/link; Appleexistingapp question pending. OriginalP03branding/store/signing prerequisites remain.
+
+## Latest checkpoint — user requests Expo Go test before iOS release
+- Preparation complete: sameSDKexpo57.0.25 installed (lock includes dependentCLI57.0.27/JSI57.1.1); installcheck clean/Doctor21of21/typecheck/Jest665of44suites/ranked8 passed. npm auditmoderate10 unchanged. Metro running on8081 (execsession51480), LAN172.30.1.23:8081; localstatus200/iOSmanifest200/iOSbundlecompile200/LANmanifest200. EXPO_NO_DOTENV1, diagnostics=true,mockads=false, backendenvremoved for this process only. Server deliberately left running for useriPhone. Currentpublicweb remainsa4c5ee2.
+- Await actual iPhone opening/device+iOS+Go versions and QA/Hermes3golden results. User must sameExpoaccountinsoojeong. docs/ios-release.md checklist and learningnotes written. No completioncommit/push/EASbuild/signing/submit; taskin_progress and dirtyscopedpatch/docs retained until physicalQA. RemainingPages/policy/store prerequisites not waived.
+- Active ExpoGoQA subplan; old PagesT03 incomplete preserved. ExpoCLI authenticated insoojeong with network permission; initial sandbox whoami UnexpectedServerError/install EACCES were not credential failures. install--check recommends expo57.0.24 -> ~57.0.25. SameSDK patch and localchecks first, actualiPhone/QA required before completion. EASconfig/projectId/storematerials absent; AppReviewcopy/finalapproval still required. Publicsite staysa4c5ee2.
+
 ## Latest checkpoint — uniform result buttons officially redeployed
 - User requested same-style single-column all result buttons then officialredeploy. UI1e0961f done and deploymentb7d8343 done. Normalpush a4c5ee250ff148f8c938682ccf8e39abc7b064a7 deployed through run36027176616 build/deploy success. CIJest665/ranking186/Chromium37pass11skip/types/parity/productionexport/envscan pass.
 - Actualpublic1280x720/844x390/667x375: 7buttons equalwidth/x/height50/radius/color, verticalgap>=9, allscrollreachable/retry, page/console/HTTPerrors0, productionwrites0. JSb317607e7c3e95f74779ba3c6c9296af HTTP200, normalizednewsuccesscopy included/oldreceiptcopy absent. Publicsite https://jeong-insoo.github.io/close-call-nyang/ now includes latestUI/copy. Result-only smoke is NOT fullPagesT03/native proof.
@@ -61,13 +74,13 @@
 - T03 remains in_progress. Next: Usage/backup-restore evidence and remaining operational checks; then Pages configuration/deploy and public-origin browser verification. Expo Go/iPhone/Hermes handoff remains P03. Live no-click browser retry is now verified; do not repeat account creation just to re-establish this result.
 
 ## Active Plan
-[GitHub Pages 웹 배포 및 공개 검증](./plans/2026-09-24-pages-hosted-web.md)
+[우당탕탕 냥대리](./plans/2026-09-21-close-call-nyang.md)
 
 ## Active Phase
-[P01 Pages release](./phases/2026-09-24-pages-hosted-web/P01-pages-release/phase.md)
+[P03 출시 준비](./phases/2026-09-21-close-call-nyang/P03-release/phase.md)
 
 ## Active Task
-[T03 Pages live smoke](./phases/2026-09-24-pages-hosted-web/P01-pages-release/T03-pages-live-smoke.md)
+[T02 아이콘·스토어·빌드 준비](./phases/2026-09-21-close-call-nyang/P03-release/T02-store-preparation.md)
 
 ## Status
 - Latest completed request (2026-09-22): rookie를 생성 이미지 PNG 부품(우측 3/4, 다리·팔 절반, 표정 평소/위험40도/넘어짐)으로 교체, commit 5cf570d. [결정](./decisions/2026-09-22-side-view-walk.md), [학습노트](../docs/learning-notes/2026-09-22-side-view-walk.md). Jest650, Chromium34pass/11skip/0fail(3.4min), rules f7245064c9459310 불변, 4173=dist index-298ee86edf82ff1bbdd0079e1339a79f.js. 보상 2종은 P02(시트 필요). 사용자 요청: 다른 사람이 테스트할 환경(예/아니오만 답함=네) — 방식 미정.
@@ -110,7 +123,7 @@
 - T01 Pages CI gate 구현·검증 완료. Production bundle 검사 통과, typecheck/ranked/Jest/ranking/Playwright 통과. T02 원격 GitHub 인증/production backend preflight로 이동.
 
 ## Next Step (IMPORTANT)
-최신 결과UI 재배포b7d8343완료, 실제배포SHAa4c5ee2/run36027176616. 기존 PagesT03 청사진으로 복귀해 공개랭킹read/outage 등 남은범위를 검증한다. 결과화면3viewport/asset/retry는 새공개버전에서 이미 확인했으므로 근거를 재사용한다. 신규 production 계정/점수쓰기는 별도승인없이는 금지한다. 공개read와 로컬network simulation을 실제서버장애로 표현하지 않는다. Offline/reconnect와 Expo Go/Hermes·개인정보·스토어최종승인은 별도다.
+TestFlight요청에따라EASbootstrap a7d0343완료. 사용자에게질문한기존AppStoreConnect앱유무답변확인후P03-T02아이콘/운영publicenv/필수자료를준비한다. legacy청사진oldtitle/top100/vector를현재우당탕탕냥대리/top30/승인rookieart에맞춰명시적으로정합화한다. Apple로그인/팀/앱ID/서명은공식경로로사용자참여하에확인하고정확한build를TestFlight에업로드한다. 아직build/upload/Go실기기검증완료아님. 가격/지원처/문구/심사승인은미확정값을추측하지않음.
 
 ## Resume Existing T03 After Requested Change
 이 절은 과거 복귀 지시다. T03은4a56230으로 완료됐으며 현재 Active Task의 Pages T02를 따른다. Production 합성점수 삽입, 인증정보 덮어쓰기, 추가과금/프로젝트생성은 계속 금지한다. 자동푸시하지 않는다.
