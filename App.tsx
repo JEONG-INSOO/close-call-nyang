@@ -123,9 +123,11 @@ export default function App(): React.JSX.Element {
       const state = controller.readState();
       for (const effect of effects) {
         if (effect.runId !== state.run?.id) continue;
-        if (effect.type === 'footstep' || effect.type === 'wobble' || effect.type === 'coffee' || effect.type === 'fall') {
+        if (effect.type === 'footstep' || effect.type === 'coffee' || effect.type === 'fall') {
           services.current.audio.cue(effect.type);
-          if (effect.type !== 'footstep') void playHaptic(effect.type, services.current.preferences.value.settings.hapticsEnabled);
+        }
+        if (effect.type === 'wobble' || effect.type === 'coffee' || effect.type === 'fall') {
+          void playHaptic(effect.type, services.current.preferences.value.settings.hapticsEnabled);
         }
       }
     });

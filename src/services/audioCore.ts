@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef } from 'react';
 import type { Settings } from './preferences';
 
-export type AudioCue = 'footstep' | 'wobble' | 'fall' | 'coffee';
+export type AudioCue = 'footstep' | 'fall' | 'coffee';
 export type AudioKey = 'music' | AudioCue;
-export const AUDIO_KEYS: readonly AudioKey[] = ['music', 'footstep', 'wobble', 'fall', 'coffee'];
+export const AUDIO_KEYS: readonly AudioKey[] = ['music', 'footstep', 'fall', 'coffee'];
 export interface FeedbackStatus {
   playing: boolean; loaded: boolean; buffering: boolean; ended: boolean;
   error?: string | null; interrupted?: boolean;
@@ -17,10 +17,10 @@ export interface AudioPort {
   subscribe(listener: (status: FeedbackStatus) => void): () => void;
 }
 export type AudioPorts = Readonly<Record<AudioKey, AudioPort>>;
-const COOLDOWN: Record<AudioCue, number> = { footstep: 120, wobble: 1200, fall: 500, coffee: 300 };
-const DURATION: Record<AudioCue, number> = { footstep: 100, wobble: 360, fall: 580, coffee: 320 };
+const COOLDOWN: Record<AudioCue, number> = { footstep: 120, fall: 500, coffee: 300 };
+const DURATION: Record<AudioCue, number> = { footstep: 100, fall: 580, coffee: 320 };
 
-/** Shared policy; platform adapters own exactly five lifetime-managed players. */
+/** Shared policy; platform adapters own exactly four lifetime-managed players. */
 export function useAudioCoordinator(settings: Settings, ports: AudioPorts, needsGesturePriming: boolean) {
   const settingsRef = useRef(settings);
   settingsRef.current = settings;

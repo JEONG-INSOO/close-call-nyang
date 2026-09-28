@@ -6,7 +6,7 @@ export type { AudioCue } from './audioCore';
 
 const SOURCES: Record<AudioKey, number> = {
   music: require('../../assets/audio/commute-loop.wav'), footstep: require('../../assets/audio/step.wav'),
-  wobble: require('../../assets/audio/wobble.wav'), fall: require('../../assets/audio/fall.wav'), coffee: require('../../assets/audio/coffee.wav'),
+  fall: require('../../assets/audio/fall.wav'), coffee: require('../../assets/audio/coffee.wav'),
 };
 interface WebPort extends AudioPort { load(): void; dispose(): void }
 function webPort(source: number): WebPort {

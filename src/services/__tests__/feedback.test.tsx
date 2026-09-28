@@ -58,7 +58,7 @@ describe('native game audio policy', () => {
   });
   it('pauses only the two active players at game over and preserves a delayed fall cue', async () => {
     const hook = await renderHook(() => useNativeAudio(SETTINGS));
-    const [music, step, wobble, fall, coffee] = mockNativePlayers;
+    const [music, step, fall, coffee] = mockNativePlayers;
     await act(async () => {
       hook.result.current.unlock(); hook.result.current.setPlaying(true);
       hook.result.current.cue('footstep'); await flush();
@@ -68,7 +68,7 @@ describe('native game audio policy', () => {
     fall.seekTo.mockImplementationOnce(() => new Promise<void>(resolve => { finish = resolve; }));
     await act(() => { hook.result.current.setPlaying(false); hook.result.current.cue('fall'); });
     expect(music.pause).toHaveBeenCalledTimes(1); expect(step.pause).toHaveBeenCalledTimes(1);
-    for (const player of [wobble, fall, coffee]) expect(player.pause).not.toHaveBeenCalled();
+    for (const player of [fall, coffee]) expect(player.pause).not.toHaveBeenCalled();
     await act(() => { for (let i = 0; i < 30; i++) hook.result.current.setPlaying(false); });
     await act(async () => { finish(); await flush(); });
     expect(fall.play).toHaveBeenCalledTimes(1);
@@ -78,7 +78,7 @@ describe('native game audio policy', () => {
   });
   it('cancels a pending result sound on explicit retry and stops unexpected late playback', async () => {
     const hook = await renderHook(() => useNativeAudio(SETTINGS));
-    const fall = mockNativePlayers[3];
+    const fall = mockNativePlayers[2];
     let finish = () => {};
     fall.seekTo.mockImplementationOnce(() => new Promise<void>(resolve => { finish = resolve; }));
     await act(() => { hook.result.current.unlock(); hook.result.current.cue('fall'); hook.result.current.unlock(); });
@@ -89,13 +89,13 @@ describe('native game audio policy', () => {
     expect(fall.pause).toHaveBeenCalledTimes(1);
     await hook.unmount();
   });
-  it('owns five stable players, never requests recording, and removes listeners/resources on unmount', async () => {
+  it('owns four stable players, never requests recording, and removes listeners/resources on unmount', async () => {
     const hook = await renderHook(({ settings }: { settings: Settings }) => useNativeAudio(settings), { initialProps: { settings: SETTINGS } });
-    expect(mockNativePlayers).toHaveLength(5);
+    expect(mockNativePlayers).toHaveLength(4);
     expect(setAudioModeAsync).toHaveBeenCalledWith(expect.objectContaining({ allowsRecording: false, shouldPlayInBackground: false }));
     expect(mockNativePlayers[0]).toMatchObject({ loop: true, volume: 0.15 });
     await hook.rerender({ settings: { ...SETTINGS, reduceMotion: true } });
-    expect(mockNativePlayers).toHaveLength(5);
+    expect(mockNativePlayers).toHaveLength(4);
     expect(mockNativePlayers.every(player => player.play.mock.calls.length === 0)).toBe(true);
     await hook.unmount();
     for (const player of mockNativePlayers) {
@@ -105,7 +105,7 @@ describe('native game audio policy', () => {
   });
   it('requires a user unlock, obeys independent toggles, and permits fall after setPlaying(false)', async () => {
     const hook = await renderHook(({ settings }: { settings: Settings }) => useNativeAudio(settings), { initialProps: { settings: SETTINGS } });
-    const [music, step, , fall] = mockNativePlayers;
+    const [music, step, fall] = mockNativePlayers;
     await act(() => { hook.result.current.setPlaying(true); hook.result.current.cue('footstep'); });
     expect(music.play).not.toHaveBeenCalled(); expect(step.play).not.toHaveBeenCalled();
     await act(async () => { hook.result.current.unlock(); hook.result.current.cue('footstep'); await flush(); });
@@ -124,15 +124,17 @@ describe('native game audio policy', () => {
     await act(async () => {
       hook.result.current.unlock(); hook.result.current.setPlaying(true);
       for (let index = 0; index < 2000; index += 1) hook.result.current.cue('footstep');
-      hook.result.current.cue('wobble'); hook.result.current.cue('coffee'); await flush();
+      for (let index = 0; index < 2000; index += 1) hook.result.current.cue('coffee');
+      await flush();
     });
-    expect(mockNativePlayers).toHaveLength(5);
+    expect(mockNativePlayers).toHaveLength(4);
     expect(mockNativePlayers[1].play).toHaveBeenCalledTimes(1);
-    expect(mockNativePlayers[2].play).toHaveBeenCalledTimes(1);
-    expect(mockNativePlayers[4].play).not.toHaveBeenCalled();
-    await act(async () => { hook.result.current.cue('fall'); await flush(); });
     expect(mockNativePlayers[3].play).toHaveBeenCalledTimes(1);
+    expect(mockNativePlayers[2].play).not.toHaveBeenCalled();
+    await act(async () => { hook.result.current.cue('fall'); await flush(); });
+    expect(mockNativePlayers[2].play).toHaveBeenCalledTimes(1);
     expect(mockNativePlayers[1].pause).toHaveBeenCalled();
+    expect(mockNativePlayers[3].pause).toHaveBeenCalled();
     await hook.unmount();
   });
   it('does not play a pending seek after pause, disabling SFX, or unmount', async () => {
@@ -142,12 +144,12 @@ describe('native game audio policy', () => {
     await act(() => { hook.result.current.unlock(); hook.result.current.setPlaying(true); hook.result.current.cue('footstep'); hook.result.current.setPlaying(false); });
     await act(async () => { finish(); await flush(); });
     expect(mockNativePlayers[1].play).not.toHaveBeenCalled();
-    mockNativePlayers[3].seekTo.mockImplementation(() => new Promise<void>(resolve => { finish = resolve; }));
+    mockNativePlayers[2].seekTo.mockImplementation(() => new Promise<void>(resolve => { finish = resolve; }));
     await act(() => hook.result.current.cue('fall'));
     await hook.rerender({ settings: { ...SETTINGS, sfxEnabled: false } });
     await hook.unmount();
     await act(async () => { finish(); await flush(); });
-    expect(mockNativePlayers[3].play).not.toHaveBeenCalled();
+    expect(mockNativePlayers[2].play).not.toHaveBeenCalled();
   });
   it('contains playback/seek rejection and requires a new gesture after interruption', async () => {
     const hook = await renderHook(() => useNativeAudio(SETTINGS));
@@ -190,9 +192,9 @@ describe('web audio gesture boundary', () => {
     Object.defineProperty(globalThis, 'Audio', { configurable: true, value: MockMedia });
   });
   afterEach(() => { if (originalAudio) Object.defineProperty(globalThis, 'Audio', originalAudio); else Reflect.deleteProperty(globalThis, 'Audio'); });
-  it('primes five elements from the gesture, survives countdown, and keeps stable elements across toggles', async () => {
+  it('primes four elements from the gesture, survives countdown, and keeps stable elements across toggles', async () => {
     const hook = await renderHook(({ settings }: { settings: Settings }) => useWebAudio(settings), { initialProps: { settings: SETTINGS } });
-    expect(mockWebPlayers).toHaveLength(5);
+    expect(mockWebPlayers).toHaveLength(4);
     expect(mockWebPlayers.every(player => player.play.mock.calls.length === 0)).toBe(true);
     await act(async () => { hook.result.current.unlock(); hook.result.current.setPlaying(false); await flush(); });
     expect(mockWebPlayers.every(player => player.play.mock.calls.length === 1 && !player.muted && player.paused)).toBe(true);
@@ -200,7 +202,7 @@ describe('web audio gesture boundary', () => {
     expect(mockWebPlayers[0].play).toHaveBeenCalledTimes(2);
     await hook.rerender({ settings: { ...SETTINGS, musicEnabled: false } });
     expect(mockWebPlayers[0].paused).toBe(true);
-    expect(mockWebPlayers).toHaveLength(5);
+    expect(mockWebPlayers).toHaveLength(4);
     await hook.unmount();
     for (const player of mockWebPlayers) {
       expect(player.removeAttribute).toHaveBeenCalledWith('src');

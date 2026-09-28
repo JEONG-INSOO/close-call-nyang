@@ -188,6 +188,28 @@ describe('settings, sharing and development reward integration', () => {
     expect(screen.queryByTestId('mock-ad-screen')).toBeNull();
   });
 
+  it('routes danger to haptics only while preserving the other sound cues', async () => {
+    await render(<App />); await start();
+    mockAudio.cue.mockClear(); jest.mocked(playHaptic).mockClear();
+    const actual = engine.transition;
+    let emitted = false;
+    const spy = jest.spyOn(engine, 'transition').mockImplementation((state, action, flags) => {
+      if (state.screen === 'playing' && state.run && action.type === 'TICK') {
+        if (emitted) return { state, effects: [] };
+        emitted = true;
+        const runId = state.run.id;
+        return { state: { ...state }, effects: [
+          { type: 'wobble', runId }, { type: 'footstep', runId },
+          { type: 'coffee', runId }, { type: 'fall', runId },
+        ] };
+      }
+      return actual(state, action, flags);
+    });
+    try { await advance(1 / 60); } finally { spy.mockRestore(); }
+    expect(mockAudio.cue.mock.calls).toEqual([['footstep'], ['coffee'], ['fall']]);
+    expect(jest.mocked(playHaptic).mock.calls).toEqual([['wobble', true], ['coffee', true], ['fall', true]]);
+  });
+
   it('does not derive any sound or haptic from the first100 snapshot notification', async () => {
     await render(<App />); await start();
     mockAudio.cue.mockClear(); jest.mocked(playHaptic).mockClear();

@@ -24,11 +24,10 @@ export function useGameAudio(settings: Settings) {
   // Each hook loads its local asset once and releases its native player on unmount.
   const music = useAudioPlayer(require('../../assets/audio/commute-loop.wav'), OPTIONS);
   const footstep = useAudioPlayer(require('../../assets/audio/step.wav'), OPTIONS);
-  const wobble = useAudioPlayer(require('../../assets/audio/wobble.wav'), OPTIONS);
   const fall = useAudioPlayer(require('../../assets/audio/fall.wav'), OPTIONS);
   const coffee = useAudioPlayer(require('../../assets/audio/coffee.wav'), OPTIONS);
-  const ports = useMemo(() => ({ music: port(music), footstep: port(footstep), wobble: port(wobble), fall: port(fall), coffee: port(coffee) }),
-    [music, footstep, wobble, fall, coffee]);
+  const ports = useMemo(() => ({ music: port(music), footstep: port(footstep), fall: port(fall), coffee: port(coffee) }),
+    [music, footstep, fall, coffee]);
   useEffect(() => {
     void setAudioModeAsync({ allowsRecording: false, playsInSilentMode: false,
       shouldPlayInBackground: false, interruptionMode: 'mixWithOthers' }).catch(() => {});
