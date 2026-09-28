@@ -9,7 +9,7 @@
 ## Phases
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | in_progress | 로컬 안내 이력·첫 안내·결과 안내 및 회귀 검증 | [P01](../phases/2026-09-28-nickname-onboarding/P01-onboarding/phase.md) |
+| P01 | done | 로컬 안내 이력·첫 안내·결과 안내 및 회귀 검증 (8ac885a) | [P01](../phases/2026-09-28-nickname-onboarding/P01-onboarding/phase.md) |
 
 ## Scope / Boundaries
 - 단일 Task로 저장과 화면 연결을 함께 검증한다. 별도의 서버/API/랭킹 도전 프로토콜 변경은 없다.
