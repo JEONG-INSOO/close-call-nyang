@@ -9,6 +9,7 @@ import { palette } from '../theme/tokens';
 import type { SceneProps } from './types';
 import { svgTransform, svgTransformAdapter } from './svgMotion';
 import { RookieProtectionShape, RookieSprite } from './RookieSprite';
+import { DiligentProtectionShape, DiligentSprite } from './DiligentSprite';
 import { NYANG_WALK, strideFor, type EmployeePose } from './walk';
 
 export { NYANG_WALK, walkPhaseAt, type EmployeePose } from './walk';
@@ -20,7 +21,7 @@ export const NYANG_RIG = Object.freeze({
   pivotX: 0, pivotY: 0, legLeftX: -25, legRightX: 25, cupX: 64, cupY: -60,
 });
 
-/** Unchanged reward-cat palette; the rookie is drawn from generated PNG parts instead. */
+/** Unchanged veteran palette; rookie and diligent use generated PNG art. */
 export const NYANG_COLORS = Object.freeze({
   outline: '#61463C', fur: '#F3D4A9', white: '#FFF9EE', pink: '#E8A3AD',
   tie: '#91CAB6', badge: '#C6B7DC', cupBand: '#EAB89D',
@@ -31,22 +32,18 @@ const PAW = 'M-15 8 Q-15 0 -6 0 H6 Q15 0 15 8 Q16 18 6 19 H-6 Q-16 18 -15 8Z';
 
 const AnimatedG = Animated.createAnimatedComponent(G);
 
-type RewardId = Exclude<CharacterId, 'rookie'>;
+type RewardId = Exclude<CharacterId, 'rookie' | 'diligent'>;
 
 const Face = memo(function Face({ id }: { id: RewardId }) {
   return (
     <G testID={`face-${id}`} stroke={NYANG_COLORS.outline} strokeWidth={DETAIL} strokeLinecap="round" fill="none">
       <Ellipse testID="white-muzzle" cx={0} cy={-117} rx={25} ry={14} fill={NYANG_COLORS.white} stroke="none" />
-      {id === 'diligent' ? <G>
-        <Path d="M-35 -159 L-17 -158 M17 -159 L35 -160" />
-        <Path d="M-34 -147 Q-25 -141 -16 -147 M16 -147 Q25 -141 34 -147" strokeWidth={3} />
-        <Path d="M-8 -110 Q0 -113 8 -110" />
-      </G> : <G>
+      <G>
         <Path d="M-35 -160 L-17 -159 M17 -161 Q27 -166 35 -162" />
         <Path d="M-34 -146 L-17 -143" strokeWidth={3} />
         <Ellipse cx={25} cy={-145} rx={5} ry={6} fill={NYANG_COLORS.outline} stroke="none" />
         <Path d="M-8 -111 Q2 -105 12 -113" />
-      </G>}
+      </G>
       <Path d="M-5 -126 Q0 -129 5 -126 Q4 -121 0 -119 Q-4 -121 -5 -126Z" fill={NYANG_COLORS.pink} stroke="none" />
       <Path d="M0 -119 V-115" />
       <Path d="M-48 -124 L-57 -125 M48 -124 L57 -125" />
@@ -62,8 +59,8 @@ const Outfit = memo(function Outfit({ id }: { id: RewardId }) {
     <G testID={`outfit-${id}`} stroke={NYANG_COLORS.outline} strokeWidth={DETAIL} strokeLinejoin="round">
       <G testID={`tie-${id}`}>
         <Path d="M-6 -96 L6 -96 L5 -87 L-5 -87Z" fill={NYANG_COLORS.tie} />
-        <Path d={id === 'diligent' ? 'M-4 -87 L4 -87 L8 -55 L0 -47 L-8 -55Z' : 'M-4 -87 L4 -87 L9 -58 L0 -50 L-9 -58Z'} fill={NYANG_COLORS.tie} />
-        {id === 'veteran' && <Path d="M-5 -70 H5" fill="none" />}
+        <Path d="M-4 -87 L4 -87 L9 -58 L0 -50 L-9 -58Z" fill={NYANG_COLORS.tie} />
+        <Path d="M-5 -70 H5" fill="none" />
       </G>
       <G testID={`employee-badge-${id}`}>
         <Path d="M23 -96 L27 -77" fill="none" />
@@ -84,7 +81,7 @@ const PawPads = memo(function PawPads({ side }: { side: 'left' | 'right' }) {
   </G>;
 });
 
-/** Flat cream reward cats (diligent/veteran), unchanged until their side-view parts arrive. */
+/** Historical flat cream veteran, unchanged while the diligent cat has a separate PNG skin. */
 function RewardCat({ frame, id }: Pick<SceneProps, 'frame'> & { id: RewardId }): React.JSX.Element {
   const leftLegProps = useAnimatedProps<GProps>(() => {
     const stride = strideFor('game', frame.value.distanceM);
@@ -178,11 +175,14 @@ export function NyangCharacter({ frame, reduceMotion, characterId = DEFAULT_CHAR
     <AnimatedG testID="nyang-root" animatedProps={rootProps} stroke={NYANG_COLORS.outline} strokeWidth={OUTLINE} strokeLinecap="round" strokeLinejoin="round">
       <AnimatedG testID="protection-outline" animatedProps={protectionProps}>
         {characterId === 'rookie' ? <RookieProtectionShape />
+          : characterId === 'diligent' ? <DiligentProtectionShape />
           : <Path d="M-67 -204 Q-86 -177 -79 -142 Q-74 -115 -58 -97 L-62 -80 Q-77 -65 -63 -45 Q-63 -18 -41 -9 Q-37 5 -21 5 L25 5 Q42 5 47 -13 Q65 -22 66 -40 L78 -42 Q89 -49 86 -68 L80 -89 Q76 -99 69 -109 Q87 -136 75 -172 Q72 -188 63 -203" fill="none" stroke={palette.mint} strokeWidth={7} />}
       </AnimatedG>
       {characterId === 'rookie'
         ? <RookieSprite frame={frame} reduceMotion={reduceMotion} pose={pose} tumble={tumble} />
-        : <RewardCat frame={frame} id={characterId} />}
+        : characterId === 'diligent'
+          ? <DiligentSprite frame={frame} pose={pose} />
+          : <RewardCat frame={frame} id={characterId} />}
     </AnimatedG>
   );
 }

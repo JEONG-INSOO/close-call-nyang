@@ -1034,3 +1034,15 @@ PostgreSQL은 DB이고 Supabase Auth는 로그인 HTTP 서비스다. DB만 설�
 사용자는 Docker가 이미 설치됐다고 알려줬다. 재확인 결과 사용자별 LocalAppData/Programs/DockerDesktop에 있었고, PATH와 표준 Program Files 경로 검사에서 찾지 못했을 뿐이었다. sandbox의 Access denied 역시 파일 부재가 아니다. registry/정확한 경로를 읽기 권한으로 확인해 기존 설치를 찾았다.
 
 `docker version`의 Client만 있는 상태는 CLI가 설치됐다는 뜻이며 Server 연결 성공과 다르다. 기존 Desktop을 실행한 뒤 Client/Server29.7.2와 Linux/WSL2 엔진 연결을 확인했다. 재설치·전역 PATH 변경·WSL 설정 변경은 하지 않았다. 이번 변경은 잘못된 설치 대기 기록을 current/Task/Phase/운영 문서에서 정정한 것이다. 아직 복구용 컨테이너나 Auth 복구를 검증한 것은 아니다. 새 앱 결함은 특이사항 없음.
+
+### 성실한 냥대리: 승인 시안을 실제 걷기 프레임으로 바꾸기 (2026-09-28)
+
+이번에는 보상 캐릭터 둘을 한꺼번에 그리지 않고 `diligent` 한 명만 작업했다. 사용자가 고른 렉돌은 크림색 몸·연회색 얼굴/귀/꼬리, 밝은 파란 눈과 웃는 얼굴, 연보라 카디건·흰 블라우스·작은 리본이다. 이전 코드의 피곤한 표정과 넥타이는 이제 이 캐릭터에 적용되지 않는다. 기본 회색 태비와 베테랑, `rookie/diligent/veteran` 저장 ID, 100% 첫 달성 해금 조건은 그대로다.
+
+[승인 시안](./art/diligent-ragdoll-approved.png)은 디자인의 기준이고, 게임은 그 PNG 한 장을 그대로 움직이지 않는다. 첫 두 칸 시트는 발 자세가 거의 같아 걸음으로 쓸 수 없었다. 오른쪽 칸만 반대발을 들도록 다시 생성했다. `scripts/build-diligent-frames.mjs`가 투명 배경의 두 인물을 분리·가운데 정렬·발 기준점 일치시켜 `assets/characters/diligent/step-a.png`, `step-b.png`를 만든다. 두 장은 380×425, 발 기준 y=415다. 최초 760×850 프레임은 웹에서 두 장 합계 약1.16MB였으므로 절반 크기로 줄여 약345KB로 낮췄다. 모바일 게임 화면에서 2배 이상 큰 원본 텍스처를 매 프레임 디코딩할 필요가 없기 때문이다.
+
+`src/scene/DiligentSprite.tsx`는 `frame.value.distanceM`로부터 기존 `strideFor`를 읽어 A/B의 opacity만 번갈아 바꾼다. 새 `setState`, 타이머, 물리 입력은 없다. 15% 이후 커피도 새 점수 계산이 아니라 기존 `hasCoffee`를 읽는다. `NyangCharacter`에서만 `characterId==='diligent'` 분기를 추가해, 기본 PNG 부품과 베테랑 SVG는 보존했다. 저장 자료를 재작성하지 않아 이미 해금한 사람도 같은 `diligent` ID로 새 그림을 본다.
+
+검증: 프레임 재현 검사, 전체 단위 테스트 687/687(48스위트), TypeScript와 `ranked:check`를 통과했다. 실제 웹 export에서 최적화한 PNG 두 장의 포함을 확인했고, 브라우저 캐릭터 관련 3/3 검사에서 합성 장면 844×390·667×375의 좌/우 걸음 및 캐릭터 선택 미리보기 캡처를 육안 확인했다. 합성 장면은 **iPhone 실기기 손맛이나 FPS 측정의 증거가 아니다**. 전체 테스트의 처음 실행은 테스트 헬퍼가 새 전체 PNG에 존재하지 않는 `face-diligent`를 찾으려 해 3건 실패했고, `diligent-sprite` 식별로 고쳤다. 별도 브라우저 레이아웃 검사 하나는 과거 위험 효과음 제거 전의 WAV 5개를 기대했지만 실제 4개여서 실패했다. 이 오디오 테스트 불일치는 캐릭터 범위 밖으로 남긴다.
+
+복습 질문: 왜 두 PNG의 크기와 발 기준점이 같아야 화면에서 걷기가 튀지 않을까? `distanceM`로 포즈를 바꾸면 게임 일시정지 때 왜 자연스럽게 멈출까? 캐릭터 그림을 바꿀 때 `diligent` 저장 ID를 유지해야 하는 이유는 무엇일까?

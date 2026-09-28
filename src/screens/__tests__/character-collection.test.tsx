@@ -94,7 +94,10 @@ async function injectDistance(distanceM: number, fall = false) {
 async function renderedCharacter(): Promise<CharacterId | undefined> {
   const scene = screen.getByTestId('game-scene', { includeHiddenElements: true });
   await fireEvent(scene, 'layout', { nativeEvent: { layout: { x: 0, y: 0, width: 844, height: 390 } } });
-  return CHARACTERS.find(character => within(scene).queryByTestId(`face-${character.id}`, { includeHiddenElements: true }))?.id;
+  return CHARACTERS.find(character => within(scene).queryByTestId(
+    character.id === 'diligent' ? 'diligent-sprite' : `face-${character.id}`,
+    { includeHiddenElements: true },
+  ))?.id;
 }
 
 async function persisted() {

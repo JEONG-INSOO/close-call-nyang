@@ -97,7 +97,15 @@ for (const phone of PHONES) {
           const poseId = `${id}-${coffee ? 'coffee' : 'empty'}-${spec.id}`;
           const pose = page.getByTestId(`fixture-pose-${poseId}`);
           await expect(pose.getByText(NOTICE, { exact: true })).toBeVisible();
-          await expect(pose.getByTestId(`face-${id}`)).toHaveCount(1);
+          if (id === 'diligent') {
+            await expect(pose.getByTestId('diligent-sprite')).toHaveCount(1);
+            if (spec.id === 'walk-left' || spec.id === 'walk-right') {
+              const showA = spec.id === 'walk-left';
+              await expect.poll(() => svgOpacity(pose.getByTestId('diligent-step-a'))).toBe(showA ? 1 : 0);
+              await expect.poll(() => svgOpacity(pose.getByTestId('diligent-step-b'))).toBe(showA ? 0 : 1);
+            }
+          }
+          else await expect(pose.getByTestId(`face-${id}`)).toHaveCount(1);
           await expect(pose).toContainText(`${coffee ? '커피 있음' : '커피 없음'} · angle ${angle.toFixed(2)} rad`);
           await expect.poll(() => svgOpacity(pose.getByTestId('cup-visibility'))).toBe(coffee ? 1 : 0);
           if (id === 'rookie') {

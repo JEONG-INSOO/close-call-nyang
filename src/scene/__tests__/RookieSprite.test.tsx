@@ -98,12 +98,25 @@ test('walk and run have distinct bounded strides', async () => {
   expect(frame.value).toEqual(initial);
 });
 
-test.each(['diligent', 'veteran'] as const)('reward %s keeps its previous flat skin', async characterId => {
+test('veteran keeps its previous flat skin', async () => {
+  const characterId = 'veteran';
   await render(<Svg><NyangCharacter frame={makeMutable<SceneFrame>({ ...initial, hasCoffee: true })} characterId={characterId} reduceMotion /></Svg>);
   expect(byId('head-contour').props.fill).toBe(NYANG_COLORS.fur);
   expect(byId(`outfit-${characterId}`).children).toHaveLength(2);
   expect(screen.queryByTestId('rookie-sprite')).toBeNull();
   expect(opacityOf('cup-visibility')).toBe(1);
+});
+
+test('diligent uses approved ragdoll frames without touching the rookie or veteran skins', async () => {
+  const frame = makeMutable<SceneFrame>({ ...initial, hasCoffee: true });
+  await render(<Svg><NyangCharacter frame={frame} characterId="diligent" reduceMotion /></Svg>);
+  expect(byId('diligent-sprite')).toBeTruthy();
+  expect(byId('diligent-step-a')).toBeTruthy();
+  expect(byId('diligent-step-b')).toBeTruthy();
+  expect(screen.queryByTestId('rookie-sprite')).toBeNull();
+  expect(screen.queryByTestId('outfit-veteran')).toBeNull();
+  expect(opacityOf('cup-visibility')).toBe(1);
+  expect(frame.value).toEqual({ ...initial, hasCoffee: true });
 });
 
 test.each([-1, 0, 1])('hanging arms stay splayed outward at stride %s so the paws never tuck behind the jacket', async stride => {

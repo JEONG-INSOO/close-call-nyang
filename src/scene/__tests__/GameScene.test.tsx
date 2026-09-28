@@ -60,12 +60,19 @@ describe('GameScene contracts', () => {
 
   it.each(CHARACTERS.map(character => character.id))('forwards %s to the same body rig', async id => {
     await mountScene(frame(), id);
-    expect(byId(`face-${id}`)).toBeTruthy();
-    expect(byId(`outfit-${id}`)).toBeTruthy();
     expect(byId('character-anchor').props.transform).toBe('translate(270 425)');
-    expect(byId('leg-left')).toBeTruthy();
-    expect(byId('leg-right')).toBeTruthy();
-    expect(byId('tail')).toBeTruthy();
+    if (id === 'diligent') {
+      expect(byId('diligent-sprite')).toBeTruthy();
+      expect(byId('diligent-step-a')).toBeTruthy();
+      expect(byId('diligent-step-b')).toBeTruthy();
+      expect(screen.queryByTestId('rookie-sprite', hidden)).toBeNull();
+    } else {
+      expect(byId(`face-${id}`)).toBeTruthy();
+      expect(byId(`outfit-${id}`)).toBeTruthy();
+      expect(byId('leg-left')).toBeTruthy();
+      expect(byId('leg-right')).toBeTruthy();
+      expect(byId('tail')).toBeTruthy();
+    }
   });
 
   it('keeps the agreed shared proportions, feet pivot and cup grip', () => {
@@ -75,7 +82,8 @@ describe('GameScene contracts', () => {
     });
   });
 
-  it.each(['diligent', 'veteran'] as const)('preserves reward %s as a flat cat wearing only a tie and badge', async id => {
+  it('preserves veteran as a flat cat wearing only a tie and badge', async () => {
+    const id = 'veteran';
     const rendered = await render(<Svg><NyangCharacter frame={frame()} characterId={id} reduceMotion={false} /></Svg>);
     expect(byId('plush-head').props.transform).toBeUndefined();
     expect(byId('nyang-root').props.stroke).toBe(NYANG_COLORS.outline);
@@ -138,13 +146,41 @@ describe('GameScene contracts', () => {
     }
   });
 
-  it('keeps the reward cats on their original eleven-degree gait', async () => {
-    await render(<Svg><NyangCharacter frame={frame({ distanceM: NYANG_WALK.metersPerCycle / 4 })} characterId="diligent" reduceMotion /></Svg>);
+  it('keeps veteran on its original eleven-degree gait', async () => {
+    await render(<Svg><NyangCharacter frame={frame({ distanceM: NYANG_WALK.metersPerCycle / 4 })} characterId="veteran" reduceMotion /></Svg>);
     const props = byId('leg-left').props.jestAnimatedProps.value;
     const matrix = props.matrix ?? props.transform;
     expect(matrix[1]).toBeCloseTo(Math.sin(11 * Math.PI / 180));
     expect(matrix[4]).toBeCloseTo(-23);
     expect(matrix[5]).toBeCloseTo(-23);
+  });
+
+  it('alternates only the diligent ragdoll frames by distance without mutating the game frame', async () => {
+    const sample = frame({ distanceM: NYANG_WALK.metersPerCycle / 4 });
+    const rendered = await render(<Svg><NyangCharacter frame={sample} characterId="diligent" reduceMotion /></Svg>);
+    expect(byId('diligent-step-a')).toHaveAnimatedProps({ opacity: 1 });
+    expect(byId('diligent-step-b')).toHaveAnimatedProps({ opacity: 0 });
+    const next = { ...sample.value, distanceM: NYANG_WALK.metersPerCycle * 3 / 4 };
+    await act(() => { sample.value = next; });
+    await waitFor(() => {
+      expect(byId('diligent-step-a')).toHaveAnimatedProps({ opacity: 0 });
+      expect(byId('diligent-step-b')).toHaveAnimatedProps({ opacity: 1 });
+    });
+    expect(sample.value).toEqual(next);
+    await rendered.unmount();
+  });
+
+  it('keeps the diligent frame fixed while paused and reuses the shared fall/protection cues', async () => {
+    const sample = frame({ distanceM: NYANG_WALK.metersPerCycle * 3 / 4,
+      playing: false, fallen: true, angleRad: 65 * Math.PI / 180, protectionSeconds: 1 });
+    const original = { ...sample.value };
+    await render(<Svg><NyangCharacter frame={sample} characterId="diligent" reduceMotion /></Svg>);
+    expect(byId('diligent-step-a')).toHaveAnimatedProps({ opacity: 0 });
+    expect(byId('diligent-step-b')).toHaveAnimatedProps({ opacity: 1 });
+    expect(byId('protection-outline')).toHaveAnimatedProps({ opacity: 0.5 });
+    const root = byId('nyang-root').props.jestAnimatedProps.value;
+    expect((root.matrix ?? root.transform)[1]).toBeCloseTo(Math.sin(82 * Math.PI / 180));
+    expect(sample.value).toEqual(original);
   });
 
   it.each([false, true])('uses engine coffee state, not a duplicate score threshold (%s)', async hasCoffee => {
@@ -208,8 +244,11 @@ describe('GameScene contracts', () => {
     'keeps the $id rig and cup grip identical with coffee=$hasCoffee at $angleRad', async ({ id, hasCoffee, angleRad }) => {
       const sample = frame({ hasCoffee, angleRad });
       await render(<Svg><NyangCharacter frame={sample} characterId={id} reduceMotion={true} /></Svg>);
-      expect(byId(`face-${id}`)).toBeTruthy();
-      expect(byId(`outfit-${id}`)).toBeTruthy();
+      if (id === 'diligent') expect(byId('diligent-sprite')).toBeTruthy();
+      else {
+        expect(byId(`face-${id}`)).toBeTruthy();
+        expect(byId(`outfit-${id}`)).toBeTruthy();
+      }
       expect(byId('cup').props.transform).toBe(id === 'rookie' ? ROOKIE_CUP : 'translate(64 -60)');
       expect(byId('cup-visibility')).toHaveAnimatedProps({ opacity: hasCoffee ? 1 : 0 });
       const root = byId('nyang-root').props.jestAnimatedProps.value;

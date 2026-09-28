@@ -10,6 +10,9 @@ const source = join(root, 'docs/art/source/diligent-walk-sheet.png');
 const target = join(root, 'assets/characters/diligent');
 const outputNames = ['step-a.png', 'step-b.png'];
 const canvas = { width: 760, height: 850, baseline: 830 };
+// The rendered cat is at most ~267 CSS pixels tall on desktop; halve texture dimensions
+// to avoid decoding two unnecessarily large 760×850 RGBA textures on a phone.
+const outputSize = { width: 380, height: 425 };
 const checkOnly = process.argv.includes('--check');
 
 const { data, info } = await sharp(source).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
@@ -55,9 +58,12 @@ for (let half = 0; half < 2; half++) {
   const isolated = await sharp(source).extract(crop).png().toBuffer();
   const left = Math.round((canvas.width - crop.width) / 2);
   const top = canvas.baseline - pad - height;
-  const output = await sharp({
+  const fullSize = await sharp({
     create: { width: canvas.width, height: canvas.height, channels: 4, background: '#00000000' },
   }).composite([{ input: isolated, left, top }]).png().toBuffer();
+  const output = await sharp(fullSize).resize(outputSize.width, outputSize.height, {
+    kernel: sharp.kernel.lanczos3,
+  }).png().toBuffer();
   const destination = join(target, outputNames[half]);
   if (checkOnly) {
     const actual = await readFile(destination);
@@ -66,7 +72,7 @@ for (let half = 0; half < 2; half++) {
     await mkdir(dirname(destination), { recursive: true });
     await writeFile(destination, output);
   }
-  console.log(`${outputNames[half]}: ${canvas.width}x${canvas.height}, source bounds ${JSON.stringify(box)}, feet y=${canvas.baseline}`);
+  console.log(`${outputNames[half]}: ${outputSize.width}x${outputSize.height}, source bounds ${JSON.stringify(box)}, feet y=${canvas.baseline / 2}`);
 }
 if (Math.abs(boxes[0].bottom - boxes[1].bottom) > 6) {
   throw new Error('The two walk poses do not share a usable feet baseline');

@@ -1,14 +1,20 @@
 import { test, expect, openGame, startGame, capture } from './helpers';
 
-test('all three flat chibi portraits fit the unchanged collection preview without unlocking rewards', async ({ cleanPage: page }, info) => {
+test('all three character portraits fit the unchanged collection preview without unlocking rewards', async ({ cleanPage: page }, info) => {
   await openGame(page);
   await page.getByTestId('title-characters').click();
   for (const id of ['rookie', 'diligent', 'veteran']) {
     const preview = page.getByTestId(`character-preview-${id}`);
     await preview.scrollIntoViewIfNeeded();
-    await expect(preview.getByTestId(`face-${id}`)).toHaveCount(1);
-    await expect(preview.getByTestId(`outfit-${id}`)).toHaveCount(1);
-    // The rookie is drawn from generated PNG parts; reward cats keep the flat SVG skin.
+    if (id === 'diligent') {
+      await expect(preview.getByTestId('diligent-sprite')).toHaveCount(1);
+      await expect(preview.getByTestId('diligent-step-a')).toHaveCount(1);
+      await expect(preview.getByTestId('diligent-step-b')).toHaveCount(1);
+    } else {
+      await expect(preview.getByTestId(`face-${id}`)).toHaveCount(1);
+      await expect(preview.getByTestId(`outfit-${id}`)).toHaveCount(1);
+    }
+    // Rookie uses generated PNG parts, diligent uses two complete PNG steps, veteran stays flat SVG.
     await expect(preview.getByTestId('rookie-sprite')).toHaveCount(id === 'rookie' ? 1 : 0);
     const fits = await preview.locator('svg').evaluate(element => {
       const svg = element as SVGSVGElement;

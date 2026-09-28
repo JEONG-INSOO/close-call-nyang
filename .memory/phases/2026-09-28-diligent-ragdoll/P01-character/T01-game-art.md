@@ -61,4 +61,4 @@ Task: T01-game-art
 ## Progress
 - [x] 구현 완료
 - [x] 검증 통과: `node scripts/build-diligent-frames.mjs --check`, `git diff --check`, 두 PNG 육안 검사
-- commit: pending
+- commit: `55b72ff`
