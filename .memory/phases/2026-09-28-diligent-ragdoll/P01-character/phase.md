@@ -3,8 +3,8 @@
 ## Tasks
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| T01 | `in_progress` | 승인 시안에서 게임용 이미지와 확인 자료 제작 | [T01](./T01-game-art.md) |
-| T02 | `pending` | 렉돌 걷기 연결, 회귀 테스트와 학습노트 | [T02](./T02-game-integration.md) |
+| T01 | `done` | 승인 시안에서 게임용 이미지와 확인 자료 제작 | [T01](./T01-game-art.md) |
+| T02 | `done` | 렉돌 걷기 연결, 회귀 테스트와 학습노트 | [T02](./T02-game-integration.md) |
 
 ## Progress
-- done: 0/2 (active: T01)
+- done: 2/2 (active: none)

@@ -70,4 +70,4 @@ Task: T02-game-integration
 - [x] 구현 완료
 - [x] 검증 통과: Jest 687/687(48 suites), browser character 3/3, typecheck, ranked:check, frame --check, web:export, diff --check. 시각 캡처 육안 확인.
 - [x] 별도 발견 기록: 전체 `layout.spec.ts`의 옛 WAV 5개 예상은 실제 4개와 불일치; 캐릭터 검사와 분리하고 이번 범위에서 미수정.
-- commit: pending
+- commit: `19b0a79`

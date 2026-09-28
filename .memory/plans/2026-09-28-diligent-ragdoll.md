@@ -9,7 +9,7 @@
 ## Phases
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | 성실한 냥대리 아트 제작, 게임 연결과 검증 | [P01](../phases/2026-09-28-diligent-ragdoll/P01-character/phase.md) |
+| P01 | `done` | 성실한 냥대리 아트 제작, 게임 연결과 검증 | [P01](../phases/2026-09-28-diligent-ragdoll/P01-character/phase.md) |
 
 ## Boundaries
 - `veteran`, 해금 조건, 저장 스키마, 게임 물리, 서버 검증·광고, 배포 설정은 변경하지 않는다.
