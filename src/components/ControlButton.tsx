@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Platform, StyleSheet, Text, View, type GestureResponderEvent, type ViewStyle } from 'react-native';
 import { ko } from '../i18n/ko';
 import { palette, ui } from '../theme/tokens';
@@ -21,7 +21,7 @@ interface PadPointerEvent {
 interface PadKeyEvent { key: string; preventDefault(): void }
 
 /** Raw touches avoid the exclusive responder lock used by a single Pressable. */
-export function ControlButton({ direction, disabled, onChange }: ControlButtonProps): React.JSX.Element {
+export const ControlButton = memo(function ControlButton({ direction, disabled, onChange }: ControlButtonProps): React.JSX.Element {
   const callback = useRef(onChange);
   callback.current = onChange;
   const held = useRef(new Set<string>());
@@ -144,13 +144,13 @@ export function ControlButton({ direction, disabled, onChange }: ControlButtonPr
       <Text pointerEvents="none" style={styles.arrow}>{direction === -1 ? '←' : '→'}</Text>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   pad: { width: ui.controlSize, height: ui.controlSize, minWidth: 72, minHeight: 72,
     alignItems: 'center', justifyContent: 'center', borderRadius: 24,
     backgroundColor: '#FFFFFFCC', borderWidth: 2, borderColor: palette.ink },
-  pressed: { backgroundColor: palette.mint, borderWidth: 3 },
+  pressed: { backgroundColor: palette.mint },
   disabled: { opacity: 0.45 },
   arrow: { fontSize: 38, lineHeight: 44, fontWeight: '700', color: palette.ink, userSelect: 'none' },
   web: { touchAction: 'none', userSelect: 'none', cursor: 'pointer' } as ViewStyle,

@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import type { SharedValue } from 'react-native-reanimated';
 import type { CharacterId } from '../characters/catalog';
@@ -15,8 +15,21 @@ export interface GameScreenProps {
   controller: GameController; characterId?: CharacterId; reduceMotion: boolean;
 }
 
+/** Compare only values read by this presentation boundary. Extend when adding visible fields.
+ * Scene animation continues independently through the existing SharedValue frame.
+ */
+export function sameGameScreenPresentation(previous: GameScreenProps, next: GameScreenProps): boolean {
+  const before = previous.snapshot.state.run?.event;
+  const after = next.snapshot.state.run?.event;
+  return previous.frame === next.frame && previous.controller === next.controller
+    && previous.characterId === next.characterId && previous.reduceMotion === next.reduceMotion
+    && previous.snapshot.state.screen === next.snapshot.state.screen
+    && previous.snapshot.score === next.snapshot.score
+    && before?.id === after?.id && before?.phase === after?.phase && before?.direction === after?.direction;
+}
+
 /** Keep the scene mounted while App places title/countdown/pause/result above it. */
-export function GameScreen({ frame, snapshot, controller, characterId, reduceMotion }: GameScreenProps) {
+export const GameScreen = memo(function GameScreen({ frame, snapshot, controller, characterId, reduceMotion }: GameScreenProps) {
   const screen = snapshot.state.screen;
   const visibleHud = screen !== 'title' && screen !== 'result';
   const canPause = screen === 'playing' || screen === 'countdown' || screen === 'ad';
@@ -47,7 +60,7 @@ export function GameScreen({ frame, snapshot, controller, characterId, reduceMot
       </View>
     </View>
   );
-}
+}, sameGameScreenPresentation);
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: palette.background },

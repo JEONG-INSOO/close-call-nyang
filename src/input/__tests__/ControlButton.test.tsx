@@ -1,5 +1,5 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react-native';
-import { Platform, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { ControlButton } from '../../components/ControlButton';
 import { createInputRegistry } from '../inputState';
 import { installBrowserFixture } from './browserFixture';
@@ -13,6 +13,42 @@ afterEach(async () => { await cleanup(); Object.defineProperty(Platform, 'OS', i
 
 describe('native control pad touch identities', () => {
   beforeEach(() => platform('ios'));
+  it('keeps geometry unchanged through press, extra fingers, and release', async () => {
+    await render(<ControlButton direction={-1} disabled={false} onChange={jest.fn()} />);
+    const geometry = () => {
+      const style = StyleSheet.flatten(screen.getByTestId('control-left').props.style);
+      return { width: style.width, height: style.height, borderWidth: style.borderWidth, borderRadius: style.borderRadius };
+    };
+    const before = geometry();
+    await fireEvent(screen.getByTestId('control-left'), 'touchStart', touch('left', ['one']));
+    expect(geometry()).toEqual(before);
+    await fireEvent(screen.getByTestId('control-left'), 'touchStart', touch('left', ['two']));
+    await fireEvent(screen.getByTestId('control-left'), 'touchEnd', touch('left', ['one']));
+    expect(screen.getByTestId('control-left').props.accessibilityState.selected).toBe(true);
+    expect(geometry()).toEqual(before);
+    await fireEvent(screen.getByTestId('control-left'), 'touchCancel', touch('left', ['two']));
+    expect(geometry()).toEqual(before);
+    expect(screen.getByTestId('control-left').props.accessibilityState.selected).toBe(false);
+  });
+  it('skips identical parent renders but accepts a new callback and disabled state', async () => {
+    const first = jest.fn(), second = jest.fn();
+    const view = await render(<ControlButton direction={-1} disabled={false} onChange={first} />);
+    const originalHandler = screen.getByTestId('control-left').props.onTouchStart;
+    for (let i = 0; i < 100; i++) {
+      await view.rerender(<ControlButton direction={-1} disabled={false} onChange={first} />);
+      expect(screen.getByTestId('control-left').props.onTouchStart).toBe(originalHandler);
+    }
+    await view.rerender(<ControlButton direction={-1} disabled={false} onChange={second} />);
+    await fireEvent(screen.getByTestId('control-left'), 'touchStart', touch('left', ['one']));
+    expect(first).not.toHaveBeenCalled();
+    expect(second).toHaveBeenLastCalledWith('left:touch:one', true);
+    await view.rerender(<ControlButton direction={-1} disabled onChange={second} />);
+    expect(second).toHaveBeenLastCalledWith('left:touch:one', false);
+    expect(screen.getByTestId('control-left').props.accessibilityState.disabled).toBe(true);
+    await view.rerender(<ControlButton direction={1} disabled={false} onChange={second} />);
+    await fireEvent(screen.getByTestId('control-right'), 'touchStart', touch('right', ['two']));
+    expect(second).toHaveBeenLastCalledWith('right:touch:two', true);
+  });
   it('holds both pads simultaneously and releases only the ended/cancelled finger', async () => {
     const input = createInputRegistry();
     await render(<View>

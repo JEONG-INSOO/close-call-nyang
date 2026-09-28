@@ -78,15 +78,24 @@ test('two genuine browser touch pointers hold independently and cancel their dir
   const right = (await page.getByTestId('control-right').boundingBox())!;
   const a = { x: left.x + left.width / 2, y: left.y + left.height / 2, id: 1 };
   const b = { x: right.x + right.width / 2, y: right.y + right.height / 2, id: 2 };
+  const padGeometry = () => page.getByTestId('control-left').evaluate(element => {
+    const box = element.getBoundingClientRect();
+    const arrow = element.firstElementChild!.getBoundingClientRect();
+    return { x: box.x, y: box.y, width: box.width, height: box.height,
+      border: getComputedStyle(element).borderTopWidth, arrowX: arrow.x, arrowY: arrow.y };
+  });
+  const initialGeometry = await padGeometry();
   const cdp = await context.newCDPSession(page);
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [a, b] });
   await expect(page.getByTestId('control-left')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByTestId('control-right')).toHaveAttribute('aria-pressed', 'true');
+  expect(await padGeometry()).toEqual(initialGeometry);
   await page.waitForTimeout(180);
   expect(Math.abs(await leanDegrees(page))).toBeLessThan(15);
   // Chromium 153 releases the listed changed IDs; [] would release all touches.
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [a] });
   await expect(page.getByTestId('control-left')).toHaveAttribute('aria-pressed', 'false');
+  expect(await padGeometry()).toEqual(initialGeometry);
   await expect(page.getByTestId('control-right')).toHaveAttribute('aria-pressed', 'true');
   await expect.poll(() => leanDegrees(page)).toBeGreaterThan(8);
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchCancel', touchPoints: [] });

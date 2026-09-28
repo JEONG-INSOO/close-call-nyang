@@ -1,5 +1,13 @@
 # 우당탕탕 냥대리 QA 기록
 
+## 2026-09-28 · 터치 표시 경로 최소 수정 (local only)
+
+- 사용자 선택3: 광고 off 유지, 터치 성능 우선. ControlButton의 눌림 테두리2 고정/memo, GameScreen의 표시값 비교만 수정. 엔진/서버/rules/광고 플래그/의존성 불변.
+- Red/green: 기존 코드에서 geometry2→3, 동일 props 핸들러 identity 변경, 동일 표시100 snapshot의 HUD mock101회로 의도한3검사 실패. 별도 숨김 버튼 selector 오류1개는 검사만 수정. 수정 후 대상2 suites/16개 통과. 최종 Jest45 suites/672개 통과(37.543s), 타입 검사·ranked:check8파일(nyang-v1-bc732af6f2a7ea66)·diffcheck 통과.
+- isolated export `output/touch-performance-web`: JS `index-13183f585d54a2812446d20627dc552a.js`, 에셋17개/ICO 검증, local-only env scan8항목 통과. EXPO_NO_DOTENV1, mock/diagnostics false, backend 공개변수 미설정. 기존 dist/사용자 서버/원격 데이터 보존. 정책 페이지는 여전히 pending이며 이 task의 완료 범위가 아니다.
+- Playwright 격리4186에서844×390/667×375: 실제 CDP 두 손가락 hold/부분 해제/cancel, 버튼·화살표 위치/크기/테두리 유지2pass, exit0. uncaught/console/HTTP 실패 guard 통과. Windows 서버 teardown 대기로 실행2.3분; 각 검사4.9초. Stop-Process 오류 후 정확한 전용PID9072/명령 재확인, CIM Terminate0으로 종료; 기존 서버는 종료하지 않았다.
+- 동일 표시100회에 추가 HUD/scene mock render0회는 구조 회귀 검증이다. 실제 기존 GameScene은 이미memo였으며 mock 호출횟수는 GPU 드로우 횟수가 아니다. 실제 iPhone FPS/입력 지연/장시간 성능은 not_run. 설치된 TestFlight1.0.0(1)과 공개 Pages에는 미반영; 새 native 빌드 및 기기 재검증은 P03-T03에서 진행한다.
+
 ## 2026-09-25 · 동일규격 결과 버튼 공식 재배포
 
 - UI커밋1e0961f + 완료문구7a7e5b5, 실제배포SHAa4c5ee250ff148f8c938682ccf8e39abc7b064a7. Actions36027176616 build/deploy success. CIJest665/44suites,ranking186/12suites,Chromium37pass/11intentional skip/0fail,타입/parity/export/envscan 통과.
