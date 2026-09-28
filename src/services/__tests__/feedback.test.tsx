@@ -46,6 +46,49 @@ beforeEach(() => { mockNativePlayers.length = 0; jest.clearAllMocks(); platform(
 afterEach(() => { Object.defineProperty(Platform, 'OS', originalOS); });
 
 describe('native game audio policy', () => {
+  it('does no native work for repeated idle or playing notifications', async () => {
+    const hook = await renderHook(() => useNativeAudio(SETTINGS));
+    await act(() => hook.result.current.unlock());
+    mockNativePlayers.forEach(player => player.pause.mockClear());
+    await act(() => { for (let i = 0; i < 30; i++) hook.result.current.setPlaying(false); });
+    expect(mockNativePlayers.reduce((total, player) => total + player.pause.mock.calls.length, 0)).toBe(0);
+    await act(() => { for (let i = 0; i < 30; i++) hook.result.current.setPlaying(true); });
+    expect(mockNativePlayers[0].play).toHaveBeenCalledTimes(1);
+    await hook.unmount();
+  });
+  it('pauses only the two active players at game over and preserves a delayed fall cue', async () => {
+    const hook = await renderHook(() => useNativeAudio(SETTINGS));
+    const [music, step, wobble, fall, coffee] = mockNativePlayers;
+    await act(async () => {
+      hook.result.current.unlock(); hook.result.current.setPlaying(true);
+      hook.result.current.cue('footstep'); await flush();
+    });
+    mockNativePlayers.forEach(player => player.pause.mockClear());
+    let finish = () => {};
+    fall.seekTo.mockImplementationOnce(() => new Promise<void>(resolve => { finish = resolve; }));
+    await act(() => { hook.result.current.setPlaying(false); hook.result.current.cue('fall'); });
+    expect(music.pause).toHaveBeenCalledTimes(1); expect(step.pause).toHaveBeenCalledTimes(1);
+    for (const player of [wobble, fall, coffee]) expect(player.pause).not.toHaveBeenCalled();
+    await act(() => { for (let i = 0; i < 30; i++) hook.result.current.setPlaying(false); });
+    await act(async () => { finish(); await flush(); });
+    expect(fall.play).toHaveBeenCalledTimes(1);
+    await act(() => hook.result.current.unlock());
+    expect(fall.pause).toHaveBeenCalledTimes(1);
+    await hook.unmount();
+  });
+  it('cancels a pending result sound on explicit retry and stops unexpected late playback', async () => {
+    const hook = await renderHook(() => useNativeAudio(SETTINGS));
+    const fall = mockNativePlayers[3];
+    let finish = () => {};
+    fall.seekTo.mockImplementationOnce(() => new Promise<void>(resolve => { finish = resolve; }));
+    await act(() => { hook.result.current.unlock(); hook.result.current.cue('fall'); hook.result.current.unlock(); });
+    await act(async () => { finish(); await flush(); });
+    expect(fall.play).not.toHaveBeenCalled();
+    fall.pause.mockClear();
+    await act(() => fall.status({ playing: true }));
+    expect(fall.pause).toHaveBeenCalledTimes(1);
+    await hook.unmount();
+  });
   it('owns five stable players, never requests recording, and removes listeners/resources on unmount', async () => {
     const hook = await renderHook(({ settings }: { settings: Settings }) => useNativeAudio(settings), { initialProps: { settings: SETTINGS } });
     expect(mockNativePlayers).toHaveLength(5);

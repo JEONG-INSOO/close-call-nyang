@@ -35,6 +35,8 @@ export function useAudioCoordinator(settings: Settings, ports: AudioPorts, needs
     const priming = new Set<AudioKey>();
     const expected = new Set<AudioKey>();
     const wasPlaying = new Set<AudioKey>();
+    // Track issued play requests too: status callbacks may arrive after a pause.
+    const needsPause = new Set<AudioKey>();
     const active = new Map<AudioCue, number>();
     const last = new Map<AudioCue, number>();
     const tickets = new Map<AudioCue, number>();
@@ -45,7 +47,8 @@ export function useAudioCoordinator(settings: Settings, ports: AudioPorts, needs
       expected.delete(key);
       wasPlaying.delete(key);
       if (priming.has(key) && live.current) return;
-      try { ports[key].pause(); } catch { /* Audio never controls game progress. */ }
+      if (!needsPause.has(key)) return;
+      try { ports[key].pause(); needsPause.delete(key); } catch { /* Keep eligible for a later stop retry. */ }
     };
     const stopEffects = () => {
       generation += 1;
@@ -62,6 +65,7 @@ export function useAudioCoordinator(settings: Settings, ports: AudioPorts, needs
       const lease = lifetime;
       playTickets.set(key, ticket);
       expected.add(key);
+      needsPause.add(key);
       const failed = () => {
         if (live.current && lease === lifetime && playTickets.get(key) === ticket && expected.has(key)) interrupt();
       };
@@ -77,6 +81,9 @@ export function useAudioCoordinator(settings: Settings, ports: AudioPorts, needs
     return {
       unlock() {
         if (!live.current) return;
+        // A new start/retry gesture ends the previous result sound, even though
+        // both result and countdown are non-playing states.
+        if (!playing) stopEffects();
         unlocked = true;
         blocked = false;
         last.clear();
@@ -88,6 +95,7 @@ export function useAudioCoordinator(settings: Settings, ports: AudioPorts, needs
           // Called synchronously from start/retry/resume, never after awaiting.
           try {
             ports[key].mute(true);
+            needsPause.add(key);
             void Promise.resolve(ports[key].play()).then(() => {
               if (lease !== lifetime) return;
               priming.delete(key);
@@ -108,6 +116,7 @@ export function useAudioCoordinator(settings: Settings, ports: AudioPorts, needs
         syncMusic();
       },
       setPlaying(value: boolean) {
+        if (playing === value) return;
         playing = value;
         if (!value) stopEffects();
         syncMusic();
@@ -147,12 +156,14 @@ export function useAudioCoordinator(settings: Settings, ports: AudioPorts, needs
         if (!live.current || priming.has(key)) return;
         if (status.error || status.interrupted) { interrupt(); return; }
         if (status.playing) {
+          needsPause.add(key);
           if (blocked || !expected.has(key)) { safePause(key); return; }
           wasPlaying.add(key);
         } else {
           const unexpected = wasPlaying.has(key) && expected.has(key) && status.loaded && !status.buffering && !status.ended;
           wasPlaying.delete(key);
           if (status.ended) {
+            needsPause.delete(key);
             expected.delete(key);
             if (key !== 'music') active.delete(key);
           }
