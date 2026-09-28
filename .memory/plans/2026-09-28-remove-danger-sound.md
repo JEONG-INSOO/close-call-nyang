@@ -6,6 +6,6 @@
 ## Phases
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | in_progress | 전달 경로·플레이어·회귀검증 | [P01](../phases/2026-09-28-remove-danger-sound/P01-audio/phase.md) |
+| P01 | done | 전달 경로·플레이어·회귀검증, 6c2bd59 | [P01](../phases/2026-09-28-remove-danger-sound/P01-audio/phase.md) |
 
 완료 후 기존 audio-transition/P01-audio/T02-testflight 포인터로 복귀한다. 기존 더티 배포 기록은 보존하고 이번 소스 커밋에 섞지 않는다.
