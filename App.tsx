@@ -21,6 +21,7 @@ import { MockAdScreen } from './src/screens/MockAdScreen';
 import { SettingsPanel } from './src/screens/SettingsPanel';
 import { ShareFeedbackPanel } from './src/screens/ShareFeedbackPanel';
 import { NicknamePanel } from './src/screens/NicknamePanel';
+import { NicknameWelcomePanel } from './src/screens/NicknameWelcomePanel';
 import { LeaderboardScreen } from './src/screens/LeaderboardScreen';
 import { PendingRankingPanel } from './src/screens/PendingRankingPanel';
 import { useOnlineProfile } from './src/online/useOnlineProfile';
@@ -30,10 +31,11 @@ import { playHaptic } from './src/services/haptics';
 import { getRewardedAdAvailability } from './src/services/rewardedAds';
 import { shareScore, type ShareResult } from './src/services/share';
 import { usePreferences } from './src/services/usePreferences';
+import { useNicknameOnboarding } from './src/services/useNicknameOnboarding';
 import { clearGameResume, loadGameResume, resumeStateFromGameState, saveGameResume } from './src/services/gameResume';
 import { palette } from './src/theme/tokens';
 
-type Panel = 'settings' | 'characters' | 'share' | 'nickname' | 'leaderboard' | 'diagnostics' | null;
+type Panel = 'settings' | 'characters' | 'share' | 'nickname' | 'nicknameWelcome' | 'leaderboard' | 'diagnostics' | null;
 let Diagnostics: (() => React.JSX.Element) | null = null;
 if (__DEV__ && process.env.EXPO_PUBLIC_REPLAY_DIAGNOSTICS === 'true') {
   Diagnostics = require('./src/online/__dev__/RankedReplayDiagnostics').RankedReplayDiagnostics;
@@ -44,6 +46,7 @@ export default function App(): React.JSX.Element {
   const { controller, snapshot, frame } = useGameController(flags);
   const portraitBlocked = useWebPortraitGate();
   const preferences = usePreferences();
+  const onboarding = useNicknameOnboarding();
   const online = useOnlineProfile();
   const audio = useGameAudio(preferences.value.settings);
   const [runCharacter, setRunCharacter] = useState<CharacterId>(DEFAULT_CHARACTER_ID);
@@ -54,6 +57,7 @@ export default function App(): React.JSX.Element {
   const panelRef = useRef<Panel>(null);
   const mounted = useRef(true);
   const sharing = useRef(false);
+  const welcomePresented = useRef(false);
   const attempt = useRef<{ id: number; runId: number } | null>(null);
   const services = useRef({ preferences, audio });
   services.current = { preferences, audio };
@@ -70,6 +74,32 @@ export default function App(): React.JSX.Element {
       attempt.current = { id: services.current.preferences.beginAttempt(!flags.mockAdsEnabled), runId };
     },
   });
+
+  useEffect(() => {
+    if (onboarding.status !== 'ready' || onboarding.handled) return;
+    if (online.status === 'ready' && online.profile) {
+      onboarding.markHandled();
+      if (panelRef.current === 'nicknameWelcome') changePanel(null);
+      return;
+    }
+    if (welcomePresented.current || online.status !== 'guest' || online.profile || online.isBusy || online.deletionPending ||
+        portraitBlocked || resumeLoading || ranking.startBusy || ranking.pendingChoice || panelRef.current !== null ||
+        controller.readState().screen !== 'title') return;
+    welcomePresented.current = true;
+    ranking.cancelStart();
+    changePanel('nicknameWelcome');
+  }, [onboarding.status, onboarding.handled, onboarding.markHandled, online.status, online.profile,
+    online.isBusy, online.deletionPending, portraitBlocked, resumeLoading, ranking.startBusy,
+    ranking.pendingChoice, ranking.cancelStart, panel, snapshot.state.screen, controller, changePanel]);
+
+  const deferNickname = useCallback(() => {
+    onboarding.markHandled();
+    changePanel(null);
+  }, [onboarding.markHandled, changePanel]);
+  const setupNickname = useCallback(() => {
+    onboarding.markHandled();
+    changePanel('nickname');
+  }, [onboarding.markHandled, changePanel]);
 
   useEffect(() => {
     mounted.current = true;
@@ -233,6 +263,7 @@ export default function App(): React.JSX.Element {
             onRetry={start} onHome={home} onShare={share} onRevive={revive} onSettings={openSettings}
             onCharacters={openCharacters} newlyUnlocked={preferences.newlyUnlocked}
             onLeaderboard={() => openOnline('leaderboard')} onNickname={() => openOnline('nickname')}
+            showNicknamePrompt={online.status === 'guest' && !online.profile && !online.isBusy && !online.deletionPending}
             startBusy={ranking.startBusy} submissionState={ranking.submissionState} receipt={ranking.receipt}
             onRetrySubmission={() => { void ranking.retrySubmission(); }} />}
           {showStorageStatus && <View pointerEvents="none" style={styles.storageNotice}>
@@ -256,6 +287,8 @@ export default function App(): React.JSX.Element {
           onSave={online.saveNickname} busy={online.isBusy || online.deletionPending}
           disabled={online.status === 'unconfigured'}
           error={online.status === 'unconfigured' ? '랭킹 연결 전입니다. 닉네임 없이도 바로 플레이할 수 있어요.' : online.error} />
+        <NicknameWelcomePanel visible={panel === 'nicknameWelcome' && !portraitBlocked}
+          onSetup={setupNickname} onLater={deferNickname} />
         <LeaderboardScreen visible={panel === 'leaderboard'} api={online.api} myProfile={online.profile}
           onClose={closePanel} refreshKey={ranking.refreshKey} />
         <PendingRankingPanel visible={ranking.pendingChoice} busy={ranking.startBusy} error={ranking.pendingError}

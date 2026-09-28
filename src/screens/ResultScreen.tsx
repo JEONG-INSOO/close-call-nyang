@@ -9,12 +9,12 @@ export interface ResultScreenProps {
   score: number; bestScore: number; canRevive: boolean;
   onRetry(): void; onHome(): void; onShare(): void; onRevive(): void;
   onSettings?(): void; onCharacters?(): void; newlyUnlocked?: readonly CharacterId[];
-  onLeaderboard?(): void; onNickname?(): void; startBusy?: boolean;
+  onLeaderboard?(): void; onNickname?(): void; showNicknamePrompt?: boolean; startBusy?: boolean;
   submissionState?: RankSubmissionState; receipt?: SubmitResult | null; onRetrySubmission?(): void;
 }
 
 export function ResultScreen({ score, bestScore, canRevive, onRetry, onHome, onShare, onRevive,
-  onSettings, onCharacters, newlyUnlocked = [], onLeaderboard, onNickname, startBusy = false,
+  onSettings, onCharacters, newlyUnlocked = [], onLeaderboard, onNickname, showNicknamePrompt = false, startBusy = false,
   submissionState, receipt, onRetrySubmission }: ResultScreenProps) {
   const result = Number.isFinite(score) ? Math.max(0, Math.floor(score)) : 0;
   const best = Math.max(result, Number.isFinite(bestScore) ? Math.max(0, Math.floor(bestScore)) : 0);
@@ -49,7 +49,7 @@ export function ResultScreen({ score, bestScore, canRevive, onRetry, onHome, onS
         {awardedNames.length > 0 && <View testID="character-unlock-notice" style={styles.notice}>
           <Text accessibilityLiveRegion="polite" style={styles.noticeText}>{ko.characterUnlocked}: {awardedNames.join(', ')}</Text>
         </View>}
-        {submissionState && <View testID="ranking-submission-status" style={styles.notice}>
+        {submissionState && !(submissionState === 'local' && showNicknamePrompt && onNickname) && <View testID="ranking-submission-status" style={styles.notice}>
           <Text accessibilityLiveRegion="polite" style={styles.noticeText}>{submissionState === 'submitted' && receipt
             ? ko.rankingSubmitted : submissionState === 'pending' || submissionState === 'recording' ? ko.rankingPending : ko.rankingLocal}</Text>
         </View>}
@@ -62,6 +62,10 @@ export function ResultScreen({ score, bestScore, canRevive, onRetry, onHome, onS
             onPress={onLeaderboard} style={({ pressed }) => [styles.button, pressed && styles.pressed]}>
             <Text style={styles.buttonText}>{ko.leaderboard}</Text>
           </Pressable>}
+          {showNicknamePrompt && onNickname && <View testID="result-nickname-notice" style={styles.notice}>
+            <Text accessibilityLiveRegion="polite" style={styles.noticeText}>{ko.nicknameRankingInvite}</Text>
+            <Text style={styles.noticeText}>{ko.nicknameRankingNextRun}</Text>
+          </View>}
           {onNickname && <Pressable testID="result-nickname" accessibilityRole="button" accessibilityLabel={ko.nicknameSet}
             onPress={onNickname} style={({ pressed }) => [styles.button, pressed && styles.pressed]}>
             <Text style={styles.buttonText}>{ko.nicknameSet}</Text>
