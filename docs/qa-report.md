@@ -1,5 +1,21 @@
 # 우당탕탕 냥대리 QA 기록
 
+## 2026-09-28 · 위험 효과음 제거 build4
+
+source d8e8dbd(6c2bd59포함),1.0.0(4), build f8d4ccb3-edc9-41af-99a9-11843efc33a3, submit eb4df011-0fc4-4f21-8569-8f92218306ae 예약 접수. 사용자 요청에 따라 이후 TestFlight 표시 확인은 사용자 담당. 업로드 성공/Apple 처리/실기기FPS 미확인. 기존3번은 build와submit FINISHED 확인.
+검증: 직전 Jest676/45suites와타입, 이번release7/ranked8/env10/archive201·8hash·private0/publicGET200 rulesmatch 통과. 최초 GET 검사 명령의 PowerShell 인용 오류는 네트워크 요청 전에 실패했고 here-string 전달로 수정 후200 확인. 원본 소스/광고/서명/규칙 변경 없음. 별도 웹 배포 없음.
+
+## 2026-09-28 · 오디오 전환 비용 수정
+
+- 사용자 피드백off 시개선보고. 개별오디오/햅틱원인분리전; 중복pause는코드로재현. 신규3회귀oldfail→target15pass, full675/45suites, types/ranked8/release7/diffpassed. idlefalse30회pause150→0; 음악+step재생시result/fallpause10→2. 늦은seek취소/웹priming/설정off/중단/cleanup유지. 위험머리각도/제동력/햅틱/엔진/광고변경없음.
+- 소스8e5f95c, build32b1ca9b-eb95-4fc1-b675-b8d1c0144500,1.0.0(3)요청. archive201/7hashmatches/private0; 기존production환경10/공개GET200 rulesmatch. 실제기기프레임/새빌드설치/Appleavailable은not_run. 업데이트후음악·효과음on으로시작/위험/종료구간비교필요.
+
+## 2026-09-28 · 터치 개선 native 재빌드
+
+- 사용자 승인으로 소스4084834(터치756c005 포함), EAS b679d4dc-c1c8-45f3-b401-6d7ba769e722,1.0.0(2) 빌드. FINISHED05:08:39.350UTC. 정확한 제출 bac21516-a95a-4811-bec4-977c50454df2 IN_PROGRESS. App Review 미제출, 광고 off, 서버 규칙 불변.
+- release7/types/ranked8/env10/archive201(주요6파일일치)/운영publicGET200 및rules일치. 직전Jest672/browser2는 동일 터치 소스의 회귀 증거이지 nativeFPS 검사가 아니다. 검사 복사본만 삭제; 사용자 서버·기기 저장을 초기화하지 않았다.
+- 로컬 ASC상태 조회401으로 설치 가능 여부 미확인. 실제iPhone 모델/iOS/새빌드 설치/길게누르기/교차/다중터치/재개/FPS는 사용자 업데이트 후검증대기. 기존1번 사용 시 이 변경은 없다.
+
 ## 2026-09-28 · 터치 표시 경로 최소 수정 (local only)
 
 - 사용자 선택3: 광고 off 유지, 터치 성능 우선. ControlButton의 눌림 테두리2 고정/memo, GameScreen의 표시값 비교만 수정. 엔진/서버/rules/광고 플래그/의존성 불변.

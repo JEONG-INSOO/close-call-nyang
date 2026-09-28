@@ -1,5 +1,34 @@
 # Current Context
 
+## Latest checkpoint — 2026-09-28 위험 소리 제거 build4 제출 예약
+- 사용자 새빌드 승인, 이후 설치 가능 여부는 직접 확인 요청. Source d8e8dbd14107670e7b08ac1fcab2c90175a746bd(6c2bd59포함),1.0.0(4),build f8d4ccb3-edc9-41af-99a9-11843efc33a3,submit eb4df011-0fc4-4f21-8569-8f92218306ae 생성/예약 접수. 클라우드 FINISHED/Apple처리/기기QA는 미확인. 사용자 요청에 따라 반복 모니터링 안 함.
+- AudioT02는 사용자 변경한 제출예약/전달 범위 완료, 원래 P03-T03 nativeQA로 복귀. 기존build3 및submit3 FINISHED 재조회. 이번release7/ranked8/env10/archive201+8hash/private0/운영GET200rulesmatch; 직전Jest676/types. 소스/서명/광고/요금제 변경없음, AppReview/push/웹재배포 없음.
+
+## Latest checkpoint — 2026-09-28 위험 효과음 제거 완료
+- 사용자 요청으로 위험 소리만 제거, commit6c2bd59. App 소리/진동 전달 분리, 웹/네이티브 플레이어5→4; 위험 진동·다른 소리·엔진/랭킹 유지. targeted25/full676(45suites)/typecheck/ranked8/release7/diff-check passed. 학습노트 상세 파일과 인덱스 갱신.
+- 기존 배포 dirty 문서 보존. 새 웹 export/배포/iOS 빌드 실행 안 함. build3은 이전8e5f95c 소스이므로 이 변경이 포함되지 않는다. 실제 FPS 개선은 미측정. 이전 audioT02 업로드 상태 확인으로 복귀하되 이 변경의 새 빌드는 별도 승인/실행 필요.
+
+## Latest checkpoint — audio build3 scheduled
+- Source8e5f95ca5a1af835a807d2215c39a92fc07742c2,1.0.0(3), build32b1ca9b-eb95-4fc1-b675-b8d1c0144500; exactsubmissiona0bcb412-bc2c-4453-b9b1-2fae40536107scheduled. ActiveaudioT02in_progress; monitorexactIDs,noresubmit. Local675/target15/types/release7/ranked8/env10/archive201+7hash/publicGET200passed. CloudFINISHED/nativeQA notyetverified.
+
+## Latest checkpoint — 2026-09-28 audio update source ready
+- User reports feedbackoff muchbetter; approves scoped audiofix+TestFlight. T01done8e5f95ca5a1af835a807d2215c39a92fc07742c2: idlepause150→0, terminal10→active2 in mockregression; feedback15/full675/types/ranked8/release7passed. No physics/ads/haptics/scene changes. Active audioT02 builds/submits exactnewsource, no claimnativeFPSfixed.
+- Prior build2 b679d4dc-c1c8-45f3-b401-6d7ba769e722 finished05:08:39.350UTC, submitbac21516-a95a-4811-bec4-977c50454df2 independentlyFINISHED05:10:28.745UTC. OriginalP03-T03remainsin_progress; currentuseriPhonebuildnotexplicitlyconfirmed. Preservepriorreleasehistory, noAppReview/push/paidplanchange.
+
+## Latest checkpoint — 2026-09-28 touch update build2/upload scheduled
+- User authorized TestFlight update for touch retest. Source4084834e0f54c8edaaa9dcc58c80fade722b0b7c includes756c005 and verified existing ASC submit settings. EAS build b679d4dc-c1c8-45f3-b401-6d7ba769e722, version1.0.0/build2, IN_PROGRESS; exact submission bac21516-a95a-4811-bec4-977c50454df2 scheduled. Do not duplicate/resubmit build1. No AppReview/GitHubpush/ads/provider plan changes.
+- release7/types/ranked8/env10/archive201/6sourcehashes passed; production publicGET200/rulesmatch. Prior672Jest/browser2touch evidence current code. Apple profile revalidation401 fell back to existing valid remote signing. Initial --what-to-test Enterprise-only rejection created no submission; retry without flag succeeded. Own archive copy removed; originals preserved. T03 in_progress pending exact new build/upload/Appleprocessing and actual device retest.
+
+## Latest checkpoint — 2026-09-28 local touch performance patch completed 756c005
+- User chose option3: keep ads disabled and prioritize touch performance. Local touch T01 completed756c005: fixed pressed border, memoized controls and visible GameScreen snapshot boundary; physics, ranking, ad flags unchanged. Targeted16/fullJest672/typecheck/ranked8 passed; isolated local-only web export/environment checks passed; browser multi-touch2pass/exit0. Own4186server stopped after Windows teardown wait. Device FPS not measured; no replacement TestFlight build yet. Learning/QA notes recorded.
+- Prior build1 and submission both FINISHED per last read-only status check; historical queued entries below are superseded. User reports touch stutter on installed app, not native QA acceptance. Preserve previous release dirty files; return original P03-T03 after local patch commit and retest an identified new native build.
+
+## Latest checkpoint — TestFlight build and submission scheduled (not yet completed)
+- Userexplicitlyrequestedupload. AppleEAScredentialsactualteamS9RLQ8474U/cert+activeprofileverified. StoredofficialCLIsessionrestoredsuccessfully; newASCapp6815771701 createdforcom.mocca.closecallnyang. Existing same-team ASCAPIkeyassignedtoEASSubmit, nokeymaterialdownload/print. CLIdespite--no-auto-testflight-setupcreatedTeam(Expo)internalgroupandaddedowneraccount; noexternalinvites/AppReview.
+- Source-onlya54835786507e00eac6c366eda77262345fedf84; EASbuild5b46dbe0-2511-485a-aa05-386a3222dfb9, version1.0.0/build1, lastIN_PROGRESS. Exactsubmission7efac989-7ff8-4768-9de0-b7e3de61a179scheduled; NOTAppleprocessingoravailableyet. Nextmonitorbuild/submission, inspectfailureifany, thenASCstatus exactapp/version/build. Avoidduplicatebuild/submit.
+- Archivev4actual199files/no.git/env/keys/privatefolders/requiredinputsmatch; .gitmustbeignoredas'.git' not'/.git/' duetoEASspecialcase. Ownv1..v4copiesremovedafterinspection toavoidJestduplicates; originalworktreeuntouched. Typecheck/Jest666/release7/ranked8 passed; productionpublicGET200/currentrules, EASpublic2match. FirstincorrectGET/board400wasourpatherror, corrected/leaderboard?rulesVersion succeeded, nowrites. RuntimechangesonlyAppleTeam+OS-onlyencryptionfalse, existingcredentialsfrozen. NewASCsubmitprofileisdifferentfrombuiltcommitbutdoesnotchangeappbinary.
+- ActiveP03-T03stillin_progress; fullGo/Hermes/native/rankeddeviceQA pending, support/privacy+storedraftapprovalpending. No taskcompletion/GitHubpush. store/release-state tracksactualIDs, neverclaimuploadedfromscheduledonly.
+
 ## Latest checkpoint — P03-T02 completed 3a53ee3; Apple authentication next
 - User option1: no existing AppStoreConnect game app, prepare new one. Decision recorded; actual Apple app NOT created. P03-T02 completion3a53ee3 contains original flat grey-tabby iconSVG/1024+48 opaquePNG, pinnedsharp0.35.4, render/read-onlypixelcheck, configicons, storedrafts/nulloperatinginputs/privacyinventory/screenshots pending, knownExpo57.0.25patch.
 - Actualchecks: Jest666/44suites, release7, Doctor21/21, types, ranked8, render/check+visual1024/48 passed. Productionpublicenv wrapperexport passed; distJS1/assets17/ExpoICO48, envscan10 passed. InitialPNG-onlycheckfixedafterreadingactualExpoICOencoder. EASproductionwasempty; exactpublicURL/publishable2 registered+readbackmatched withoutvalues. No serverkey/upload/APIwrite/GitHubpush. Existingserversnotstopped; dist nowproduction-config but publicsiteunchangeda4c5ee2.
@@ -82,13 +111,13 @@
 [우당탕탕 냥대리](./plans/2026-09-21-close-call-nyang.md)
 
 ## Active Phase
-[P03 출시 준비](./phases/2026-09-21-close-call-nyang/P03-release/phase.md)
+[P03 출시](./phases/2026-09-21-close-call-nyang/P03-release/phase.md)
 
 ## Active Task
-[T03 실제 iOS 빌드·TestFlight·기기 검증](./phases/2026-09-21-close-call-nyang/P03-release/T03-ios-build-validation.md)
+[T03 iOS 빌드와 기기 검증](./phases/2026-09-21-close-call-nyang/P03-release/T03-ios-build-validation.md)
 
 ## Status
-- Active status: in_progress (P03-T03). Latest completed task: P03-T02 3a53ee3. Historical statuses below do not override this pointer.
+- Active status: in_progress (original P03-T03 nativeQA). AudioT02 제출 예약/전달 완료. 사용자가 build4 표시/설치 상태 확인 담당. 자동 모니터링/중복 제출하지 않는다.
 - Latest completed request (2026-09-22): rookie를 생성 이미지 PNG 부품(우측 3/4, 다리·팔 절반, 표정 평소/위험40도/넘어짐)으로 교체, commit 5cf570d. [결정](./decisions/2026-09-22-side-view-walk.md), [학습노트](../docs/learning-notes/2026-09-22-side-view-walk.md). Jest650, Chromium34pass/11skip/0fail(3.4min), rules f7245064c9459310 불변, 4173=dist index-298ee86edf82ff1bbdd0079e1339a79f.js. 보상 2종은 P02(시트 필요). 사용자 요청: 다른 사람이 테스트할 환경(예/아니오만 답함=네) — 방식 미정.
 - Latest completed request: 정면 연결 걷기 T01 커밋 7f6173f (Jest650, fullbrowser34pass/11skip/0fail 3.9min, 4173=dist index-d7faa3a667dbf16d952226333ed3dcd8.js). 옆모습 재설계 전 되돌아올 기준점.
 - Latest completed request: 승인된 회색 태비 신입사원 기본 rookie 구현 완료, source commit ce13976. 큰 밝은 눈·미소·회색 줄무늬·정장·사진/ID001 목걸이 사원증·맨발 젤리. 보상 두 종/해금/물리/15%커피 유지. 동일 SVG의 걷기/물병/달리기/메모 시트와 승인 원본을 docs/art에 저장. [학습노트](../docs/learning-notes/2026-09-22-grey-tabby-rookie.md).
@@ -129,7 +158,9 @@
 - T01 Pages CI gate 구현·검증 완료. Production bundle 검사 통과, typecheck/ranked/Jest/ranking/Playwright 통과. T02 원격 GitHub 인증/production backend preflight로 이동.
 
 ## Next Step (IMPORTANT)
-P03-T02완료3a53ee3, 사용자새Apple앱선택확정. 사용자의PowerShell에서 `npx.cmd --yes eas-cli@24.7.0 credentials --platform ios` → production → 공식Apple로그인/팀확인. 암호/2FA는사용자터미널에만입력하고다음메뉴문구만공유; 기존인증서폐기/다운로드/푸시알림키생성금지. 다음P03-T03에서실제팀/앱ID, archive검사/암호화사용검토/source확정후클라우드빌드→정확한buildIDsubmit→TestFlightavailable/실기기검증. 아이콘/스토어draft최종승인과T01지원/개인정보는별도남음. 아직IPA업로드/Apple앱생성/기기QA실행아님. 공개심사제출·외부초대·과금·GitHubpush권한확대금지.
+최신 지시: 사용자가1.0.0(4) 표시/설치 상태를 확인한다. 다음 요청 또는 실제기기 결과를 받아 P03-T03 QA를 이어간다. 아래 이전 build3 모니터링 지시는 이 최신 지시로 대체하며 자동 재제출하지 않는다.
+먼저 기존 build3 제출 상태를 확인한다. 위험 효과음 제거6c2bd59는 build3에 포함되지 않는다. 사용자가 업데이트를 요청하면 해당 소스를 포함한 새 빌드/제출을 별도 추적하며, 과거 build3 업로드를 새 변경 배포로 혼동하지 않는다.
+Monitor audio build32b1ca9b-eb95-4fc1-b675-b8d1c0144500 and submissiona0bcb412-bc2c-4453-b9b1-2fae40536107. On bothFINISHED recordactualtimes, completeaudioT02uploadonly, returnoriginalP03-T03physicalQA. TestFlightversion1.0.0(3) mustbeverifiedonphone; build2doesnotcontainaudiofix. No GitHubpush/AppReview/ads/ruleschanges. Previous release dirtyrecords arepreservedforreconciliation; neverclaimavailablefromscheduledalone.
 
 ## Resume Existing T03 After Requested Change
 이 절은 과거 복귀 지시다. T03은4a56230으로 완료됐으며 현재 Active Task의 Pages T02를 따른다. Production 합성점수 삽입, 인증정보 덮어쓰기, 추가과금/프로젝트생성은 계속 금지한다. 자동푸시하지 않는다.

@@ -1,6 +1,39 @@
 # iOS 출시 준비와 Expo Go 검사
 
+## 2026-09-28 · 위험 효과음 제거 — 1.0.0 (4) 제출 예약
+
+- 사용자 요청: 새 빌드 제출 후 TestFlight 표시/설치 가능 여부는 사용자가 확인한다. 반복 모니터링/Apple 처리 확인은 수행하지 않는다.
+- 소스 `d8e8dbd14107670e7b08ac1fcab2c90175a746bd` (6c2bd59 포함), 새 빌드 `f8d4ccb3-edc9-41af-99a9-11843efc33a3`, 제출 `eb4df011-0fc4-4f21-8569-8f92218306ae`. EAS가 1.0.0/build4 생성 및 제출 예약을 접수했다. 클라우드 완료/Apple 업로드 성공/설치 가능 상태는 아직 미확인이다. release-state의 submittedAt은 업로드 성공 증거가 없으므로 null, testflightStatus는 not_started를 유지한다.
+- 변경: 위험 효과음/플레이어만 제거, 위험 진동·다른 소리 유지. 직전 전체676/45suites, 이번 release7/ranked8/env10 및 공개 GET200/rules 일치. 기존 dist 검사는 환경 경계 확인이며 새 웹 배포가 아니다.
+- 실제 archive201파일/비공개경로0/소스·설정8파일 해시 일치 후 사본만 삭제. EXPO_NO_DOTENV=1, EAS production 공개변수2, 광고/진단 false. 기존 서명/요금제 유지. Apple 프로필 재검증401은 기존 로컬 검증 결과로 진행됐으며 새 인증서 발급은 하지 않았다.
+- 기존3번의 빌드 FINISHED06:00:29.820UTC, 제출 FINISHED06:02:13.117UTC를 읽기 재확인했다. 3번을 재제출하지 않았다. 새4번은 완료 여부를 추측하지 않는다. App Review/GitHub push/웹 재배포 없음.
+
+## 2026-09-28 · 오디오 전환 개선 TestFlight 업데이트
+
+- 사용자 피드백off 비교에서 개선보고, 중복오디오처리수정과업로드승인. 소스8e5f95ca5a1af835a807d2215c39a92fc07742c2, EAS build32b1ca9b-eb95-4fc1-b675-b8d1c0144500,1.0.0(3). 물리/광고/햅틱정책/래스터캐릭터변경없음.
+- 신규회귀3개oldfail→대상15pass, 전체675/45suites, release7/types/ranked8/env10/운영publicGET200/rulesmatch. Archive201파일/인증·비공개경로0/주요7파일해시일치; 정확한검사사본만삭제. 이전dist는보존했고이번환경검사는기존production구성에대한검사이지새웹배포가아니다.
+- EASproduction공개변수2로드, mock/diagnosticsfalse. Apple프로필재조회401후기존서명localvalidation으로계속됨; 자격재발급/요금제변경없음. 기존CLI24.7.0유지; TestFlight설명Enterprise옵션미사용.
+- 이전build2 FINISHED05:08:39.350UTC, submissionbac21516-a95a-4811-bec4-977c50454df2 FINISHED05:10:28.745UTC(독립재조회). 새3번은오디오수정,2번은버튼/표시memo수정으로구분한다. 실기기FPS미측정, 사용자빌드번호미확인.
+
+## 2026-09-28 · 터치 개선 TestFlight 업데이트
+
+- 사용자 요청에 따라 터치 수정756c005 및 제출 설정을 포함한 소스4084834e0f54c8edaaa9dcc58c80fade722b0b7c로 새 빌드를 생성했다. EAS ID b679d4dc-c1c8-45f3-b401-6d7ba769e722, 버전1.0.0/원격 buildNumber2, 생성05:04:06UTC. 최초 확인 IN_PROGRESS; 기존1번을 재제출하지 않는다.
+- 전송 전 archive201파일, 비공개/인증 경로0, 주요 소스·설정6파일 해시 일치. 검사 사본만 제거했다. release7/typecheck/ranked8/public-env10 및 운영 공개GET200/rules일치 확인; 직전 터치 변경 전체Jest672/browser2 통과 증거 보존. 광고/진단 false, production 공개변수2 로드 확인.
+- 비대화형 Apple 프로필 재조회401 경고 후 기존 remote 서명(local validation active/2027-09-13만료)을 사용해 빌드 요청이 생성됐다. 인증서나 API키를 교체하지 않았다. `--what-to-test` 자동 설명 첨부는 Enterprise 한도 오류로 제출 예약 실패; 요금제 변경 없이 그 선택 옵션만 제거해 재시도한다. 업로드 완료·Apple처리·실기기 성공은 서로 구분한다.
+- 이전 빌드5b46dbe0-2511-485a-aa05-386a3222dfb9 및 제출7efac989-7ff8-4768-9de0-b7e3de61a179는 재조회FINISHED, 이전 제출 완료2026-09-24T20:43:33.355Z. 기존 문서의 예약 대기 기록은 당시 시점이다.
+- Build2는2026-09-28T05:08:39.350Z에 FINISHED(한국14:08:39). 제출 bac21516-a95a-4811-bec4-977c50454df2는 IN_PROGRESS. 로컬 `submit:status`는Apple API401이므로 앱이 없다고 해석하지 않는다. Apple 처리/설치 가능 상태는 아직 독립 확인되지 않았다.
+
+업데이트 후 사용자 검사: TestFlight에 표시된1.0.0(2)인지 확인하고 앱을 삭제하지 말고 업데이트한다. 같은 기기에서 무입력/한쪽 길게 누르기/빠른 좌우 교차/양쪽 누른 뒤 한쪽만 떼기/일시정지 후 재개를 비교한다. iPhone 모델·iOS 버전·빌드번호·끊기는 상황을 함께 기록한다. 실기기 통과 전T03를done으로 바꾸지 않는다.
+
 ## 2026-09-25 · 실제 서명 확인과 업로드 요청
+
+실제 실행: source commit `a54835786507e00eac6c366eda77262345fedf84` → EAS build `5b46dbe0-2511-485a-aa05-386a3222dfb9`, version1.0.0/build1 (2026-09-24 17:46:38UTC 생성). 원격 번호를 처음1로 초기화했고 이후 autoIncrement다. Expo Go 관련 권고 경고는 SDK57 개발방식을 바꾸라는 오류가 아니며 독립 앱 검증은 계속 필요하다. 비대화형 빌드는 Apple 서버의 서명 재검증을 건너뛰고 기존 인증서를 그대로 사용했다.
+
+최종 archive199파일/필수입력원본일치, .git/env/키/비공개폴더제외 확인. config SHA256 `63a654695b60a2430508e101e596a6146b4852501fb293d0aa65d1dea84c367e`. 검사 사본v1..v4는 원본경로가 아님을 확인한 후 제거했다. release7/typecheck/Jest666/ranked8, 운영 공개GET200/rules일치 및 EAS 공개값2readback 통과.
+
+저장된 공식 Apple 세션을 재사용해 새 ASC 앱 `6815771701` 생성, 동일팀 기존 API키를 EASSubmit에 연결했다. 비밀키 내용/쿠키를 열거나 저장소로 복사하지 않았다. `submit --id ... --no-wait --no-auto-testflight-setup` 실행에도 CLI가 `Team (Expo)` 내부 그룹과 소유자 접근을 만들었다. 외부 사용자를 초대하거나 App Review를 제출하지 않았다.
+
+정확한 제출ID `7efac989-7ff8-4768-9de0-b7e3de61a179`, 생성시각2026-09-24 17:48:47UTC, 최초상태AWAITING_BUILD. 예약 성공은 Apple 업로드 완료가 아니다. 현재 상태는 store/release-state.json 및 아래 후속 기록을 따른다. 새 ascAppId 제출 설정은 바이너리를 바꾸지 않으므로 이것만으로 재빌드하지 않는다.
 
 EAS credentials 읽기 조회로 bundle `com.mocca.closecallnyang`의 Apple Team `S9RLQ8474U`, 배포 인증서 및 active provisioning profile을 확인했다. 프로필은 조회 직전 갱신되어 있었고 두 항목 만료는 2027-09-13이다. 인증서/개인키를 다운로드하거나 재생성·폐기하지 않았다. 사용자가 TestFlight 업로드를 명시적으로 요청했다.
 
