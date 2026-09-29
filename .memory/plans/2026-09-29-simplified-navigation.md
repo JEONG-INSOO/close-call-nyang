@@ -8,7 +8,7 @@
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | UI·진입 경로·회귀 테스트·학습 기록 | [P01](../phases/2026-09-29-simplified-navigation/P01-ui/phase.md) |
+| P01 | `done` | UI·진입 경로·회귀 테스트·학습 기록 | [P01](../phases/2026-09-29-simplified-navigation/P01-ui/phase.md) |
 
 ## Boundaries and dirty worktree
 

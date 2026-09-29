@@ -116,4 +116,4 @@ Task: T01-simplify-actions
 - [x] 구현 완료
 - [x] 검증 통과 — Jest 49/691, typecheck, ranked:check, release 7/7, 격리 웹/fixture export, Playwright phone-landscape 6/6(exit 0), diff --check.
 - [x] 학습·QA 기록
-- commit: pending
+- commit: `323801d` (이번 Task 코드·테스트·학습 기록)
