@@ -1,6 +1,6 @@
 # Task: T03 베테랑 웹·Expo Go 시각 검증과 학습 기록
 
-## Status: pending
+## Status: in_progress
 
 ## Goal
 

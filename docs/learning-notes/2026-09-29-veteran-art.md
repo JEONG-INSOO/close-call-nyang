@@ -15,4 +15,19 @@ node --test scripts/build-veteran-frames.test.mjs
 
 복습: 왜 원본 PNG와 게임용 아틀라스를 분리할까? 같은 크기의 이미지라도 발 기준선이 다르면 어떤 일이 생길까? 자동 검사만으로 걸음의 자연스러움을 증명할 수 있을까?
 
-인접한 미완료 작업: T02 런타임 연결, T03 Expo Go 실기기 시각·성능 검증.
+이 시점의 후속 작업은 T02 런타임 연결과 T03 Expo Go 실기기 시각·성능 검증이었다.
+
+## T02: 게임 화면에 연결
+
+`NyangCharacter`는 선택 ID가 `veteran`일 때만 `VeteranSprite`를 그린다. 신입·성실한 냥대리의 분기와 `CharacterId`, 0/1/10회 해금 조건은 바꾸지 않았다. 옛 베테랑 평면 SVG 코드는 제거했다.
+
+`VeteranSprite`는 `SceneFrame`을 읽어 걷기 거리의 네 구간은 아틀라스 0~3번, 40° 이상 위태로움은 4번, 넘어짐은 5번을 보여준다. `fallen`이 위험보다 우선이고 부활하면 현재 거리의 걷기 칸으로 돌아간다. `hasCoffee`와 `protectionSeconds`도 점수에서 추론하지 않고 엔진 프레임에서 읽는다. 매 게임 프레임에 React 상태를 바꾸지 않고 애니메이션 그룹의 가로 위치만 이동한다.
+
+```tsx
+const slot = expression === 2 ? 5 : expression === 1 ? 4 : veteranFrameIndexAt(pose, frame.value.distanceM);
+return { transform: svgTransform(0, -slot * VETERAN_ART.width, 0) };
+```
+
+장면·캐릭터 테스트에서 4칸 순서, 위험/넘어짐/부활, 커피·보호와 다른 스킨 보존을 확인했다. 타입 검사와 랭킹 규칙 사본 검사도 통과했다. 여기서 확인한 것은 코드와 테스트 환경의 동작이지 실제 iPhone FPS는 아니다.
+
+복습: 스킨이 달라도 랭킹 점수가 같아야 하는 이유는? 위험 표정과 실제 실패 판정은 각각 어느 코드에서 결정되는가? 여섯 PNG를 겹치는 방식에 비해 한 아틀라스의 장단점은 무엇인가?

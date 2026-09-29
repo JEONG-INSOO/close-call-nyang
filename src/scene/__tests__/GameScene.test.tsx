@@ -5,7 +5,7 @@ import Svg from 'react-native-svg';
 import { CHARACTERS, type CharacterId } from '../../characters/catalog';
 import { BALANCE } from '../../game/balance';
 import { GameScene } from '../GameScene';
-import { NyangCharacter, NYANG_COLORS, NYANG_RIG, NYANG_WALK, walkPhaseAt } from '../NyangCharacter';
+import { NyangCharacter, NYANG_RIG, NYANG_WALK, walkPhaseAt } from '../NyangCharacter';
 import type { SceneFrame } from '../types';
 
 // Reanimated's supplied SVG host mock retains animated props for structural tests.
@@ -61,7 +61,10 @@ describe('GameScene contracts', () => {
   it.each(CHARACTERS.map(character => character.id))('forwards %s to the same body rig', async id => {
     await mountScene(frame(), id);
     expect(byId('character-anchor').props.transform).toBe('translate(270 425)');
-    if (id === 'diligent') {
+    if (id === 'veteran') {
+      expect(byId('veteran-sprite')).toBeTruthy();
+      expect(byId('veteran-atlas')).toBeTruthy();
+    } else if (id === 'diligent') {
       expect(byId('diligent-sprite')).toBeTruthy();
       expect(byId('diligent-step-a')).toBeTruthy();
       expect(byId('diligent-step-b')).toBeTruthy();
@@ -82,38 +85,14 @@ describe('GameScene contracts', () => {
     });
   });
 
-  it('preserves veteran as a flat cat wearing only a tie and badge', async () => {
+  it('uses the approved veteran atlas, not the old flat cat parts', async () => {
     const id = 'veteran';
-    const rendered = await render(<Svg><NyangCharacter frame={frame()} characterId={id} reduceMotion={false} /></Svg>);
-    expect(byId('plush-head').props.transform).toBeUndefined();
-    expect(byId('nyang-root').props.stroke).toBe(NYANG_COLORS.outline);
-    expect(byId('nyang-root').props.strokeWidth).toBe(4.5);
-    expect(byId('head-contour').props.fill).toBe(NYANG_COLORS.fur);
-    expect(byId('plush-body').props).toMatchObject({ fill: NYANG_COLORS.fur, rx: 52, ry: 39 });
-    expect(byId('white-belly').props.fill).toBe(NYANG_COLORS.white);
-    expect(byId('white-muzzle').props).toMatchObject({ fill: NYANG_COLORS.white, cx: 0 });
-    expect(byId('paw-left').props.fill).toBe(NYANG_COLORS.fur);
-    expect(byId('paw-right').props.fill).toBe(NYANG_COLORS.fur);
-    expect(byId('paw-left').props.d).toBe(byId('paw-right').props.d);
-    const left = byId('leg-left').props.jestAnimatedProps.value;
-    const right = byId('leg-right').props.jestAnimatedProps.value;
-    expect(left.matrix ?? left.transform).toEqual([1, 0, -0, 1, -25, -18]);
-    expect(right.matrix ?? right.transform).toEqual([1, -0, 0, 1, 25, -18]);
-    expect(byId('front-paw-left').props).toMatchObject({ rx: 11, ry: 13, fill: NYANG_COLORS.fur });
-    expect(byId('front-paw-right').props).toMatchObject({ rx: 11, ry: 13, fill: NYANG_COLORS.fur });
-    expect(byId('coffee-grip').props).toMatchObject({ cx: 53, cy: -55, fill: NYANG_COLORS.fur });
-    expect(byId(`outfit-${id}`).children).toHaveLength(2);
-    expect(byId(`tie-${id}`)).toBeTruthy();
-    expect(byId(`employee-badge-${id}`)).toBeTruthy();
-    for (const side of ['left', 'right']) {
-      expect(byId(`paw-pad-${side}`).props).toMatchObject({ cx: 0, cy: 12, rx: 6, ry: 4 });
-      expect(screen.getAllByTestId(new RegExp(`^paw-bean-${side}-`), hidden)).toHaveLength(3);
-    }
-    // These were the old jacket/lapel/pocket/shadow/forehead-highlight paths.
-    const drawing = JSON.stringify(rendered.toJSON());
-    for (const removedColor of ['#354A68', '#66758D', '#8B99AD', '#E1C7A9', '#FFFFFF']) {
-      expect(drawing).not.toContain(removedColor);
-    }
+    await render(<Svg><NyangCharacter frame={frame()} characterId={id} reduceMotion={false} /></Svg>);
+    expect(byId('veteran-sprite')).toBeTruthy();
+    expect(byId('veteran-atlas')).toBeTruthy();
+    expect(byId('veteran-atlas-shift')).toBeTruthy();
+    expect(screen.queryByTestId('head-contour', hidden)).toBeNull();
+    expect(screen.queryByTestId('outfit-veteran', hidden)).toBeNull();
   });
 
   it('matches the initial .30-second alternating footstep cadence with a bounded distance-only phase', () => {
@@ -146,13 +125,11 @@ describe('GameScene contracts', () => {
     }
   });
 
-  it('keeps veteran on its original eleven-degree gait', async () => {
+  it('uses the four approved veteran frames in numeric order', async () => {
     await render(<Svg><NyangCharacter frame={frame({ distanceM: NYANG_WALK.metersPerCycle / 4 })} characterId="veteran" reduceMotion /></Svg>);
-    const props = byId('leg-left').props.jestAnimatedProps.value;
+    const props = byId('veteran-atlas-shift').props.jestAnimatedProps.value;
     const matrix = props.matrix ?? props.transform;
-    expect(matrix[1]).toBeCloseTo(Math.sin(11 * Math.PI / 180));
-    expect(matrix[4]).toBeCloseTo(-23);
-    expect(matrix[5]).toBeCloseTo(-23);
+    expect(matrix[4]).toBe(-380);
   });
 
   it('alternates only the diligent ragdoll frames by distance without mutating the game frame', async () => {
@@ -244,7 +221,7 @@ describe('GameScene contracts', () => {
     'keeps the $id rig and cup grip identical with coffee=$hasCoffee at $angleRad', async ({ id, hasCoffee, angleRad }) => {
       const sample = frame({ hasCoffee, angleRad });
       await render(<Svg><NyangCharacter frame={sample} characterId={id} reduceMotion={true} /></Svg>);
-      if (id === 'diligent') expect(byId('diligent-sprite')).toBeTruthy();
+      if (id === 'diligent' || id === 'veteran') expect(byId(`${id}-sprite`)).toBeTruthy();
       else {
         expect(byId(`face-${id}`)).toBeTruthy();
         expect(byId(`outfit-${id}`)).toBeTruthy();

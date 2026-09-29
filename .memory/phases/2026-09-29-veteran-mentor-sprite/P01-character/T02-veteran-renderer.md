@@ -1,6 +1,6 @@
 # Task: T02 베테랑 PNG 스프라이트 연결
 
-## Status: in_progress
+## Status: done
 
 ## Goal
 
@@ -67,10 +67,10 @@ T01에서 육안 승인·검증한 단일 아틀라스를 `veteran` 캐릭터가
 
 ## Acceptance Criteria
 
-- [ ] 승인 아틀라스의 4걷기·위험·넘어짐이 프레임 변화에 맞춰 표시되고 `veteran`의 옛 평면 SVG가 실제 렌더 트리에 남지 않는다.
-- [ ] 홈 미리보기·실제 게임·결과가 동일 선택 ID를 따르며, 컵/보호/부활·`reduceMotion`이 유지된다.
-- [ ] rookie/diligent의 외형과 단위 테스트, 카탈로그 0/1/10회와 저장·게임/랭킹 소스에 변화가 없다.
-- [ ] 새 veteran은 한 아틀라스 이미지·한 위치 worklet만 사용한다(별도 커피 opacity 제외).
+- [x] 승인 아틀라스의 4걷기·위험·넘어짐이 프레임 변화에 맞춰 표시되고 `veteran`의 옛 평면 SVG가 실제 렌더 트리에 남지 않는다.
+- [x] 홈 미리보기·실제 게임·결과가 동일 선택 ID를 따르며, 컵/보호/부활·`reduceMotion`이 유지된다. (코드와 통합 테스트 기준, 실기기 시각 확인은 T03)
+- [x] rookie/diligent의 외형과 단위 테스트, 카탈로그 0/1/10회와 저장·게임/랭킹 소스에 변화가 없다.
+- [x] 새 veteran은 한 아틀라스 이미지·한 위치 worklet만 사용한다(별도 커피 opacity 제외).
 
 ## Validation
 
@@ -101,6 +101,6 @@ Task: T02-veteran-renderer
 
 ## Progress
 
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과: 장면/스프라이트 77건 중 최초 신규 테스트 1건의 비동기 기대값을 수정한 뒤 통과; 전체 696건 중 기존 선택 헬퍼 2건 실패를 수정해 해당 7건 재검증 통과. typecheck, ranked:check 통과.
+- commit: 이번 Task 커밋에 기록

@@ -95,7 +95,7 @@ async function renderedCharacter(): Promise<CharacterId | undefined> {
   const scene = screen.getByTestId('game-scene', { includeHiddenElements: true });
   await fireEvent(scene, 'layout', { nativeEvent: { layout: { x: 0, y: 0, width: 844, height: 390 } } });
   return CHARACTERS.find(character => within(scene).queryByTestId(
-    character.id === 'diligent' ? 'diligent-sprite' : `face-${character.id}`,
+    character.id === 'rookie' ? 'face-rookie' : `${character.id}-sprite`,
     { includeHiddenElements: true },
   ))?.id;
 }

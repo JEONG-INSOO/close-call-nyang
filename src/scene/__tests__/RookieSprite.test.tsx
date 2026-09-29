@@ -1,7 +1,7 @@
 import { act, render, screen, waitFor } from '@testing-library/react-native';
 import { makeMutable } from 'react-native-reanimated';
 import Svg from 'react-native-svg';
-import { NyangCharacter, NYANG_COLORS, NYANG_WALK, type EmployeePose } from '../NyangCharacter';
+import { NyangCharacter, NYANG_WALK, type EmployeePose } from '../NyangCharacter';
 import { EmployeeCharacterSheet } from '../EmployeeCharacterSheet';
 import { expressionAt, ROOKIE_ART } from '../RookieSprite';
 import type { SceneFrame } from '../types';
@@ -98,11 +98,13 @@ test('walk and run have distinct bounded strides', async () => {
   expect(frame.value).toEqual(initial);
 });
 
-test('veteran keeps its previous flat skin', async () => {
+test('veteran uses the approved atlas instead of the previous flat skin', async () => {
   const characterId = 'veteran';
   await render(<Svg><NyangCharacter frame={makeMutable<SceneFrame>({ ...initial, hasCoffee: true })} characterId={characterId} reduceMotion /></Svg>);
-  expect(byId('head-contour').props.fill).toBe(NYANG_COLORS.fur);
-  expect(byId(`outfit-${characterId}`).children).toHaveLength(2);
+  expect(byId('veteran-sprite')).toBeTruthy();
+  expect(byId('veteran-atlas')).toBeTruthy();
+  expect(screen.queryByTestId('head-contour')).toBeNull();
+  expect(screen.queryByTestId(`outfit-${characterId}`)).toBeNull();
   expect(screen.queryByTestId('rookie-sprite')).toBeNull();
   expect(opacityOf('cup-visibility')).toBe(1);
 });
