@@ -108,16 +108,16 @@
 - T03 remains in_progress. Next: Usage/backup-restore evidence and remaining operational checks; then Pages configuration/deploy and public-origin browser verification. Expo Go/iPhone/Hermes handoff remains P03. Live no-click browser retry is now verified; do not repeat account creation just to re-establish this result.
 
 ## Active Plan
-[우당탕탕 냥대리](./plans/2026-09-21-close-call-nyang.md)
+[베테랑 냥대리 승인 시안의 게임 적용](./plans/2026-09-29-veteran-mentor-sprite.md)
 
 ## Active Phase
-[P03 출시](./phases/2026-09-21-close-call-nyang/P03-release/phase.md)
+[P01 베테랑 냥대리 게임 외형](./phases/2026-09-29-veteran-mentor-sprite/P01-character/phase.md)
 
 ## Active Task
-[T03 iOS 빌드와 기기 검증](./phases/2026-09-21-close-call-nyang/P03-release/T03-ios-build-validation.md)
+[T03 베테랑 웹·Expo Go 시각 검증과 학습 기록](./phases/2026-09-29-veteran-mentor-sprite/P01-character/T03-veteran-qa.md)
 
 ## Status
-- Active status: in_progress (original P03-T03 nativeQA). AudioT02 제출 예약/전달 완료. 사용자가 build4 표시/설치 상태 확인 담당. 자동 모니터링/중복 제출하지 않는다.
+- Active status: `in_progress` (veteran P01-T03; T01 원본/아틀라스 및 T02 런타임 연결 완료). 원래 P03-T03 출시·기기 검증은 보존된 `in_progress` 작업이다.
 - Latest completed request (2026-09-22): rookie를 생성 이미지 PNG 부품(우측 3/4, 다리·팔 절반, 표정 평소/위험40도/넘어짐)으로 교체, commit 5cf570d. [결정](./decisions/2026-09-22-side-view-walk.md), [학습노트](../docs/learning-notes/2026-09-22-side-view-walk.md). Jest650, Chromium34pass/11skip/0fail(3.4min), rules f7245064c9459310 불변, 4173=dist index-298ee86edf82ff1bbdd0079e1339a79f.js. 보상 2종은 P02(시트 필요). 사용자 요청: 다른 사람이 테스트할 환경(예/아니오만 답함=네) — 방식 미정.
 - Latest completed request: 정면 연결 걷기 T01 커밋 7f6173f (Jest650, fullbrowser34pass/11skip/0fail 3.9min, 4173=dist index-d7faa3a667dbf16d952226333ed3dcd8.js). 옆모습 재설계 전 되돌아올 기준점.
 - Latest completed request: 승인된 회색 태비 신입사원 기본 rookie 구현 완료, source commit ce13976. 큰 밝은 눈·미소·회색 줄무늬·정장·사진/ID001 목걸이 사원증·맨발 젤리. 보상 두 종/해금/물리/15%커피 유지. 동일 SVG의 걷기/물병/달리기/메모 시트와 승인 원본을 docs/art에 저장. [학습노트](../docs/learning-notes/2026-09-22-grey-tabby-rookie.md).
