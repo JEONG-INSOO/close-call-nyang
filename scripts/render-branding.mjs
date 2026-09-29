@@ -4,11 +4,18 @@ import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
-export const brandingAssets = [1024, 48].map(size => ({
-  source: resolve(root, 'assets/branding/icon.svg'),
-  destination: resolve(root, `assets/branding/${size === 1024 ? 'icon' : 'favicon'}.png`),
-  width: size, height: size, opaque: true,
-}));
+export const brandingAssets = [
+  {
+    kind: 'png', source: resolve(root, 'assets/branding/diligent-app-icon-source.png'),
+    destination: resolve(root, 'assets/branding/icon.png'),
+    width: 1024, height: 1024, opaque: true,
+  },
+  {
+    kind: 'svg', source: resolve(root, 'assets/branding/icon.svg'),
+    destination: resolve(root, 'assets/branding/favicon.png'),
+    width: 48, height: 48, opaque: true,
+  },
+];
 
 export function validateSvg(source) {
   if (!/viewBox="0 0 1024 1024"/.test(source) || /<(?:script|image|text|foreignObject|style)\b|\bon\w+\s*=|(?:href|url\s*\(|<!DOCTYPE|<!ENTITY)/i.test(source)) {
@@ -17,9 +24,18 @@ export function validateSvg(source) {
 }
 
 async function render(asset) {
-  const source = await readFile(asset.source, 'utf8');
-  validateSvg(source);
-  return sharp(Buffer.from(source)).resize(asset.width, asset.height)
+  const source = await readFile(asset.source);
+  if (asset.kind === 'svg') {
+    validateSvg(source.toString('utf8'));
+  } else if (asset.kind === 'png') {
+    const meta = await sharp(source).metadata();
+    if (meta.format !== 'png' || meta.width !== meta.height || meta.width < asset.width) {
+      throw new Error('App icon source must be a square PNG at least 1024px wide.');
+    }
+  } else {
+    throw new Error(`Unsupported branding source: ${asset.kind}`);
+  }
+  return sharp(source).resize(asset.width, asset.height)
     .flatten({ background: '#d9eee8' }).removeAlpha().toColourspace('srgb').png().toBuffer();
 }
 

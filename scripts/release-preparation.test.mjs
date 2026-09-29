@@ -39,6 +39,10 @@ test('app config points at original opaque source-matched branding', async () =>
   const config = await read('app.config.ts');
   assert.match(config, /icon: '\.\/assets\/branding\/icon.png'/);
   assert.match(config, /favicon: '\.\/assets\/branding\/favicon.png'/);
+  assert.equal(brandingAssets[0].kind, 'png');
+  assert.match(brandingAssets[0].source, /diligent-app-icon-source\.png$/);
+  assert.equal(brandingAssets[1].kind, 'svg');
+  assert.match(brandingAssets[1].source, /icon\.svg$/);
   assert.deepEqual(await verifyBranding(), []);
   assert.throws(() => validateSvg('<svg viewBox="0 0 1024 1024"><image href="remote"/></svg>'));
   assert.throws(() => validateSvg('<svg viewBox="0 0 1024 1024" onload="bad"/>'));
@@ -53,6 +57,14 @@ test('branding check detects stale pixels and never repairs files implicitly', a
     const before = await stat(assets[0].destination);
     assert.ok((await verifyBranding(assets)).length >= 1);
     assert.equal((await stat(assets[0].destination)).mtimeMs, before.mtimeMs);
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
+test('app icon renderer rejects a source too small for the iOS icon', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'nyang-icon-source-'));
+  try {
+    const assets = brandingAssets.map(asset => ({ ...asset, destination: join(dir, `${asset.width}.png`) }));
+    assets[0].source = brandingAssets[1].destination;
+    await assert.rejects(renderBranding(assets), /square PNG at least 1024px/);
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
 test('web verifier checks base path, real scripts and favicon while exposing pending policies', async () => {
