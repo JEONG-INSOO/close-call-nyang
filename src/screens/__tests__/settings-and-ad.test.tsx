@@ -5,7 +5,6 @@ import App from '../../../App';
 import * as config from '../../config/app';
 import * as controllers from '../../game/controller';
 import * as engine from '../../game/engine';
-import * as sharing from '../../services/share';
 import { BALANCE } from '../../game/balance';
 import { ko } from '../../i18n/ko';
 import { PREFERENCES_KEY, parsePreferences } from '../../services/preferences';
@@ -73,7 +72,7 @@ async function fall(score = 42) {
   expect(controller.readState().screen).toBe('result');
 }
 
-describe('settings, sharing and development reward integration', () => {
+describe('settings and development reward integration', () => {
   it('restores independent settings and the best record after an app remount', async () => {
     const first = await render(<App />);
     await fireEvent.press(screen.getByRole('button', { name: ko.settings }));
@@ -117,28 +116,16 @@ describe('settings, sharing and development reward integration', () => {
     expect(controller.readState().screen).toBe('playing');
   });
 
-  it('offers selectable manual share text on failure and stays quiet for cancellation', async () => {
-    const share = jest.spyOn(sharing, 'shareScore').mockResolvedValueOnce({ status: 'manual', text: sharing.formatShareText(42) })
-      .mockResolvedValueOnce({ status: 'cancelled', text: sharing.formatShareText(42) });
+  it('keeps only retry and home after a result when mock revival is unavailable', async () => {
     await render(<App />); await start(); await fall();
-    await fireEvent.press(screen.getByRole('button', { name: ko.share }));
-    expect(screen.getByRole('header', { name: ko.shareManual })).toBeOnTheScreen();
-    expect(screen.getByText(sharing.formatShareText(42))).toHaveProp('selectable', true);
-    expect(screen.queryByText(ko.shareCopied)).toBeNull();
-    await fireEvent.press(screen.getByRole('button', { name: ko.shareClose }));
-    await fireEvent.press(screen.getByRole('button', { name: ko.share }));
-    expect(share).toHaveBeenCalledTimes(2);
-    expect(screen.queryByText(ko.shareManual)).toBeNull();
+    expect(screen.getAllByRole('button').map(button => button.props.accessibilityLabel)).toEqual([ko.retry, ko.home]);
+    expect(screen.queryByTestId('result-share')).toBeNull();
   });
 
-  it('does not open a delayed share response over a newer attempt', async () => {
-    let resolve!: (value: sharing.ShareResult) => void;
-    jest.spyOn(sharing, 'shareScore').mockReturnValue(new Promise(done => { resolve = done; }));
+  it('starts a newer attempt directly without opening a service overlay', async () => {
     await render(<App />); await start(); await fall();
-    await fireEvent.press(screen.getByRole('button', { name: ko.share }));
     await fireEvent.press(screen.getByRole('button', { name: ko.retry }));
-    await act(async () => resolve({ status: 'manual', text: 'previous run' }));
-    expect(screen.queryByText('previous run')).toBeNull();
+    expect(screen.queryByTestId('share-panel')).toBeNull();
     expect(controller.readState().screen).toBe('countdown');
   });
 

@@ -85,11 +85,13 @@ it('offers one welcome, saves later locally, and keeps manual setup after remoun
   await first.unmount();
   await render(<App />);
   expect(screen.queryByTestId('nickname-welcome-panel')).toBeNull();
-  await fireEvent.press(screen.getByTestId('title-nickname'));
+  expect(screen.queryByTestId('title-nickname')).toBeNull();
+  await fireEvent.press(screen.getByTestId('title-settings'));
+  await fireEvent.press(screen.getByTestId('settings-nickname-edit'));
   expect(screen.getByTestId('nickname-panel')).toBeOnTheScreen();
 });
 
-it('uses the existing editor and invites only the next run after an unregistered result', async () => {
+it('keeps result minimal and allows first setup from settings after returning home', async () => {
   const view = await render(<App />);
   await fireEvent.press(screen.getByTestId('nickname-welcome-setup'));
   expect(screen.queryByTestId('nickname-welcome-panel')).toBeNull();
@@ -97,11 +99,12 @@ it('uses the existing editor and invites only the next run after an unregistered
   expect(mockOnline.saveNickname).not.toHaveBeenCalled();
   await fireEvent.press(screen.getByTestId('nickname-panel-close'));
   await start(); await finishRun();
-  expect(screen.getByTestId('result-nickname-notice')).toBeOnTheScreen();
-  expect(screen.getByText(ko.nicknameRankingInvite)).toBeOnTheScreen();
-  expect(screen.getByText(ko.nicknameRankingNextRun)).toBeOnTheScreen();
+  expect(screen.queryByTestId('result-nickname-notice')).toBeNull();
   expect(screen.queryByTestId('ranking-submission-status')).toBeNull();
-  await fireEvent.press(screen.getByTestId('result-nickname'));
+  expect(screen.queryByTestId('result-nickname')).toBeNull();
+  await fireEvent.press(screen.getByTestId('result-home'));
+  await fireEvent.press(screen.getByTestId('title-settings'));
+  await fireEvent.press(screen.getByTestId('settings-nickname-edit'));
   mockOnline.saveNickname.mockImplementationOnce(async () => {
     mockOnline.status = 'ready';
     mockOnline.profile = { publicId: 'public-1', nickname: '새 냥대리', updatedAt: '2026-09-28T00:00:00Z' };
@@ -109,8 +112,12 @@ it('uses the existing editor and invites only the next run after an unregistered
   });
   await fireEvent.changeText(screen.getByTestId('nickname-input'), '새 냥대리');
   await fireEvent.press(screen.getByTestId('nickname-save'));
+  expect(mockOnline.saveNickname).toHaveBeenCalledWith('새 냥대리');
+  expect(mockOnline.profile?.nickname).toBe('새 냥대리');
   await view.rerender(<App />);
-  expect(screen.queryByTestId('result-nickname-notice')).toBeNull();
+  await fireEvent.press(screen.getByTestId('title-settings'));
+  expect(screen.getByTestId('settings-nickname')).toHaveTextContent('새 냥대리');
+  expect(screen.queryByTestId('settings-nickname-edit')).toBeNull();
   expect(screen.queryByText(ko.rankingSubmitted)).toBeNull();
 });
 

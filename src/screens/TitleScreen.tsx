@@ -5,10 +5,10 @@ import { palette } from '../theme/tokens';
 export interface TitleScreenProps {
   bestScore: number; onStart(): void; onSettings(): void; onCharacters?(): void;
   onResume?(): void; resumeAvailable?: boolean;
-  nickname?: string; onNickname?(): void; onLeaderboard?(): void; startBusy?: boolean; onlineNotice?: string | null;
+  onLeaderboard?(): void; startBusy?: boolean; onlineNotice?: string | null;
 }
 
-export function TitleScreen({ bestScore, onStart, onSettings, onCharacters, onResume, resumeAvailable = false, nickname, onNickname, onLeaderboard,
+export function TitleScreen({ bestScore, onStart, onSettings, onCharacters, onResume, resumeAvailable = false, onLeaderboard,
   startBusy = false, onlineNotice }: TitleScreenProps) {
   const best = Number.isFinite(bestScore) ? Math.max(0, Math.floor(bestScore)) : 0;
   return (
@@ -34,10 +34,6 @@ export function TitleScreen({ bestScore, onStart, onSettings, onCharacters, onRe
           <Text style={styles.resumeSavedText}>{ko.resumeSaved}</Text>
         </Pressable>}
         <View style={styles.services}>
-          {onNickname && <Pressable testID="title-nickname" accessibilityRole="button" accessibilityLabel={nickname ? `${ko.nicknameEdit}: ${nickname}` : ko.nicknameSet}
-            onPress={onNickname} style={({ pressed }) => [styles.serviceButton, pressed && styles.pressed]}>
-            <Text style={styles.serviceText}>{nickname || ko.nicknameSet}</Text>
-          </Pressable>}
           {onLeaderboard && <Pressable testID="title-leaderboard" accessibilityRole="button" accessibilityLabel={ko.leaderboard}
             onPress={onLeaderboard} style={({ pressed }) => [styles.serviceButton, pressed && styles.pressed]}>
             <Text style={styles.serviceText}>{ko.leaderboard}</Text>

@@ -10,14 +10,14 @@ import { ResultScreen } from '../ResultScreen';
 import { TitleScreen } from '../TitleScreen';
 
 describe('screen presentation contracts', () => {
-  it('gives every result action the same geometry and preserves each callback', async () => {
-    const actions = { onRetry: jest.fn(), onHome: jest.fn(), onShare: jest.fn(), onRevive: jest.fn(),
-      onSettings: jest.fn(), onCharacters: jest.fn(), onLeaderboard: jest.fn(), onNickname: jest.fn(), onRetrySubmission: jest.fn() };
-    const view = await render(<ResultScreen score={15} bestScore={20} canRevive submissionState="pending" {...actions} />);
+  it('puts mint retry, home, then optional revival in one column', async () => {
+    const actions = { onRetry: jest.fn(), onHome: jest.fn(), onRevive: jest.fn() };
+    const view = await render(<ResultScreen score={15} bestScore={20} canRevive {...actions} />);
     const buttons = screen.getAllByRole('button');
-    expect(buttons).toHaveLength(9);
-    for (const button of buttons) {
-      expect(button).toHaveStyle({ width: '100%', minHeight: 50, flexShrink: 0, borderRadius: 14, backgroundColor: palette.paper });
+    expect(buttons.map(button => button.props.accessibilityLabel)).toEqual([ko.retry, ko.home, ko.revive]);
+    for (const [index, button] of buttons.entries()) {
+      expect(button).toHaveStyle({ width: '100%', minHeight: 50, flexShrink: 0, borderRadius: 14,
+        backgroundColor: index === 0 ? palette.mint : palette.paper });
       await fireEvent.press(button);
     }
     for (const callback of Object.values(actions)) expect(callback).toHaveBeenCalledTimes(1);
@@ -41,15 +41,14 @@ describe('screen presentation contracts', () => {
     expect(settings).toHaveBeenCalledTimes(1); expect(characters).toHaveBeenCalledTimes(1);
   });
 
-  it('shows uncapped results and functional retry/home/share, while ad availability stays explicit', async () => {
-    const retry = jest.fn(); const home = jest.fn(); const share = jest.fn();
+  it('shows uncapped results and only retry/home when ad revival is unavailable', async () => {
+    const retry = jest.fn(); const home = jest.fn();
     await render(<ResultScreen score={128.9} bestScore={90} canRevive={false}
-      onRetry={retry} onHome={home} onShare={share} onRevive={jest.fn()} />);
+      onRetry={retry} onHome={home} onRevive={jest.fn()} />);
     expect(screen.getByLabelText(`${ko.scoreLabel} 128%`)).toBeOnTheScreen();
     expect(screen.getByLabelText(`${ko.bestLabel} 128%`)).toBeOnTheScreen();
     expect(screen.queryByRole('button', { name: ko.revive })).toBeNull();
-    await fireEvent.press(screen.getByRole('button', { name: ko.share }));
-    expect(share).toHaveBeenCalledTimes(1);
+    expect(screen.getAllByRole('button')).toHaveLength(2);
     await fireEvent.press(screen.getByRole('button', { name: ko.retry }));
     await fireEvent.press(screen.getByRole('button', { name: ko.home }));
     expect(retry).toHaveBeenCalledTimes(1); expect(home).toHaveBeenCalledTimes(1);
@@ -58,7 +57,7 @@ describe('screen presentation contracts', () => {
   it('exposes revival only when a caller explicitly provides availability', async () => {
     const revive = jest.fn();
     await render(<ResultScreen score={15} bestScore={200} canRevive={true}
-      onRetry={jest.fn()} onHome={jest.fn()} onShare={jest.fn()} onRevive={revive} />);
+      onRetry={jest.fn()} onHome={jest.fn()} onRevive={revive} />);
     await fireEvent.press(screen.getByRole('button', { name: ko.revive }));
     expect(revive).toHaveBeenCalledTimes(1);
   });

@@ -116,6 +116,19 @@ async function hydrateStored(completedRuns: number, selectedCharacter: Character
 }
 
 describe('character collection integrated with real application services', () => {
+  it('shows the selected character on the title immediately while keeping the current run frozen', async () => {
+    await hydrateStored(10);
+    await render(<App />);
+    expect(await renderedCharacter()).toBe('rookie');
+    await fireEvent.press(screen.getByRole('button', { name: ko.characters }));
+    await fireEvent.press(screen.getByRole('button', { name: `${ko.characterDiligent} ${ko.characterSelectAction}` }));
+    expect(await renderedCharacter()).toBe('diligent');
+    await fireEvent.press(screen.getByRole('button', { name: `${ko.characterVeteran} ${ko.characterSelectAction}` }));
+    expect(await renderedCharacter()).toBe('veteran');
+    await fireEvent.press(screen.getByRole('button', { name: ko.close }));
+    await startPlaying();
+    expect(await renderedCharacter()).toBe('veteran');
+  });
   it('starts with rookie, persists the first 100 immediately, and shows its award only after the run', async () => {
     await render(<App />);
     expect(await renderedCharacter()).toBe('rookie');
@@ -140,13 +153,15 @@ describe('character collection integrated with real application services', () =>
     await startPlaying();
     await injectDistance(100, true);
     const frozenRun = controller.readState().run;
-    await fireEvent.press(screen.getByRole('button', { name: ko.characterSelect }));
+    expect(screen.queryByRole('button', { name: ko.characterSelect })).toBeNull();
+    await fireEvent.press(screen.getByTestId('result-home'));
+    await fireEvent.press(screen.getByTestId('title-characters'));
     await fireEvent.press(screen.getByRole('button', { name: `${ko.characterDiligent} ${ko.characterSelectAction}` }));
     await waitFor(async () => expect((await persisted()).collection.selectedCharacter).toBe('diligent'));
-    expect(await renderedCharacter()).toBe('rookie');
-    expect(controller.readState().run).toBe(frozenRun);
+    expect(await renderedCharacter()).toBe('diligent');
+    expect(controller.readState().run).not.toBe(frozenRun);
     await fireEvent.press(screen.getByRole('button', { name: ko.close }));
-    await startPlaying(true);
+    await startPlaying();
     expect(await renderedCharacter()).toBe('diligent');
     expect(controller.readState().run!.id).toBe(frozenRun!.id + 1);
     expect(screen.queryByTestId('character-unlock-notice')).toBeNull();
@@ -168,7 +183,8 @@ describe('character collection integrated with real application services', () =>
     expect(screen.getByTestId('character-unlock-notice')).toHaveTextContent(`${ko.characterUnlocked}: ${ko.characterVeteran}`);
     expect((await persisted()).collection.selectedCharacter).toBe('diligent');
     expect(await renderedCharacter()).toBe('diligent');
-    await fireEvent.press(screen.getByRole('button', { name: ko.characterSelect }));
+    await fireEvent.press(screen.getByTestId('result-home'));
+    await fireEvent.press(screen.getByTestId('title-characters'));
     expect(screen.getByTestId('select-veteran')).toBeEnabled();
   });
 
@@ -203,7 +219,8 @@ describe('character collection integrated with real application services', () =>
     await waitFor(async () => expect((await persisted()).bestScore).toBe(200));
     expect((await persisted()).collection.completedRuns).toBe(0);
     expect(screen.queryByTestId('character-unlock-notice')).toBeNull();
-    await fireEvent.press(screen.getByRole('button', { name: ko.characters }));
+    await fireEvent.press(screen.getByTestId('result-home'));
+    await fireEvent.press(screen.getByTestId('title-characters'));
     expect(screen.getByTestId('select-diligent')).toBeDisabled();
     expect(screen.getByTestId('select-veteran')).toBeDisabled();
   });

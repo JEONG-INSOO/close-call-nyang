@@ -72,11 +72,17 @@ async function simulatedApi(page: Page) {
     setFailDelete: (value: boolean) => { failDelete = value; }, setFailStart: (value: boolean) => { failStart = value; } };
 }
 async function close(page: Page, panel: string) { await page.getByTestId(panel).getByRole('button', { name: '닫기', exact: true }).click(); }
+async function deferFirstNickname(page: Page) {
+  await expect(page.getByTestId('nickname-welcome-panel')).toBeVisible();
+  await page.getByTestId('nickname-welcome-later').click();
+}
 async function join(page: Page) {
-  await page.getByTestId('title-nickname').click();
+  await page.getByTestId('title-settings').click();
+  await page.getByTestId('settings-nickname-edit').click();
   await page.getByTestId('nickname-input').fill('동료냥');
   await page.getByTestId('nickname-save').click();
   await expect(page.getByTestId('nickname-panel')).toHaveCount(0);
+  await expect(page.getByTestId('title-settings')).toBeVisible();
 }
 
 test('simulated API: guest read, duplicate nickname, shared ranks, report/hide and deletion retry', async ({ page }, info) => {
@@ -84,6 +90,7 @@ test('simulated API: guest read, duplicate nickname, shared ranks, report/hide a
   const api = await simulatedApi(page);
   await page.goto(APP);
   await expect(page.getByTestId('start-button')).toBeVisible();
+  await deferFirstNickname(page);
   await page.getByTestId('title-leaderboard').click();
   await expect(page.getByTestId(`rank-row-${OTHER}`)).toContainText('123%');
   expect(api.signupCount()).toBe(0);
@@ -122,11 +129,12 @@ test('simulated API: guest read, duplicate nickname, shared ranks, report/hide a
 
 test('simulated API: genuine short run submits inputs, then start outage falls back to local', async ({ page }, info) => {
   test.skip(info.project.name !== 'phone-landscape', 'One simulated online flow; not hosted verification.');
-  const api = await simulatedApi(page); await page.goto(APP); await join(page);
+  const api = await simulatedApi(page); await page.goto(APP); await deferFirstNickname(page); await join(page);
   await page.getByTestId('start-button').click();
   await expect(page.getByTestId('control-right')).toBeEnabled();
   await page.keyboard.down('ArrowRight'); await expect(page.getByTestId('result-screen')).toBeVisible(); await page.keyboard.up('ArrowRight');
-  await expect(page.getByText('랭킹등록완료!', { exact: true })).toBeVisible();
+  await expect.poll(() => api.writes.filter(path => path.endsWith('/runs/finalize')).length).toBe(1);
+  await expect(page.getByText('랭킹등록완료!', { exact: true })).toHaveCount(0);
   await expect(page.getByTestId('ranking-receipt')).toHaveCount(0);
   await page.screenshot({ path: info.outputPath('simulated-submission.png'), fullPage: true });
   expect(api.writes.some(path => path.endsWith('/runs/chunks'))).toBe(true);
@@ -135,7 +143,7 @@ test('simulated API: genuine short run submits inputs, then start outage falls b
   api.setFailStart(true); await page.getByTestId('retry-button').click();
   await expect(page.getByTestId('control-right')).toBeEnabled();
   await page.keyboard.down('ArrowRight'); await expect(page.getByTestId('result-screen')).toBeVisible(); await page.keyboard.up('ArrowRight');
-  await expect(page.getByText('이번 기록은 기기에만 저장돼요', { exact: false })).toBeVisible();
+  await expect(page.getByTestId('result-screen').getByRole('button')).toHaveCount(2);
   expect(api.errors).toEqual([]);
   await info.attach('simulated-api-scope', { body: JSON.stringify({ hostedEvidence: false, receivedRoutes: api.writes }), contentType: 'application/json' });
 });

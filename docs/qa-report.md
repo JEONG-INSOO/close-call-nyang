@@ -6,6 +6,13 @@
 - 관련5스위트/38개, 전체48스위트/686개 테스트가 통과했다. 신규 사용자/건너뛰고 재실행/기존 프로필/오프라인/저장 실패/늦은 저장 응답/결과 안내 및 저장 뒤 소멸을 확인한다. TypeScript/ranked8/release7/diff-check도 통과했다.
 - 실제 iPhone 가로 키보드와 TestFlight 반영은 아직 검사하지 않았다. 기존4번 바이너리에는 이번 코드가 포함되지 않는다.
 
+## 2026-09-29 · 결과·홈 화면 간소화
+
+- 결과의 재도전(민트색) → 홈 → 조건부 가상광고 순서, 나머지 결과 버튼/랭킹 문구 제거, 홈의 랭킹·캐릭터·설정, 설정에서만 첫 닉네임 등록/등록 후 편집 버튼 없음.
+- Jest 49스위트/691개, `typecheck`, `ranked:check`, 별도 `output/ui-web` 웹 export, fixture·온라인 모의 빌드, Playwright phone-landscape 대상 6/6 통과. 모의 온라인 API에서 등록·랭킹 제출·삭제와 실패 후 local 시작을 검사했다. 실제 서버에 테스트 쓰기 없음.
+- 첫 브라우저 실행은 첫 닉네임 환영 모달을 테스트가 닫지 않아 2건 시간초과했다. ‘나중에’를 명시적으로 선택하도록 고친 후 6/6 재검증했다. Windows Playwright 소유 서버 종료가 지연되어 전용 서버 3개를 먼저 실행하고 `PLAYWRIGHT_REUSE_EXISTING_SERVER=true`로 exit code 0을 확인한 뒤 해당 서버만 종료했다.
+- 실기기 Expo Go·TestFlight 이번 UI 빌드/설치, 실제 랭킹 서버 점검은 `not_run`. 앞서 제출한 1.0.0(5)에 새 UI가 포함됐다고 주장하지 않는다.
+
 ## 2026-09-28 · 위험 효과음 제거 build4
 
 source d8e8dbd(6c2bd59포함),1.0.0(4), build f8d4ccb3-edc9-41af-99a9-11843efc33a3, submit eb4df011-0fc4-4f21-8569-8f92218306ae 예약 접수. 사용자 요청에 따라 이후 TestFlight 표시 확인은 사용자 담당. 업로드 성공/Apple 처리/실기기FPS 미확인. 기존3번은 build와submit FINISHED 확인.

@@ -98,14 +98,14 @@ export function SettingsPanel({ visible, settings, onChange, onClose, nickname, 
         </View>
       ))}
       <Text style={styles.hint}>{ko.settingsHint}</Text>
-      {(onEditNickname || onDeleteProfile || onlineError) && <View style={styles.onlineSection}>
+      {(nickname || onEditNickname || onDeleteProfile || onlineError) && <View style={styles.onlineSection}>
         <Text accessibilityRole="header" style={online.label}>{ko.onlineProfile}</Text>
         {nickname && <Text testID="settings-nickname" style={online.copy}>{nickname}</Text>}
         {onlineError && <Text accessibilityRole="alert" style={online.error}>{onlineError}</Text>}
-        {onEditNickname && !confirming && <Pressable testID="settings-nickname-edit" accessibilityRole="button"
-          accessibilityLabel={nickname ? ko.nicknameEdit : ko.nicknameSet} disabled={busy}
+        {onEditNickname && !nickname && !confirming && <Pressable testID="settings-nickname-edit" accessibilityRole="button"
+          accessibilityLabel={ko.nicknameSet} disabled={busy}
           onPress={onEditNickname} style={({ pressed }) => [online.button, busy && online.disabled, pressed && online.pressed]}>
-          <Text style={online.buttonText}>{nickname ? ko.nicknameEdit : ko.nicknameSet}</Text>
+          <Text style={online.buttonText}>{ko.nicknameSet}</Text>
         </Pressable>}
         {onDeleteProfile && !confirming && <Pressable testID="settings-delete-online" accessibilityRole="button"
           accessibilityLabel={ko.deleteOnlineProfile} disabled={busy} onPress={() => { setConfirming(true); setDeleteError(null); }}

@@ -105,7 +105,7 @@ describe('playable app flow', () => {
     expect(controller.readState().screen).toBe('result');
     expect(screen.getByRole('button', { name: ko.retry })).toBeOnTheScreen();
     expect(screen.queryByRole('button', { name: ko.revive })).toBeNull();
-    expect(screen.getByRole('button', { name: ko.share })).toBeOnTheScreen();
+    expect(screen.queryByRole('button', { name: ko.share })).toBeNull();
     expect(screen.getAllByText(/128%/).length).toBeGreaterThan(0);
     await fireEvent.press(screen.getByRole('button', { name: ko.retry }));
     expect(controller.readState().screen).toBe('countdown');

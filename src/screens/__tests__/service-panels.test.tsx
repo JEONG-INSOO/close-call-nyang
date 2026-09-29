@@ -90,21 +90,17 @@ describe('local service panels', () => {
     } finally { Object.defineProperty(Platform, 'OS', previous); }
   });
 
-  it('shows the unlocked name only on result and waits for an explicit character selection action', async () => {
-    const characters = jest.fn(); const openSettings = jest.fn();
+  it('shows the unlocked name on result without reopening character/settings panels', async () => {
     await render(<ResultScreen score={115} bestScore={115} canRevive={false}
-      onRetry={jest.fn()} onHome={jest.fn()} onShare={jest.fn()} onRevive={jest.fn()}
-      onCharacters={characters} onSettings={openSettings} newlyUnlocked={['diligent']} />);
+      onRetry={jest.fn()} onHome={jest.fn()} onRevive={jest.fn()} newlyUnlocked={['diligent']} />);
     expect(screen.getByTestId('character-unlock-notice')).toHaveTextContent(`${ko.characterUnlocked}: ${ko.characterDiligent}`);
-    expect(characters).not.toHaveBeenCalled();
-    await fireEvent.press(screen.getByRole('button', { name: ko.characterSelect }));
-    await fireEvent.press(screen.getByRole('button', { name: ko.settings }));
-    expect(characters).toHaveBeenCalledTimes(1); expect(openSettings).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('button', { name: ko.characterSelect })).toBeNull();
+    expect(screen.queryByRole('button', { name: ko.settings })).toBeNull();
   });
 
   it('shows no award notice if the result has no newly unlocked characters', async () => {
     await render(<ResultScreen score={100} bestScore={100} canRevive={false}
-      onRetry={jest.fn()} onHome={jest.fn()} onShare={jest.fn()} onRevive={jest.fn()} />);
+      onRetry={jest.fn()} onHome={jest.fn()} onRevive={jest.fn()} />);
     expect(screen.queryByTestId('character-unlock-notice')).toBeNull();
   });
 

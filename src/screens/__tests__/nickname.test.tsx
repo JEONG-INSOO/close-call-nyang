@@ -86,6 +86,8 @@ describe('nickname participation and deletion panels', () => {
     const remove = jest.fn(async () => true); const change = jest.fn();
     await render(shell(<SettingsPanel visible settings={settings} onChange={change} onClose={jest.fn()}
       nickname={profile.nickname} onEditNickname={jest.fn()} onDeleteProfile={remove} />));
+    expect(screen.getByTestId('settings-nickname')).toHaveTextContent(profile.nickname);
+    expect(screen.queryByTestId('settings-nickname-edit')).toBeNull();
     await fireEvent.press(screen.getByTestId('settings-delete-online'));
     expect(remove).not.toHaveBeenCalled(); expect(screen.getByText(ko.deleteOnlineDescription)).toBeOnTheScreen();
     await fireEvent.press(screen.getByRole('button', { name: ko.cancel }));
@@ -121,37 +123,30 @@ describe('nickname participation and deletion panels', () => {
 });
 
 describe('ranking entry and result presentation', () => {
-  it('keeps offline start usable with optional nickname and ranking actions', async () => {
-    const start = jest.fn(); const nickname = jest.fn(); const ranking = jest.fn();
+  it('keeps offline start usable with ranking, character and settings but no nickname action', async () => {
+    const start = jest.fn(); const ranking = jest.fn();
     await render(<TitleScreen bestScore={101} onStart={start} onSettings={jest.fn()}
-      onNickname={nickname} onLeaderboard={ranking} onlineNotice={ko.rankUnavailable} />);
+      onCharacters={jest.fn()} onLeaderboard={ranking} onlineNotice={ko.rankUnavailable} />);
     await fireEvent.press(screen.getByTestId('start-button'));
-    await fireEvent.press(screen.getByTestId('title-nickname'));
     await fireEvent.press(screen.getByTestId('title-leaderboard'));
-    expect(start).toHaveBeenCalledTimes(1); expect(nickname).toHaveBeenCalledTimes(1); expect(ranking).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId('title-nickname')).toBeNull();
+    expect(screen.getByTestId('title-characters')).toBeOnTheScreen();
+    expect(screen.getByTestId('title-settings')).toBeOnTheScreen();
+    expect(start).toHaveBeenCalledTimes(1); expect(ranking).toHaveBeenCalledTimes(1);
   });
 
-  it.each([3, null])('shows only confirmed success without receipt details for rank %s', async (rank) => {
-    const retry = jest.fn();
-    const props = { score: 101, bestScore: 145, canRevive: false, onRetry: jest.fn(), onHome: jest.fn(), onShare: jest.fn(), onRevive: jest.fn() };
-    const view = await render(<ResultScreen {...props} submissionState="pending" onRetrySubmission={retry} />);
-    expect(screen.getByText(ko.rankingPending)).toBeOnTheScreen();
-    await fireEvent.press(screen.getByTestId('retry-ranking-submission')); expect(retry).toHaveBeenCalledTimes(1);
-    await view.rerender(<ResultScreen {...props} submissionState="submitted" receipt={{ runId: 'server-run', score: 101, bestScore: 120, rank, improved: false }} />);
-    expect(screen.getByText('랭킹등록완료!')).toBeOnTheScreen();
-    expect(screen.getByTestId('ranking-submission-status')).toHaveTextContent(/^랭킹등록완료!$/);
-    expect(screen.queryByTestId('ranking-receipt')).toBeNull();
-    expect(screen.queryByText(/검증된 성공률|온라인 최고 기록|3위/)).toBeNull();
+  it('keeps result score but hides all ranking and service controls', async () => {
+    await render(<ResultScreen score={101} bestScore={145} canRevive={false}
+      onRetry={jest.fn()} onHome={jest.fn()} onRevive={jest.fn()} />);
+    expect(screen.getAllByRole('button').map(button => button.props.accessibilityLabel)).toEqual([ko.retry, ko.home]);
+    expect(screen.queryByTestId('ranking-submission-status')).toBeNull();
     expect(screen.queryByTestId('retry-ranking-submission')).toBeNull();
+    for (const id of ['result-leaderboard', 'result-nickname', 'result-share', 'result-characters', 'result-settings']) {
+      expect(screen.queryByTestId(id)).toBeNull();
+    }
+    expect(screen.queryByText(ko.rankingSubmitted)).toBeNull();
     expect(screen.getByTestId('result-score')).toHaveTextContent('101%');
     expect(screen.getByTestId('result-best')).toHaveTextContent('145%');
-  });
-
-  it.each(['submitted', 'recording', 'local', 'unranked'] as const)('does not announce success without a receipt in %s state', async (submissionState) => {
-    await render(<ResultScreen score={10} bestScore={20} canRevive={false} onRetry={jest.fn()}
-      onHome={jest.fn()} onShare={jest.fn()} onRevive={jest.fn()} submissionState={submissionState} receipt={null} />);
-    expect(screen.queryByText('랭킹등록완료!')).toBeNull();
-    expect(screen.getByText(submissionState === 'recording' ? ko.rankingPending : ko.rankingLocal)).toBeOnTheScreen();
   });
 
   it('offers three explicit pending-upload choices without silently discarding', async () => {

@@ -33,13 +33,9 @@ test('corrupt local data recovers without a crash or fabricated unlock', async (
   await expect(page.getByTestId('select-veteran')).toBeDisabled();
 });
 
-test('clipboard rejection displays selectable fallback rather than copied success', async ({ cleanPage: page }) => {
-  await page.addInitScript(() => Object.defineProperty(navigator, 'clipboard', {
-    configurable: true, value: { writeText: async () => { throw new DOMException('Denied test boundary', 'NotAllowedError'); } },
-  }));
+test('result has no share action while the score remains visible', async ({ cleanPage: page }) => {
   await openGame(page); await startGame(page); await loseWithRight(page);
-  await page.getByTestId('result-share').click();
-  await expect(page.getByRole('heading', { name: '복사해서 공유해 주세요' })).toBeVisible();
-  await expect(page.getByText('공유할 기록을 복사했어요.', { exact: true })).toHaveCount(0);
-  await expect(page.getByText(/우당탕탕 냥대리 프로젝트 성공률 \d+%!/)).toBeVisible();
+  await expect(page.getByTestId('result-score')).toContainText('%');
+  await expect(page.getByTestId('result-share')).toHaveCount(0);
+  await expect(page.getByTestId('share-panel')).toHaveCount(0);
 });
