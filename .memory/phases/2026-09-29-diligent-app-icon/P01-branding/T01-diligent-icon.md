@@ -85,4 +85,4 @@ Task: T01-diligent-icon
 
 - [x] 구현 완료
 - [x] 검증 통과 — 1024/64px 육안, branding:render/verify, release 8/8, typecheck, diff --check, favicon SHA-256 불변.
-- commit: pending
+- commit: `e809381` (이번 아이콘 원본·출력·검증·학습 기록)

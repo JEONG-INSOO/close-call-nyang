@@ -8,7 +8,7 @@
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | 아트 원본·브랜딩 파이프라인·검증·학습 기록 | [P01](../phases/2026-09-29-diligent-app-icon/P01-branding/phase.md) |
+| P01 | `done` | 아트 원본·브랜딩 파이프라인·검증·학습 기록 | [P01](../phases/2026-09-29-diligent-app-icon/P01-branding/phase.md) |
 
 ## Boundaries
 
