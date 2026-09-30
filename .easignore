@@ -9,6 +9,7 @@ blob-report/
 output/
 *.tsbuildinfo
 npm-debug.log*
+/debug.log
 .env
 .env.*
 !.env.example

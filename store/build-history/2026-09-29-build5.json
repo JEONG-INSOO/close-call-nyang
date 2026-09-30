@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "bundleIdentifier": "com.mocca.closecallnyang",
+  "sourceCommit": "4f42251344202dc4e412034cdace4e1a4ddb51d5",
+  "sourceSnapshot": "EAS archive includes uncommitted working-tree changes; see docs/ios-release.md",
+  "easProjectId": "315e87a2-f405-4f65-ae45-c91f1d2c59bf",
+  "easBuildId": "bf4c00e9-6e5c-4d5b-bf0e-51ddf6b92e40",
+  "ascAppId": "6815771701",
+  "version": "1.0.0",
+  "buildNumber": "5",
+  "expoGoQa": "pending",
+  "nativeQa": "pending",
+  "leaderboardQa": "pending",
+  "backendUrl": "https://fgojrxmpxpzdiwsktjsx.supabase.co",
+  "testflightStatus": "eas_upload_finished_apple_processing_unverified",
+  "reviewStatus": "not_started",
+  "releaseMode": "manual",
+  "submissionId": "40e5d3cf-97e8-41c4-a470-8a8767976ac8",
+  "submittedAt": "2026-09-29T06:47:04.252Z"
+}
