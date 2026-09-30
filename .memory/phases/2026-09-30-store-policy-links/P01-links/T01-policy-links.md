@@ -1,6 +1,6 @@
 # Task: T01 앱 개인정보·고객지원 링크
 
-## Status: in_progress
+## Status: done
 
 ## Goal
 
@@ -94,6 +94,6 @@ Task: T01-policy-links
 
 ## Progress
 
-- [ ] 구현·검증·학습 기록 완료
-- [ ] 범위 한정 커밋 후 원래 출시 자료 P01-T03로 포인터 복귀
-- commit: pending
+- [x] 구현·검증·학습 기록 완료
+- [x] 범위 한정 커밋 후 원래 출시 자료 P01-T03로 포인터 복귀
+- commit: `089c8bd`

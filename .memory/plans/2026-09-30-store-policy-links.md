@@ -15,7 +15,7 @@
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | 공통 URL·설정 링크·랭킹 문의 연결 및 실패 회귀 | [P01](../phases/2026-09-30-store-policy-links/P01-links/phase.md) |
+| P01 | `done` | 공통 URL·설정 링크·랭킹 문의 연결 및 실패 회귀 (`089c8bd`) | [P01](../phases/2026-09-30-store-policy-links/P01-links/phase.md) |
 
 ## Guardrails
 

@@ -9,4 +9,4 @@
 | T03 | `pending` | 한·영 스토어 메타데이터와 실제 iPhone 캡처 계획 | [T03](./T03-store-assets.md) |
 
 ## Progress
-- done: 2/3 (승인된 policy-links 단일 Task 후 T03로 복귀)
+- done: 2/3 (policy-links `089c8bd` 완료; active: T03 pending)
