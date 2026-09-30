@@ -1,7 +1,8 @@
-import { readFile, readdir, lstat } from 'node:fs/promises';
+import { readFile, lstat, realpath } from 'node:fs/promises';
 import { resolve, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
+import { PUBLIC_BASE, PUBLIC_PAGE_NAMES, validatePublicPage } from './public-pages.mjs';
 
 export async function verifyFavicon(bytes) {
   if (bytes.length >= 6 && bytes.readUInt16LE(0) === 0 && bytes.readUInt16LE(2) === 1) {
@@ -33,7 +34,7 @@ export async function verifyFavicon(bytes) {
 
 // Static export validation only; does not claim public deployment or browser QA.
 export async function verifyWeb(directory = 'dist') {
-  const root = resolve(directory);
+  const root = await realpath(resolve(directory));
   const html = await readFile(resolve(root, 'index.html'), 'utf8');
   const local = async url => {
     const pathname = decodeURIComponent(url.split(/[?#]/)[0]);
@@ -43,6 +44,8 @@ export async function verifyWeb(directory = 'dist') {
     if (!rel || rel.startsWith(`..${sep}`) || rel === '..' || pathname.includes('\\')) throw new Error('Invalid export asset path');
     const stat = await lstat(path);
     if (!stat.isFile() || stat.isSymbolicLink() || !stat.size) throw new Error('Missing or empty export asset');
+    const actualRelative = relative(root, await realpath(path));
+    if (actualRelative === '..' || actualRelative.startsWith(`..${sep}`)) throw new Error('Export asset escapes root');
     return path;
   };
   const scripts = [...html.matchAll(/<script\b[^>]*\bsrc=["']([^"']+)["']/gi)].map(match => match[1]);
@@ -60,12 +63,11 @@ export async function verifyWeb(directory = 'dist') {
   if (!href) throw new Error('Favicon link missing');
   const favicon = await verifyFavicon(await readFile(await local(href)));
   const policyPages = {};
-  const names = await readdir(root);
-  for (const name of ['privacy', 'support']) {
-    if (!names.includes(name)) { policyPages[name] = 'pending (not in export)'; continue; }
-    const text = await readFile(await local(`/close-call-nyang/${name}/index.html`), 'utf8');
+  for (const name of PUBLIC_PAGE_NAMES) {
+    const text = await readFile(await local(`${PUBLIC_BASE}${name}/index.html`), 'utf8');
     if (!/<html\b/i.test(text) || text === html) throw new Error(`${name} must be an actual document, not the game fallback`);
-    policyPages[name] = 'present; content approval still required';
+    validatePublicPage(text, name);
+    policyPages[name] = 'present; bilingual structure/contact/links/safety passed';
   }
   return { status: 'passed', scripts: scripts.length, bundledAssets, favicon, policyPages,
     limitation: 'Static files only. No public URL, native device or legal-content approval verified.' };

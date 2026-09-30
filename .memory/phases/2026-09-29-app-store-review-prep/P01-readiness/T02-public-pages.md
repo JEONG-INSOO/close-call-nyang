@@ -36,9 +36,9 @@
 - 로컬 HTML 존재와 실제 GitHub Pages 200의 차이, 공개 닉네임과 비공개 Auth ID의 차이, 앱 삭제와 서버 데이터 삭제의 차이를 기록한다.
 
 ## Acceptance Criteria
-- [ ] 두 경로가 로컬 빌드에서 열리고 한국어·영어·연락처·삭제 경로가 코드와 부합한다.
+- [x] 두 경로가 로컬 빌드에서 열리고 한국어·영어·연락처·삭제 경로가 코드와 부합한다.
 - [ ] 공개 배포 후 실제 URL 200과 내용 검증을 기록한다. 미배포면 Task 완료로 표시하지 않는다.
-- [ ] 키·토큰·비공개 식별자 및 미검증 보존 약속을 페이지에 포함하지 않는다.
+- [x] 키·토큰·비공개 식별자 및 미검증 보존 약속을 페이지에 포함하지 않는다.
 
 ## Validation
 - `npm.cmd run web:export` — 정책 페이지 포함 최신 로컬 export.
@@ -47,6 +47,15 @@
 - `npm.cmd run test:release` — 공개 URL·메타데이터 관계.
 - 실제 `https://jeong-insoo.github.io/close-call-nyang/support/` 및 `/privacy/` HTTP/브라우저 검사 — 원격 배포 증거.
 - `git -c safe.directory=D:/GrillmeEDU diff --check`.
+
+## Validation Results — 2026-09-30 local milestone
+- 한·영 support/privacy 구현, 실제 Auth/DB/삭제 경로 대조. Supabase/GitHub 운영 로그·백업과 지원 메일에는 임의 보관 기간을 약속하지 않았다.
+- 새 `scripts/public-pages.mjs`는 고정 소스·출력/심볼릭링크 경계·HTML/링크/비밀 패턴을 검증한다. 기존 dist 보호를 위해 export에 `--output-dir output/...`를 허용했다. `scripts/verify-web.test.mjs`22/22와 release8/8 통과. 이전 verifier의 정책 pending 허용을 제거했다.
+- `output/public-pages-web` 운영 공개 설정 export 성공. 웹 정적 검사: JS1/assets18/양쪽 정책/opaque ICO. env 검사10/10. Typecheck/ranked8 통과.
+- `e2e/public-pages.spec.ts`6/6,7.5s; 1280×720/390×844/667×375에서 실제 HTML200/영문 anchor/nav44px/overflow 없음. 두 휴대폰 캡처 육안 확인. Playwright 출력 허용목록에 격리 경로를 추가했다.
+- 최초 Node 테스트 문법 오류(동기 throws 콜백 안 await) 교정 후 재실행 통과. 알려진 비밀·HTML 안전 패턴 검사는 법률/전면 보안 인증이 아니다.
+- 사용자가 이번 커밋의 main push 및 공식 사이트 재배포를 명시 승인했다. 기존 인증/Pages workflow·공개 CI 변수 이름 확인. 배포 및 실제 원격200는 아직 pending이므로 Status는 in_progress다.
+- 범위 밖 발견: 앱 개인정보 링크 없음/랭킹 지원은 GitHub 문의. 새 TestFlight 후 캡처 확보라는 계획 의존성도 후속 정리가 필요하다. 학습노트에 남기고 앱 소스는 이번 Task에서 바꾸지 않았다.
 
 ## Learning
 - 개념: 데이터 수집 고지, 공급자와 운영자 역할, 정적 페이지를 앱 번들 배포에 붙이는 방법.

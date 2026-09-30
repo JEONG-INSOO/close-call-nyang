@@ -67,16 +67,21 @@ test('app icon renderer rejects a source too small for the iOS icon', async () =
     await assert.rejects(renderBranding(assets), /square PNG at least 1024px/);
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
-test('web verifier checks base path, real scripts and favicon while exposing pending policies', async () => {
+test('web verifier requires real policies alongside base path, scripts and favicon', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'nyang-web-release-'));
   try {
     await mkdir(join(dir, 'assets'));
     await writeFile(join(dir, 'index.html'), '<html><link rel="icon" href="/close-call-nyang/favicon.png"><script src="/close-call-nyang/app.js"></script></html>');
     await writeFile(join(dir, 'app.js'), 'console.log("release fixture")');
     await writeFile(join(dir, 'favicon.png'), await readFile(brandingAssets[1].destination));
+    await assert.rejects(verifyWeb(dir), /ENOENT/);
+    for (const name of ['support', 'privacy']) {
+      await mkdir(join(dir, name));
+      await writeFile(join(dir, name, 'index.html'), await read(`web-static/${name}/index.html`));
+    }
     const report = await verifyWeb(dir);
     assert.equal(report.status, 'passed');
-    assert.match(report.policyPages.privacy, /pending/);
+    assert.match(report.policyPages.privacy, /bilingual/);
     await writeFile(join(dir, 'app.js'), '<html>fallback</html>');
     await assert.rejects(verifyWeb(dir), /HTML fallback/);
     await writeFile(join(dir, 'app.js'), 'const x="/close-call-nyang/assets/missing.png"');

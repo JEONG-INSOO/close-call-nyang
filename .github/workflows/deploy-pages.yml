@@ -89,6 +89,12 @@ jobs:
           EXPO_PUBLIC_REPLAY_DIAGNOSTICS: 'false'
         run: npm run ranking:env-check -- --allow-unconfigured
 
+      - name: Verify static export and public pages
+        run: npm run web:verify
+
+      - name: Public page regression tests
+        run: node --test scripts/verify-web.test.mjs
+
       - name: Build isolated browser fixtures
         run: |
           npm run fixtures:build

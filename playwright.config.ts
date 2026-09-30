@@ -3,7 +3,8 @@ import { defineConfig } from '@playwright/test';
 // CI owns its servers; the explicit switch supports local runs with detached servers
 // when a Windows shell keeps Playwright's child-process cleanup alive after tests pass.
 const reuseExistingServer = process.env.PLAYWRIGHT_REUSE_EXISTING_SERVER === 'true';
-const webOutput = process.env.PLAYWRIGHT_WEB_DIR === 'output/ui-web' ? 'output/ui-web' : 'dist';
+const webOutput = ['output/ui-web', 'output/public-pages-web'].includes(process.env.PLAYWRIGHT_WEB_DIR ?? '')
+  ? process.env.PLAYWRIGHT_WEB_DIR! : 'dist';
 
 export default defineConfig({
   testDir: './e2e', testMatch: '*.spec.ts', fullyParallel: false, workers: 1,
