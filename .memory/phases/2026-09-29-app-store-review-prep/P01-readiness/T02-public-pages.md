@@ -1,6 +1,6 @@
 # Task: T02 지원·개인정보 안내 공개 페이지
 
-## Status: pending
+## Status: in_progress
 
 ## Goal
 

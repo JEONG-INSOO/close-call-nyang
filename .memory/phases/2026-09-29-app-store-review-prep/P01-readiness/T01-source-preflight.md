@@ -85,4 +85,4 @@ Task: T01-source-preflight
 ## Progress
 - [x] 구현·검증 완료
 - [x] 범위 한정 커밋 준비 완료
-- commit: this task's source commit (hash recorded in current checkpoint after commit)
+- commit: `838d7c1`

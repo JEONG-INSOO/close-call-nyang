@@ -1,5 +1,63 @@
 # Current Context
 
+## Latest checkpoint — 2026-09-30 출시 소스 T01 완료
+- `838d7c1`: 최신 홈/캐릭터 소스를 범위 한정 커밋했다. Jest691/49 suites, 타입·ranked8·release8, 브라우저5/5, iOS Hermes export 통과. EAS 아카이브111파일은 커밋 입력과 전부 일치하고 실제 비밀 파일은 없다.
+- Active Task는 공개 지원·개인정보 페이지 T02로 이동한다. 이전 베테랑/원래 iOS T03 실기기 QA는 미완료로 보존한다. 새 IPA/업로드/원격 배포/심사 제출은 아직 없다.
+
+## Latest checkpoint — 2026-09-29 App Store 공개 심사 준비 계획
+- 사용자 결정: 무료·인앱결제 없음, 전 세계, `2026 Insoo Jeong`, 공개 지원 `mocca3232@naver.com`, 새 아이콘과 최신 게임 소스를 포함한 심사 준비. App Store 소개 문구는 최종 확인 후 사용하며 심사 제출/공개는 자동 실행하지 않는다.
+- [결정](./decisions/2026-09-29-app-store-review-prep.md)과 [계획](./plans/2026-09-29-app-store-review-prep.md)의 P01 3개/P02 3개 Task 청사진을 작성했다. 이번 계획 단계는 앱 구현 코드·원격 빌드를 수정하지 않았다.
+- 연결된 iPhone/iOS 시뮬레이터 도구가 없어 사용자가 최신 TestFlight의 가로 화면 원본을 촬영·전달하기로 했고, 조수는 편집·규격 확인을 맡는다. 실제 원본 도착 전 캡처와 심사 제출은 대기한다.
+- 이전 베테랑 P01-T03와 원래 iOS P03-T03은 `in_progress`로 보존한다. 새 Active Task는 출시 소스 선별·QA이며 기존 더티 작업과 사용자 `test`를 일괄 커밋하지 않는다.
+
+## Latest checkpoint — 2026-09-29 베테랑 T02 게임 연결 완료
+- 승인한 네 걸음 이미지 그대로 `VeteranSprite`의 아틀라스 0~3칸에 연결하고 위험/넘어짐은 4~5칸으로 표시한다. 옛 베테랑 평면 SVG 제거, rookie/diligent·해금/점수 규칙 불변. 컵·보호·부활은 기존 `SceneFrame`을 읽는다.
+- 장면·스프라이트 테스트, 타입·ranked 검사 통과. 전체 테스트 최초 696건 중 캐릭터 선택 헬퍼 2건이 옛 `face-veteran`을 기대해 실패했고 이를 `veteran-sprite`로 수정하여 해당 7건 통과. 실기기 렌더/FPS는 T03에서 확인한다.
+- 다음 Active Task는 `P01-character/T03-veteran-qa.md`. 원래 P03-T03 iOS 검증은 별도 보존한다.
+
+## Latest checkpoint — 2026-09-29 베테랑 T01 승인 원본·아틀라스 완료
+- 사용자 지정 `tabby-walk-frame-01..04.png`를 01→02→03→04 순서로 보존한 걷기 4장과 앞서 만든 위험·넘어짐 2장을 사용한다. 01·03 오른발 젤리 반복을 설명했고 사용자가 **네 장 그대로 사용**을 확정했다. 원본 네 장은 SHA-256 일치 복사, 모두 1186×1326 투명 RGBA.
+- 단일 2280×425 아틀라스의 재생성 `--check`, Node 테스트 3/3, `git diff --check` 통과. T01 아트만 완료하며 게임 코드/수집/물리/서버/배포는 변경하지 않았다. 원래 P03-T03 iOS 검증은 별도로 보존한다.
+- 다음 Active Task는 베테랑 `P01-character/T02-veteran-renderer.md`: 이미지 아틀라스를 게임 장면에 연결하고 구 SVG 테스트를 교체한다. 실제 Expo Go 성능·동작 확인은 후속 T03이다.
+
+## Latest checkpoint — 2026-09-29 사용자가 고른 네 PNG 확보·아틀라스 재생성
+- 지정 `outputs/tabby-walk-frame-01..04.png` 네 장을 01→02→03→04 순서로 `docs/art/source/veteran-mentor/frame-1..4.png`에 복사했다. 원본/복사본 SHA-256 일치, 모두 1186×1326 투명 RGBA. 앞서 생성한 위험·넘어짐 후보는 유지했다.
+- 사용자 원본 기반 단일 2280×425 아틀라스 재생성, `--check`와 Node 테스트 3/3 통과. 다만 01과 03 모두 화면 오른발의 젤리가 보인다. 좌우 교대 요구를 충족하려면 한 장의 반대발 수정이 필요하므로, **네 장 그대로 사용 vs 한 장 수정** 사용자 선택 대기. 현재 T01 `in_progress`, 미커밋·게임 미연결.
+
+## Latest checkpoint — 2026-09-29 사용자가 새로운 걷기 네 장을 선택함
+- 사용자가 채팅에 보낸 주황색 베테랑 네 장을 선택했다. 이는 직전 생성 `frame-1..4.png` 및 아틀라스와 다르므로 **직전 아틀라스를 승인한 것으로 간주하지 않는다**. 첫 장의 팔·다리 자세부터 다르다.
+- 현재 채팅에 렌더된 네 이미지의 손실 없는 원본 파일 경로가 작업공간/최근 클립보드에서 확인되지 않았다. 사용자에게 원본 PNG 4개 첨부 또는 각각의 접근 가능한 절대 경로를 요청한다. 확보 전에는 이미지 재생성·기존 소스 덮어쓰기·T01 완료/커밋/T02 진입을 하지 않는다.
+- 위험·넘어짐 2장은 기존 생성본을 유지할 후보이고, 기존 dirty 작업/P03-T03은 보존한다. Active Task T01 `in_progress`.
+
+## Latest checkpoint — 2026-09-29 베테랑 여섯 포즈 자동 검증 완료, 이미지 승인 대기
+- 승인 시안과 동일한 베테랑을 `frame-1`로 보존하고, 중간 걸음 2장·반대발 걸음 1장·위험/넘어짐 표정을 만들어 `docs/art/source/veteran-mentor/`에 두었다. 같은 발을 다시 든 실패 시도 2개는 폐기했다.
+- `scripts/build-veteran-frames.mjs`가 1186×1326 RGBA 원본 6개에서 발 y=415를 맞춘 2280×425 투명 아틀라스를 만든다. `--check` 통과, Node 테스트 3/3, diff check 통과. 학습노트에 생성 실패·알파·기준선·검증 이유를 기록했다.
+- **T01 `in_progress`**: 사용자 육안 승인 전이므로 완료/커밋/포인터 전진 없음. 게임 연결·배포도 없음. 기존 dirty 사용자 변경과 원래 P03-T03은 그대로 보존한다.
+
+## Latest checkpoint — 2026-09-29 베테랑 승인 시안 제작 우선
+- 사용자 선택: 승인한 [베테랑 멘토 시안](../docs/art/proposals/veteran-mentor-concept-v1.png)의 게임용 걷기·위험·넘어짐 제작을 원래 iOS 검증보다 우선한다.
+- [결정](./decisions/2026-09-29-veteran-mentor-art.md)과 [계획](./plans/2026-09-29-veteran-mentor-sprite.md), 단일 P01의 T01~T03 청사진을 작성했다. **이번 계획 단계에서는 이미지·런타임 코드를 수정하지 않았다.**
+- 이전 Active Task `2026-09-21-close-call-nyang/P03-release/T03-ios-build-validation.md`는 `in_progress`로 보존하고 베테랑 P01 완료 후 복귀한다. 기존 dirty 파일·사용자 `test` 및 원격 배포/제출 상태를 변경하지 않았다.
+
+## Latest checkpoint — 2026-09-28 성실한 렉돌 로컬 구현 완료
+- T01 `55b72ff`, T02 `19b0a79`: 승인 시안·투명 걸음2장·`diligent` 전용 스프라이트·학습노트 완료. 기본 rookie·베테랑, 해금/저장·물리/랭킹 규칙 불변.
+- Jest687/687(48), 캐릭터 브라우저3/3, typecheck, ranked:check, 프레임 재현, 웹 export 통과. 별도 레이아웃 WAV5개 가정은 실제4개라 실패(옛 위험 효과음 제거 후 테스트 부채); 캐릭터 범위밖으로 남김.
+- 로컬 `dist`만 생성했다. 공식 웹·TestFlight 재배포와 iPhone 실기기 FPS/손맛은 미확인. 원래 P03-T03 출시 검증으로 복귀하며 기존 dirty P03 문서·사용자 `test` 보존.
+
+## Latest checkpoint — 2026-09-28 성실한 냥대리 렉돌 작업 시작
+- 사용자 승인: 렉돌 한 명만, 크림/연회색 털·파란 눈·연보라 카디건·흰 블라우스·작은 리본. 시안 승인 뒤 게임용 걷기 제작을 요청했다.
+- Active Task는 아래 `2026-09-28-diligent-ragdoll/P01-character/T01-game-art.md`. 기존 P03 출시 T03 iOS 검증은 미완료로 보존하며 이 캐릭터 작업 뒤 복귀한다. 기존 dirty P03 문서와 `test`를 건드리거나 이번 커밋에 넣지 않는다.
+
+## Latest checkpoint — 2026-09-28 닉네임 첫 안내 구현 완료
+- Source commit8ac885a. 첫홈 안내/나중에 로컬 저장/결과의 다음도전 안내와 기존닉네임편집기 연결. 관련38/5스위트, 전체686/48스위트, typecheck/ranked8/release7/diff-check통과. 학습노트·QA기록완료.
+- nickname-onboarding/P01-T01 done. 원래 P03-release/T03-ios-build-validation in_progress로 복귀. 기존4번 TestFlight는 이번 코드 미포함, 새 빌드/웹재배포 미실행. 사용자 test 및 기존 P03 dirty 보존. iPhone 키보드/동작·본 기능 실제운영검증은 미확인.
+- 범위밖 발견: 설정 효과음 설명에 제거된 위험 소리 문구 잔존. 이번 작업에서 미수정.
+
+## Latest checkpoint — 2026-09-28 닉네임 안내 계획 완료 (코드 미변경)
+- 사용자확정: 첫홈1회 선택형안내, 나중에 후 자동재등장없음, 결과미설정안내+다음도전부터참여문구. 결정/계획/단일P01-T01청사진 저장. Active Task는 nickname-onboarding/T01 pending.
+- 독립AsyncStorage이력, 기존입력창재사용, guest와loading/offline구분, 서버소급등록없음. 앱소스/테스트/배포 아직변경안함. 다음 실행은 아래청사진 기준.
+- 기존 dirty P03-T03/phase 및 사용자test 보존·커밋제외. 기존TestFlight4상태확인은 사용자담당 유지. 구현완료후 원래P03-T03로복귀, 보상캐릭터는별도.
+
 ## Latest checkpoint — 2026-09-28 위험 소리 제거 build4 제출 예약
 - 사용자 새빌드 승인, 이후 설치 가능 여부는 직접 확인 요청. Source d8e8dbd14107670e7b08ac1fcab2c90175a746bd(6c2bd59포함),1.0.0(4),build f8d4ccb3-edc9-41af-99a9-11843efc33a3,submit eb4df011-0fc4-4f21-8569-8f92218306ae 생성/예약 접수. 클라우드 FINISHED/Apple처리/기기QA는 미확인. 사용자 요청에 따라 반복 모니터링 안 함.
 - AudioT02는 사용자 변경한 제출예약/전달 범위 완료, 원래 P03-T03 nativeQA로 복귀. 기존build3 및submit3 FINISHED 재조회. 이번release7/ranked8/env10/archive201+8hash/private0/운영GET200rulesmatch; 직전Jest676/types. 소스/서명/광고/요금제 변경없음, AppReview/push/웹재배포 없음.
@@ -107,17 +165,29 @@
 - Fresh GitHub read-only preflight: public repo JEONG-INSOO/close-call-nyang, main branch; Pages endpoint404, repository variables empty. No publish/configuration changes. Network works with permitted execution outside the sandbox; historical blanket connectivity blockers are superseded.
 - T03 remains in_progress. Next: Usage/backup-restore evidence and remaining operational checks; then Pages configuration/deploy and public-origin browser verification. Expo Go/iPhone/Hermes handoff remains P03. Live no-click browser retry is now verified; do not repeat account creation just to re-establish this result.
 
+## Latest checkpoint — 2026-09-29 결과·홈 UI T01 완료
+- 사용자 결정대로 결과 화면은 민트색 ‘다시 도전’ 첫째, ‘처음으로’ 둘째, 사용 가능한 경우 가상광고 부활 셋째만 표시한다. 홈 서비스는 랭킹·캐릭터·설정만 표시하고 첫 닉네임은 환영 안내 또는 미등록 상태의 설정에서만 만들 수 있다. 이미 등록했다면 앱의 변경 경로만 숨긴다. 서버 변경 API와 프로필 삭제, 자동 랭킹 제출·보류 처리는 유지한다.
+- `323801d`에 이번 UI 코드·테스트·학습 기록을 한정해 커밋했다. Jest 49/691, typecheck, ranked:check, release 7/7, 격리 웹/fixture export, Playwright phone-landscape 6/6 통과. 실제 Expo Go/iPhone·TestFlight 재빌드/설치는 미실행. 이미 제출한 1.0.0(5)에는 이 UI가 없다.
+- 새 UI 계획 P01-T01 완료 후 Active Task를 보존된 베테랑 P01-T03로 복귀한다. 기존 iOS P03-T03도 별도 `in_progress`이고, 관련 미커밋 파일과 사용자 파일 `test`를 보존한다. 이 커밋을 푸시하거나 공식 사이트·TestFlight를 재배포하지 않았다.
+
+## Latest checkpoint — 2026-09-29 성실한 냥대리 iOS 아이콘 T01 완료
+- 사용자 선택에 따라 성실한 렉돌 냥대리의 얼굴·파란 눈·분홍 리본을 연보라 배경의 1024px iOS 앱 아이콘으로 적용했다. 이미지 생성 원본과 최종 PNG를 분리하고 웹 파비콘/게임 스프라이트는 유지했다.
+- `e809381`: branding:render/verify, release 8/8, typecheck, diff-check, 1024/64px 육안 확인, 웹 파비콘 SHA-256 불변. 실제 새 TestFlight/iPhone 설치·App Store 표시와 푸시/배포는 미실행이다.
+- 아이콘 Task 완료 후 Active Task를 보존된 베테랑 P01-T03로 복귀한다. 원래 iOS P03-T03도 별도 미완료이고 기존 미커밋 변경은 보존한다.
+
 ## Active Plan
-[베테랑 냥대리 승인 시안의 게임 적용](./plans/2026-09-29-veteran-mentor-sprite.md)
+[App Store 공개 심사 준비](./plans/2026-09-29-app-store-review-prep.md)
 
 ## Active Phase
-[P01 베테랑 냥대리 게임 외형](./phases/2026-09-29-veteran-mentor-sprite/P01-character/phase.md)
+[P01 출시 자료·소스 준비](./phases/2026-09-29-app-store-review-prep/P01-readiness/phase.md)
 
 ## Active Task
-[T03 베테랑 웹·Expo Go 시각 검증과 학습 기록](./phases/2026-09-29-veteran-mentor-sprite/P01-character/T03-veteran-qa.md)
+[T02 지원·개인정보 안내 공개 페이지](./phases/2026-09-29-app-store-review-prep/P01-readiness/T02-public-pages.md)
 
 ## Status
-- Active status: `in_progress` (veteran P01-T03; T01 원본/아틀라스 및 T02 런타임 연결 완료). 원래 P03-T03 출시·기기 검증은 보존된 `in_progress` 작업이다.
+- Active status: `in_progress` (app-store-review-prep P01-T02). T01은 `838d7c1`로 완료했다. 베테랑 P01-T03와 원래 P03-T03 출시·기기 검증은 보존된 `in_progress` 작업이다. 성실한 냥대리 앱 아이콘 P01-T01은 `e809381`로 완료했다.
+- Historical checkpoint: 원래 P03-T03 nativeQA. 렉돌 P01-T01/T02는 `55b72ff`/`19b0a79`로 로컬 완료. 새 소스의 웹·iOS 재배포는 별도 확인 필요.
+- Historical checkpoint: 원래 P03-T03 nativeQA. 닉네임 안내 T01은8ac885a로 완료. 사용자 build4 확인담당은 유지하되 이번 기능은 build4에 미포함.
 - Latest completed request (2026-09-22): rookie를 생성 이미지 PNG 부품(우측 3/4, 다리·팔 절반, 표정 평소/위험40도/넘어짐)으로 교체, commit 5cf570d. [결정](./decisions/2026-09-22-side-view-walk.md), [학습노트](../docs/learning-notes/2026-09-22-side-view-walk.md). Jest650, Chromium34pass/11skip/0fail(3.4min), rules f7245064c9459310 불변, 4173=dist index-298ee86edf82ff1bbdd0079e1339a79f.js. 보상 2종은 P02(시트 필요). 사용자 요청: 다른 사람이 테스트할 환경(예/아니오만 답함=네) — 방식 미정.
 - Latest completed request: 정면 연결 걷기 T01 커밋 7f6173f (Jest650, fullbrowser34pass/11skip/0fail 3.9min, 4173=dist index-d7faa3a667dbf16d952226333ed3dcd8.js). 옆모습 재설계 전 되돌아올 기준점.
 - Latest completed request: 승인된 회색 태비 신입사원 기본 rookie 구현 완료, source commit ce13976. 큰 밝은 눈·미소·회색 줄무늬·정장·사진/ID001 목걸이 사원증·맨발 젤리. 보상 두 종/해금/물리/15%커피 유지. 동일 SVG의 걷기/물병/달리기/메모 시트와 승인 원본을 docs/art에 저장. [학습노트](../docs/learning-notes/2026-09-22-grey-tabby-rookie.md).
@@ -158,6 +228,11 @@
 - T01 Pages CI gate 구현·검증 완료. Production bundle 검사 통과, typecheck/ranked/Jest/ranking/Playwright 통과. T02 원격 GitHub 인증/production backend preflight로 이동.
 
 ## Next Step (IMPORTANT)
+현재 최우선: `2026-09-29-app-store-review-prep/P01-readiness/T02-public-pages.md`에 따라 한·영 지원·개인정보 페이지와 export/검증 흐름을 구현하고 로컬·공개 HTTP 결과를 구별해 기록한다. 아래 지시는 과거 기록이다. 실기기 증거가 없는 이전 T03는 미완료로 유지하며 캡처는 최신 TestFlight 원본을 사용자에게 받아 확인한다.
+현재 최우선: `2026-09-29-veteran-mentor-sprite/P01-character/T03-veteran-qa.md`에 따라 웹/Expo Go에서 네 걸음, 위험·넘어짐, 컵, 보호, 프레임 손맛을 실제로 확인한다. T01 원본 네 장을 임의 수정하지 않는다. 아래 T02/이전 지시는 과거 맥락이다.
+현재 최우선: `2026-09-29-veteran-mentor-sprite/P01-character/T02-veteran-renderer.md`를 읽고 승인한 6칸 아틀라스를 `veteran` 장면에 연결하며 기존 SVG 가정을 테스트에서 교체한다. 01·03 오른발 반복은 사용자 승인대로 수정하지 않는다. 원래 P03-T03으로의 복귀는 베테랑 P01 완료 뒤이며, 아래 지시들은 모두 과거 맥락이다.
+닉네임 안내 구현은8ac885a로 완료했다. 이전 P03-T03 실기기 검증은 계속 미완료다. 사용자가 다음 요청을 주면 실제 기기 결과 및 보상 캐릭터 후속 범위를 확인한다. 아래 닉네임 구현 지시는 완료된 과거 기록으로 대체된다.
+최우선: nickname-onboarding/P01-onboarding/T01-nickname-onboarding.md를 읽고 memory-execute 단계로 구현·검증·커밋한다. 이 아래 배포 지시는 과거 맥락이며 닉네임 작업을 대신하지 않는다.
 최신 지시: 사용자가1.0.0(4) 표시/설치 상태를 확인한다. 다음 요청 또는 실제기기 결과를 받아 P03-T03 QA를 이어간다. 아래 이전 build3 모니터링 지시는 이 최신 지시로 대체하며 자동 재제출하지 않는다.
 먼저 기존 build3 제출 상태를 확인한다. 위험 효과음 제거6c2bd59는 build3에 포함되지 않는다. 사용자가 업데이트를 요청하면 해당 소스를 포함한 새 빌드/제출을 별도 추적하며, 과거 build3 업로드를 새 변경 배포로 혼동하지 않는다.
 Monitor audio build32b1ca9b-eb95-4fc1-b675-b8d1c0144500 and submissiona0bcb412-bc2c-4453-b9b1-2fae40536107. On bothFINISHED recordactualtimes, completeaudioT02uploadonly, returnoriginalP03-T03physicalQA. TestFlightversion1.0.0(3) mustbeverifiedonphone; build2doesnotcontainaudiofix. No GitHubpush/AppReview/ads/ruleschanges. Previous release dirtyrecords arepreservedforreconciliation; neverclaimavailablefromscheduledalone.
