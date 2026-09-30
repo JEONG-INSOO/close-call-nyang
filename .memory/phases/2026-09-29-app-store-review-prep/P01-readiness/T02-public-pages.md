@@ -19,6 +19,7 @@
   - `scripts/export-web.mjs` :: Expo export 완료 후 공개 페이지를 `dist`의 대응 경로에 안전 복사하는 빌드 흐름; modify
   - `scripts/verify-web.mjs`, `scripts/verify-web.test.mjs` :: base path·내용/링크·민감 정보 미포함 검사; modify
   - `.github/workflows/deploy-pages.yml` :: 기존 Pages export/verify 흐름과 정적 페이지 연결; modify only if necessary
+  - `e2e/helpers.ts`, `e2e/nickname-onboarding.spec.ts` :: 배포 CI의 실제 운영 구성에서 첫 안내가 옛 gameplay tests를 가리는 회귀를 복구; modify/new after reproduction, 앱 구현/보상 값은 변경하지 않음
   - `store/privacy-inventory.md` :: 데이터 처리의 기존 근거; read-only, 불일치 시 근거 기록
   - `src/online/client.ts`, `supabase/functions/leaderboard-api/handler.ts`, `supabase/migrations/202609210001_leaderboard.sql` :: 실제 데이터/삭제 흐름; read-only
 - **Signatures & Types**: 정적 경로 `support/index.html`, `privacy/index.html`은 UTF-8 HTML. 빌드 헬퍼를 추가하면 `copyPublicPages({sourceRoot:string, outputRoot:string, basePath:string}): Promise<void>`처럼 입력·출력을 명시하고 같은 위치 외 복사를 거부한다. 배포 루트는 `GITHUB_PAGES`일 때 `/close-call-nyang/`을 사용한다.
@@ -56,8 +57,10 @@
 - 최초 Node 테스트 문법 오류(동기 throws 콜백 안 await) 교정 후 재실행 통과. 알려진 비밀·HTML 안전 패턴 검사는 법률/전면 보안 인증이 아니다.
 - 사용자가 이번 커밋의 main push 및 공식 사이트 재배포를 명시 승인했다. 기존 인증/Pages workflow·공개 CI 변수 이름 확인. 배포 및 실제 원격200는 아직 pending이므로 Status는 in_progress다.
 - 범위 밖 발견: 앱 개인정보 링크 없음/랭킹 지원은 GitHub 문의. 새 TestFlight 후 캡처 확보라는 계획 의존성도 후속 정리가 필요하다. 학습노트에 남기고 앱 소스는 이번 Task에서 바꾸지 않았다.
+- 배포 CI의 browser 단계가 오래 실행되어 운영 설정 로컬에서 held-keyboard test를 15초 제한으로 재현: 첫 닉네임 안내 modal이 시작 버튼을 가려 click timeout. 이전 local-only 빌드는 welcome이 없어 통과했다. 배포 검증 복구에 필요한 test-only 조정으로 공통 gameplay fixture는 returning guest로 준비하고, 실제 ‘나중에’ 클릭/저장/reload/시작/가입 쓰기0는 별도 synthetic-configured test로 검증한다. 실제 게임 안내·인증·캐릭터/점수는 바꾸지 않는다.
 
 ## Learning
+- CI 첫 실행 `36653859313`는 stale onboarding helper로 지연되어 cancelled 확인했다. 테스트만 수정한 후 운영 구성 전체 Playwright는 46 passed/11 환경별 intentional skips, 3.8m. 실제 새 CI/원격200는 재배포 후 검증한다.
 - 개념: 데이터 수집 고지, 공급자와 운영자 역할, 정적 페이지를 앱 번들 배포에 붙이는 방법.
 - 예상 디버깅: GitHub Pages의 프로젝트 base path 누락, SPA가 `/privacy/`를 404로 처리, 캐시된 이전 배포.
 - 복습 질문: HTML 파일 존재만으로 지원 URL이 유효하다고 할 수 없는 이유는? 익명 로그인도 왜 데이터 처리인가? 서버 삭제와 로컬 삭제는 어떻게 다른가?

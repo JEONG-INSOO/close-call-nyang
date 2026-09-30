@@ -16,6 +16,12 @@ export const test = base.extend<{ cleanPage: Page }>({
       // Navigation/unmount can cancel media; exempt ERR_ABORTED without classifying its cause.
       if (request.failure()?.errorText !== 'net::ERR_ABORTED') errors.push(`request: ${request.url()} ${request.failure()?.errorText}`);
     });
+    // Gameplay/layout scenarios represent a returning guest. First-launch onboarding
+    // has its own real-click regression; this does not create a profile or unlock rewards.
+    await page.addInitScript(() => {
+      const key = 'close-call-nyang.nickname-onboarding.v1';
+      if (localStorage.getItem(key) === null) localStorage.setItem(key, JSON.stringify({ schemaVersion: 1, handled: true }));
+    });
     await use(page);
     await testInfo.attach('browser-log', { body: JSON.stringify({ errors, warnings }, null, 2), contentType: 'application/json' });
     expect(errors, 'No unhandled app errors, missing assets or failed requests').toEqual([]);
