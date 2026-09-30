@@ -15,13 +15,14 @@
 ## Phases
 
 ### 2026-09-30 순서 보강
+- 사용자 [TestFlight 우선 요청](../decisions/2026-09-30-testflight-first.md)에 따라 최신 소스의 P02-T01 전달을 먼저 실행한다. P01-T03은 pending 보존. 서명·아카이브·QA 게이트는 유지하고 스토어 설명/심사 제출은 실행하지 않는다.
 - 공개 페이지 T02 완료 후 사용자 승인 [앱 정책 링크 단일 Task](./2026-09-30-store-policy-links.md)를 먼저 실행하고 이 계획 P01-T03로 복귀한다. 웹 게시만으로 앱 안의 개인정보 접근 경로가 생기지는 않는다.
 - P01-T03는 소개 초안·승인된 운영 입력·촬영 계약 준비까지다. 실제 최신 원본 캡처는 P02-T01의 새 빌드 후 P02-T02에서 확보·검증하고 최종 소개/제출 자료 승인은 P02-T03에서 확인한다. 원래 최종 승인 게이트를 유지하되 캡처가 빌드보다 먼저 필요했던 순환 의존성을 제거한다.
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
 | P01 | `in_progress` | 소스·QA 고정, 공개 지원/개인정보 페이지, 한·영 스토어 자료 | [P01](../phases/2026-09-29-app-store-review-prep/P01-readiness/phase.md) |
-| P02 | `pending` | 새 서명 빌드·TestFlight/기기 QA·App Store Connect 심사 직전 설정 | [P02](../phases/2026-09-29-app-store-review-prep/P02-ios-delivery/phase.md) |
+| P02 | `in_progress` | 사용자 요청으로 새 TestFlight 전달 우선, 심사·문구 승인은 별도 | [P02](../phases/2026-09-29-app-store-review-prep/P02-ios-delivery/phase.md) |
 
 ## Exit condition
 

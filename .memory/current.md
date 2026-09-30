@@ -1,5 +1,9 @@
 # Current Context
 
+## Latest checkpoint — 2026-09-30 TestFlight 업로드 우선 요청
+- 사용자가 최신 코드의 TestFlight 배포를 명시 요청했다. 스토어 초안 P01-T03은 pending 보존하고 P02-T01 전달을 먼저 실행한다. 기존 Expo 계정 insoojeong 정상, 최신 원격 iOS build5 FINISHED이며 진행 중 중복 빌드는 없다.
+- 최신 정책 링크/아이콘/캐릭터가 포함된 고정 소스→archive 검사→새 build 한 개→정확한 ID submit. Apple 처리/기기 QA는 별도이며 App Review/공개/외부 초대/웹재배포/push는 요청 범위가 아니다. 기존 dirty 파일 보존.
+
 ## Latest checkpoint — 2026-09-30 앱 링크 T01 완료, 스토어 초안 T03 복귀
 - `089c8bd`: 설정 하단 privacy/support, 랭킹 지원의 공통 공식 주소, 안전한 링크 오류·중복·close 경계, EAS 정적 소스 제외 완료. 관련41/전체700(50 suites)/타입/ranked8/release8/웹 링크3 통과. local-only 격리 export/env8·작은 가로 캡처 확인. 게임/서버/저장/닉네임 정책 불변.
 - 링크 단일 Task/Phase done. 원래 공개 심사 준비 P01-T03의 한·영 초안·승인된 운영 입력·촬영 계약으로 복귀한다. 소개는 draft 유지, 최신 iPhone 캡처와 최종 승인 게이트는 새 TestFlight 뒤 P02에서 확인한다.
@@ -194,13 +198,13 @@
 [App Store 공개 심사 준비](./plans/2026-09-29-app-store-review-prep.md)
 
 ## Active Phase
-[P01 출시 자료·소스 준비](./phases/2026-09-29-app-store-review-prep/P01-readiness/phase.md)
+[P02 iOS 전달·심사 준비](./phases/2026-09-29-app-store-review-prep/P02-ios-delivery/phase.md)
 
 ## Active Task
-[T03 한·영 스토어 자료와 캡처 준비](./phases/2026-09-29-app-store-review-prep/P01-readiness/T03-store-assets.md)
+[T01 새 iOS 빌드와 정확한 TestFlight 업로드](./phases/2026-09-29-app-store-review-prep/P02-ios-delivery/T01-eas-build-upload.md)
 
 ## Status
-- Active status: `pending` (app-store-review-prep P01-T03). 원래 출시 P01-T01/T02와 policy-links P01-T01은 완료했다. 베테랑 P01-T03와 원래 P03-T03 출시·기기 검증은 보존된 `in_progress` 작업이다.
+- Active status: `in_progress` (app-store-review-prep P02-T01; 사용자 TestFlight 요청 우선). P01-T03 pending 보존. 이전 베테랑/원래 iOS QA 미완료도 보존한다.
 - Historical checkpoint: 원래 P03-T03 nativeQA. 렉돌 P01-T01/T02는 `55b72ff`/`19b0a79`로 로컬 완료. 새 소스의 웹·iOS 재배포는 별도 확인 필요.
 - Historical checkpoint: 원래 P03-T03 nativeQA. 닉네임 안내 T01은8ac885a로 완료. 사용자 build4 확인담당은 유지하되 이번 기능은 build4에 미포함.
 - Latest completed request (2026-09-22): rookie를 생성 이미지 PNG 부품(우측 3/4, 다리·팔 절반, 표정 평소/위험40도/넘어짐)으로 교체, commit 5cf570d. [결정](./decisions/2026-09-22-side-view-walk.md), [학습노트](../docs/learning-notes/2026-09-22-side-view-walk.md). Jest650, Chromium34pass/11skip/0fail(3.4min), rules f7245064c9459310 불변, 4173=dist index-298ee86edf82ff1bbdd0079e1339a79f.js. 보상 2종은 P02(시트 필요). 사용자 요청: 다른 사람이 테스트할 환경(예/아니오만 답함=네) — 방식 미정.

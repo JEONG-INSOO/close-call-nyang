@@ -1,12 +1,13 @@
 # Task: T01 새 iOS 빌드와 정확한 TestFlight 업로드
 
-## Status: pending
+## Status: in_progress
 
 ## Goal
 
 P01에서 고정한 소스·공개 환경으로 새 아이콘이 들어간 서명 iOS 빌드를 만들고, 그 정확한 build ID만 기존 App Store Connect 앱으로 업로드한다.
 
 ## Decision Summary
+- 2026-09-30 사용자가 최신 앱을 TestFlight에 올려 테스트하도록 명시 요청했다. P01-T03 메타데이터는 pending 유지하고 이 Task를 우선한다. 소개/실제 캡처/심사 승인 게이트는 후속에 유지한다.
 - Expo Go는 개발 검사이며 App Store IPA가 아니다. 기존 1.0.0(5)의 FINISHED는 새 아이콘/UI의 제출 증거가 아니다.
 - EAS project `315e87a2-f405-4f65-ae45-c91f1d2c59bf`, iOS bundle `com.mocca.closecallnyang`, ASC app `6815771701`, team `S9RLQ8474U`를 기존 검증값으로 사용하되 CLI readback으로 다시 확인한다. 키/토큰은 출력·커밋하지 않는다.
 
@@ -18,13 +19,15 @@ P01에서 고정한 소스·공개 환경으로 새 아이콘이 들어간 서�
   - `eas.json` :: `build.production`, `submit.production`; read-only unless verified mismatch
   - `.easignore` :: 업로드 경계; modify only if confidential input leaks
   - `store/release-state.json` :: 기존 상태·새 빌드/제출 사실; modify after evidence
+  - `store/build-history/2026-09-29-build5.json` :: 현재 dirty release-state의 이전 빌드 사실을 원형 보존; new before replacing current state
+  - `docs/learning-notes/2026-09-30-testflight-upload.md` :: archive와 source 대응·실제 build/submission 증거; new
   - `docs/ios-release.md`, `docs/learning-notes.md` :: 빌드/업로드 차이와 결과; modify selectively
 - **Signatures & Types**: `ReleaseState` 기존 schemaVersion 1 필드 유지. 새 값은 `sourceCommit:string`, `sourceSnapshot:'clean_committed'`, `easBuildId:string`, `buildNumber:string`, `submissionId:string|null`, `testflightStatus:string`, `reviewStatus:'not_started'` 등 기존 JSON 타입/키를 바꾸지 않고 기록한다.
 - **Data & Schema Fields**: production의 공개 변수는 `EXPO_PUBLIC_SUPABASE_URL` 운영 ref `fgojrxmpxpzdiwsktjsx`와 `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`만 필요. mock ad/replay 진단은 false. 서비스 키·개인 `.env`는 아카이브 금지.
 - **Execution Flow / Logic**:
   1. P01 소스 커밋과 작업 트리의 잔여 변경을 비교하여 EAS가 업로드할 파일의 바이트/해시가 고정 소스와 일치하는지 확인한다. 아카이브에 현재 무관 더티 파일이 들어가면 빌드하지 않고 별도 안전한 소스 스냅샷을 마련한다.
   2. EAS 계정·프로젝트·운영 공개 변수 존재만 조회한다(값·토큰 출력 금지). 기존 서명/프로비저닝과 App Store Connect 앱을 조회한다. 인증 실패는 사용자가 공식 로그인 화면에서 해결한다.
-  3. `npx.cmd --yes eas-cli@24.7.0 build --platform ios --profile production --non-interactive --wait`로 새 빌드 하나를 생성한다. 완료된 ID/버전/번호와 source commit을 기록한다. 실패면 수정 후 **새 빌드 ID**를 구분한다.
+  3. 검증된 로컬 `output/eas-cli-tools/node_modules/.bin/eas.cmd`(24.7.0; npx 동일 버전의 대안)를 사용해 `build --platform ios --profile production --non-interactive --freeze-credentials --wait`로 새 빌드 하나를 생성한다. 완료된 ID/버전/번호와 source commit을 기록한다. 실패면 수정 후 **새 빌드 ID**를 구분한다. 출력에는 고정 metadata만 남기고 JSON의 서명된 로그 URL/환경 값은 출력하지 않는다.
   4. 정확한 성공 ID를 `npx.cmd --yes eas-cli@24.7.0 submit --platform ios --profile production --id <verified-build-id> --non-interactive --wait --no-auto-testflight-setup`에 전달한다. CLI 옵션은 실제 버전 help로 검증하고 기존 앱 외 새 앱/테스터 그룹을 만들지 않는다. App Review 제출은 하지 않는다.
   5. EAS build FINISHED와 submission FINISHED, Apple 처리·설치 상태는 서로 다른 필드/근거로 저장한다.
 - **Error & Exception Handling**: EAS/Apple 401, 네트워크 지연, 서명 오류는 `blocked` 또는 실패로 기록하고 비밀번호/2FA를 채팅에서 받지 않는다. Apple 연결이 안 되면 성공을 추측하지 않고 상태 조회만 재시도한다. 기존 인증서를 임의 폐기·교체하지 않는다.
