@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { ko } from '../i18n/ko';
+import { PUBLIC_LINKS } from '../config/publicLinks';
 import { hidePlayer, loadBlockedPlayers } from '../online/blockedPlayers';
 import type { LeaderboardEntry, LeaderboardResponse, PlayerProfile, ReportReason } from '../online/contracts';
 import { onlineErrorMessage, type RankingApi } from '../online/types';
@@ -13,7 +14,6 @@ export interface LeaderboardScreenProps {
   onClose(): void; refreshKey?: number;
 }
 
-const SUPPORT_URL = 'https://github.com/JEONG-INSOO/close-call-nyang/issues';
 const REFRESH_COOLDOWN_MS = 3000;
 const REPORT_REASONS: readonly { value: ReportReason; label: string }[] = [
   { value: 'inappropriate', label: ko.reportInappropriate },
@@ -97,7 +97,7 @@ export function LeaderboardScreen({ visible = true, api, myProfile, onClose, ref
   };
 
   const openSupport = async () => {
-    try { await Linking.openURL(SUPPORT_URL); }
+    try { await Linking.openURL(PUBLIC_LINKS.support); }
     catch { setNotice(ko.supportUnavailable); }
   };
 

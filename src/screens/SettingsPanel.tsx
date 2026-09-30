@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Linking, Modal, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ko } from '../i18n/ko';
+import { PUBLIC_LINKS } from '../config/publicLinks';
 import type { Settings } from '../services/preferences';
 import { palette, ui } from '../theme/tokens';
 import { onlineStyles as online } from './onlineStyles';
@@ -56,13 +57,32 @@ export function SettingsPanel({ visible, settings, onChange, onClose, nickname, 
   deleting = false, onlineError }: SettingsPanelProps) {
   const [confirming, setConfirming] = useState(false); const [localBusy, setLocalBusy] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null); const locked = useRef(false);
+  const [linkError, setLinkError] = useState<string | null>(null);
+  const [openingLink, setOpeningLink] = useState(false); const linkLocked = useRef(false);
   const active = useRef(false); const generation = useRef(0);
   useEffect(() => {
     active.current = visible;
-    if (!visible) { generation.current += 1; setConfirming(false); setDeleteError(null); setLocalBusy(false); }
+    if (!visible) {
+      generation.current += 1; setConfirming(false); setDeleteError(null); setLocalBusy(false);
+      linkLocked.current = false; setOpeningLink(false); setLinkError(null);
+    }
     return () => { active.current = false; };
   }, [visible]);
   const busy = deleting || localBusy;
+  const openPublicPage = async (url: string): Promise<void> => {
+    if (!active.current || busy || linkLocked.current) return;
+    const operation = generation.current;
+    linkLocked.current = true; setOpeningLink(true); setLinkError(null);
+    try { await Linking.openURL(url); }
+    catch {
+      if (active.current && operation === generation.current) setLinkError(ko.publicPageUnavailable);
+    } finally {
+      // A response from a closed panel must not unlock a new panel's pending operation.
+      if (active.current && operation === generation.current) {
+        linkLocked.current = false; setOpeningLink(false);
+      }
+    }
+  };
   const remove = async () => {
     if (!onDeleteProfile || locked.current || busy) return;
     locked.current = true; setLocalBusy(true); setDeleteError(null);
@@ -127,6 +147,20 @@ export function SettingsPanel({ visible, settings, onChange, onClose, nickname, 
           </Pressable>
         </View>}
       </View>}
+      <View style={styles.onlineSection}>
+        <Text accessibilityRole="header" style={online.label}>{ko.publicPages}</Text>
+        {linkError && <Text testID="settings-link-error" accessibilityRole="alert" style={online.error}>{linkError}</Text>}
+        {([
+          { key: 'privacy', title: ko.privacyPolicy },
+          { key: 'support', title: ko.supportPage },
+        ] as const).map(link => <Pressable key={link.key} testID={`settings-${link.key}`}
+          accessibilityRole="link" accessibilityLabel={link.title} disabled={busy || openingLink}
+          accessibilityState={{ disabled: busy || openingLink, busy: openingLink }}
+          onPress={() => { void openPublicPage(PUBLIC_LINKS[link.key]); }}
+          style={({ pressed }) => [online.button, (busy || openingLink) && online.disabled, pressed && online.pressed]}>
+          <Text style={online.buttonText}>{link.title}</Text>
+        </Pressable>)}
+      </View>
     </ServicePanelFrame>
   );
 }

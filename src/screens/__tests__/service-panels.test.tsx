@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Platform } from 'react-native';
+import { Linking, Platform } from 'react-native';
+import { PUBLIC_LINKS } from '../../config/publicLinks';
 import { CHARACTERS } from '../../characters/catalog';
 import { ko } from '../../i18n/ko';
 import type { Settings } from '../../services/preferences';
@@ -15,6 +16,91 @@ jest.mock('react-native-svg', () => {
 });
 
 const settings: Settings = Object.freeze({ musicEnabled: true, sfxEnabled: true, hapticsEnabled: true, reduceMotion: false });
+
+describe('Settings public document links (mocked OS browser)', () => {
+  beforeEach(() => { jest.spyOn(Linking, 'openURL').mockReset().mockResolvedValue(undefined); });
+  afterEach(() => { jest.restoreAllMocks(); });
+  const props = { settings, onChange: jest.fn(), onClose: jest.fn() };
+  const panel = (visible = true, extra = {}) => <SafeAreaProvider><SettingsPanel {...props} visible={visible} {...extra} /></SafeAreaProvider>;
+
+  it.each([undefined, '성실한 냥대리'])('exposes both links without opening anything on render, nickname=%s', async nickname => {
+    await render(panel(true, { nickname }));
+    expect(screen.getByRole('link', { name: ko.privacyPolicy })).toBeEnabled();
+    expect(screen.getByRole('link', { name: ko.supportPage })).toBeEnabled();
+    expect(Linking.openURL).not.toHaveBeenCalled();
+    await fireEvent.press(screen.getByTestId('settings-privacy'));
+    expect(Linking.openURL).toHaveBeenLastCalledWith(PUBLIC_LINKS.privacy);
+    await fireEvent.press(screen.getByTestId('settings-support'));
+    expect(Linking.openURL).toHaveBeenLastCalledWith(PUBLIC_LINKS.support);
+    expect(Linking.openURL).toHaveBeenCalledTimes(2);
+  });
+
+  it('locks both links until the OS call finishes', async () => {
+    let resolve!: () => void;
+    jest.mocked(Linking.openURL).mockReturnValueOnce(new Promise<void>(done => { resolve = done; }));
+    await render(panel());
+    await fireEvent.press(screen.getByTestId('settings-privacy'));
+    expect(screen.getByTestId('settings-support')).toBeDisabled();
+    await fireEvent.press(screen.getByTestId('settings-support'));
+    await fireEvent.press(screen.getByTestId('settings-privacy'));
+    expect(Linking.openURL).toHaveBeenCalledTimes(1);
+    await act(async () => resolve());
+    expect(screen.getByTestId('settings-support')).toBeEnabled();
+  });
+
+  it('shows a safe independent error and permits retry without clearing online errors', async () => {
+    jest.mocked(Linking.openURL).mockRejectedValueOnce(new Error('private-session-secret'));
+    await render(panel(true, { onlineError: ko.deleteOnlineRetry }));
+    await fireEvent.press(screen.getByTestId('settings-support'));
+    expect(screen.getByTestId('settings-link-error')).toHaveTextContent(ko.publicPageUnavailable);
+    expect(screen.getByText(ko.deleteOnlineRetry)).toBeOnTheScreen();
+    expect(screen.queryByText('private-session-secret')).toBeNull();
+    await fireEvent.press(screen.getByTestId('settings-support'));
+    expect(screen.queryByTestId('settings-link-error')).toBeNull();
+    expect(screen.getByText(ko.deleteOnlineRetry)).toBeOnTheScreen();
+    expect(Linking.openURL).toHaveBeenCalledTimes(2);
+  });
+
+  it('clears errors on close and ignores old completion while a reopened panel is opening a new link', async () => {
+    let rejectOld!: (cause: Error) => void; let resolveNew!: () => void;
+    jest.mocked(Linking.openURL)
+      .mockReturnValueOnce(new Promise((_done, reject) => { rejectOld = reject; }))
+      .mockReturnValueOnce(new Promise<void>(done => { resolveNew = done; }));
+    const view = await render(panel());
+    await fireEvent.press(screen.getByTestId('settings-privacy'));
+    await view.rerender(panel(false)); await view.rerender(panel());
+    expect(screen.getByTestId('settings-support')).toBeEnabled();
+    await fireEvent.press(screen.getByTestId('settings-support'));
+    await act(async () => rejectOld(new Error('stale')));
+    expect(screen.queryByTestId('settings-link-error')).toBeNull();
+    expect(screen.getByTestId('settings-privacy')).toBeDisabled();
+    await act(async () => resolveNew());
+    expect(screen.getByTestId('settings-privacy')).toBeEnabled();
+    jest.mocked(Linking.openURL).mockRejectedValueOnce(new Error('offline'));
+    await fireEvent.press(screen.getByTestId('settings-support'));
+    expect(screen.getByTestId('settings-link-error')).toBeOnTheScreen();
+    await view.rerender(panel(false)); await view.rerender(panel());
+    expect(screen.queryByTestId('settings-link-error')).toBeNull();
+  });
+
+  it('does not open a link during parent deletion or an in-flight local deletion', async () => {
+    const view = await render(panel(true, { deleting: true }));
+    await fireEvent.press(screen.getByTestId('settings-privacy'));
+    expect(screen.getByTestId('settings-support')).toBeDisabled();
+    expect(Linking.openURL).not.toHaveBeenCalled();
+    let resolve!: (result: boolean) => void;
+    const remove = jest.fn(() => new Promise<boolean>(done => { resolve = done; }));
+    await view.rerender(panel(true, { onDeleteProfile: remove }));
+    await fireEvent.press(screen.getByTestId('settings-delete-online'));
+    await fireEvent.press(screen.getByTestId('confirm-delete-online'));
+    expect(screen.getByTestId('settings-privacy')).toBeDisabled();
+    await fireEvent.press(screen.getByTestId('settings-support'));
+    expect(Linking.openURL).not.toHaveBeenCalled();
+    await act(async () => resolve(false));
+    expect(screen.getByTestId('settings-privacy')).toBeEnabled();
+    expect(screen.getByText(ko.deleteOnlineRetry)).toBeOnTheScreen();
+  });
+});
 
 describe('local service panels', () => {
   it('does not mount a hidden settings or character modal', async () => {

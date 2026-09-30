@@ -54,9 +54,9 @@
 
 ## Acceptance Criteria
 
-- [ ] guest/등록 사용자 모두 설정에 두 링크가 보이고 랭킹 문의도 같은 support를 연다.
-- [ ] 열기 실패/중복/close 경계와 기존 닉네임/삭제 회귀가 통과하고 서버·물리·저장 계약은 불변이다.
-- [ ] 타입/전체 회귀/작은 웹 화면 검증·학습노트·범위 한정 커밋. 실제 iPhone은 원래 새 TestFlight QA에서 확인한다.
+- [x] guest/등록 사용자 모두 설정에 두 링크가 보이고 랭킹 문의도 같은 support를 연다.
+- [x] 열기 실패/중복/close 경계와 기존 닉네임/삭제 회귀가 통과하고 서버·물리·저장 계약은 불변이다.
+- [x] 타입/전체 회귀/작은 웹 화면 검증·학습노트. 범위 한정 커밋은 아래 기록한다. 실제 iPhone은 원래 새 TestFlight QA에서 확인한다.
 
 ## Validation
 
@@ -65,6 +65,13 @@
 - `npm.cmd run web:export -- --output-dir output/public-links-web` — 프로세스 `EXPO_NO_DOTENV=1`/개발flag false. 운영 설정이 없으면 로컬 모드라고 기록한다.
 - `npx.cmd playwright test e2e/public-links.spec.ts --project=phone-landscape` — 위 고정 출력의 별도 서버/reuse로 실제 새 빌드를 확인한다.
 - `git -c safe.directory=D:/GrillmeEDU diff --check`/cached check.
+
+## Validation Results — 2026-09-30
+- 공통 고정 PUBLIC_LINKS, guest 조건 밖의 Settings44pt 링크, 브라우저 독립 오류/중복 ref/close generation, 랭킹 지원 공통 주소와 안내, EAS의 정적 소스 제외를 구현했다. SDK/저장/서버/게임 변경 없음.
+- 관련41/4 suites, 전체700/50 suites, 타입·ranked8(규칙 불변)·release8 통과. 최초 mock 이력/Promise 타입/텍스트 부분 matcher 실패는 테스트 준비·타입·정규식으로 교정하고 재검증했다.
+- 기존 dist 보존. EXPO_NO_DOTENV=1/모의 광고·진단 false의 output/public-links-web local-only export: JS1/assets18/정책HTML/opaque ICO, env8 통과. 운영 준비 빌드 아님.
+- 실제 desktop/844×390/667×375 브라우저3/3(7.7s), 설정 스크롤·44pt·tap→새 브라우저 정확한 URL·랭킹 같은support 확인. 외부 요청은 테스트 응답으로 가로채 쓰기0. 작은 가로 캡처 육안 확인.
+- 상세 학습노트 docs/learning-notes/2026-09-30-public-links.md. 실제 iPhone Safari복귀/새 코드웹·IPA배포는 미실행; 후속 출시에서 확인한다. 기존 효과음 설명의 옛 위험 소리 문구는 범위 밖으로 기록했다.
 
 ## Learning
 

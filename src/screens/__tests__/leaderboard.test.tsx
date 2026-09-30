@@ -1,6 +1,8 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Linking } from 'react-native';
+import { PUBLIC_LINKS } from '../../config/publicLinks';
 import { ko } from '../../i18n/ko';
 import { BLOCKED_PLAYERS_KEY } from '../../online/blockedPlayers';
 import type { LeaderboardEntry, LeaderboardResponse, PlayerProfile, ReportReason } from '../../online/contracts';
@@ -24,6 +26,20 @@ const shell = (content: React.ReactNode) => <SafeAreaProvider>{content}</SafeAre
 beforeEach(async () => { await AsyncStorage.clear(); jest.clearAllMocks(); });
 
 describe('simulated shared leaderboard UI (not hosted evidence)', () => {
+  it('opens the same official support page only on tap, with a safe failure notice', async () => {
+    const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+    try {
+      await render(shell(<LeaderboardScreen api={null} myProfile={null} onClose={jest.fn()} />));
+      expect(open).not.toHaveBeenCalled();
+      expect(screen.getByText(ko.supportNotice)).toHaveTextContent(/비밀번호·인증 코드·토큰/);
+      await fireEvent.press(screen.getByTestId('ranking-support'));
+      expect(open).toHaveBeenLastCalledWith(PUBLIC_LINKS.support);
+      open.mockRejectedValueOnce(new Error('secret-session'));
+      await fireEvent.press(screen.getByTestId('ranking-support'));
+      expect(screen.getByText(ko.supportUnavailable)).toBeOnTheScreen();
+      expect(screen.queryByText('secret-session')).toBeNull();
+    } finally { open.mockRestore(); }
+  });
   it('preserves tied server ranks and duplicate names, including own rank outside the top 30', async () => {
     const api = fakeApi();
     await render(shell(<LeaderboardScreen api={api} myProfile={profile} onClose={jest.fn()} />));

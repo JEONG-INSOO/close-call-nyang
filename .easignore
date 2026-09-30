@@ -41,6 +41,7 @@ Thumbs.db
 /e2e/
 /scripts/
 /store/
+/web-static/
 /jest.config.cjs
 /jest.setup.ts
 /playwright.config.ts
