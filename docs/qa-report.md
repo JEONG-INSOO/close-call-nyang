@@ -1,5 +1,77 @@
 # 우당탕탕 냥대리 QA 기록
 
+## 2026-09-30 · T02 범위 종료와 스토어 로그인 확인
+
+- T02는 사용자 확정 범위의 22개 passed와 삭제·재설치 2개 not_run을 기록하고 종료한다. 전체 `nativeQa`/`leaderboardQa`는 pending이며 생략 검사를 통과로 바꾸지 않는다. 기존 기록과 삭제 기능을 유지한다.
+- 로그인된 App Store Connect 배포 화면에서 1.0 제출 준비 중과 선택 가능한 1.0.0(6)을 읽기 확인했다. Apple build ID: `103a4776-f5b9-4ef1-9428-8f72ea8c1539`. 선택 창 취소, 원격 변경 없음.
+- 스토어 기본 언어 영어(미국), 스크린샷·설명·빌드 미등록, 자동 출시 기본값을 확인했다. 로컬 수동 출시 결정 적용·미확정 공개 문구·설문·최종 승인은 후속 T03에서 처리한다.
+- `node --test scripts/render-store-screenshots.test.mjs scripts/release-preparation.test.mjs`: 12/12 passed, exit 0. Fontconfig 캐시 쓰기 경고만 발생했다. 파일 검사는 실제 기기 미검증 항목을 대신하지 않는다.
+
+## 2026-09-30 · 기존 기록 보존과 격리된 삭제 검사
+
+- 최신 사용자 결정: “삭제 재설치는 하지 않고 배포하자”. 이번 릴리스의 계정 삭제·앱 재설치 테스트는 사용자 요청으로 생략한다. staging 재개·추가 계정 생성/삭제·기존 프로필 초기화를 하지 않는다. `not_run`/사용자 생략으로 남기며 통과나 기능 불필요로 처리하지 않는다. 계정 삭제 기능은 유지한다.
+- 사용자 선택: 현재 닉네임·온라인 최고기록을 보존하고 별도 테스트 데이터로 삭제 검사. 기존 TestFlight/Expo Go 저장 공간이나 프로필을 초기화하지 않는다.
+- 로컬 검사: `nickname.test.tsx`, `service-panels.test.tsx`, `api.test.ts`, `useOnlineProfile.test.tsx`, `useRankedGame.test.tsx` 5 suites / 78 tests 통과. 삭제 확인·중복 호출·실패 재시도·세션/전송 대기 처리를 mock으로 검사한 것이며 실기기나 실제 서버 삭제 통과로 취급하지 않는다.
+- 격리 서버 시도: `ranking:verify`를 staging ref `tadokcpealpwjfyjovuy`/전용 env/`--allow-test-writes`로 실행했다. 도구는 이번 실행에서 만든 임시 A/B만 삭제하며 기존 계정이나 관리자 삭제를 사용하지 않는다. 일반/네트워크 권한 재시도 모두 공개 GET에서 `NETWORK_OR_TIMEOUT`으로 중단됐다.
+- 최신 보고서: ignored `output/ranking-staging-2ce1e946-2f98-40fd-b84b-e54948cafb66.json`. `smokePassed=false`, `cleanupRequiredCount=0`, `signupResponseUncertain=false`. 계정 생성 단계에 도달하지 않았으므로 이번 임시 계정 생성/삭제 없음.
+- 원인 확인: 공개 주소 조회에서 staging `ENOTFOUND`; CLI `projects list --output json` 읽기 조회에서 staging `INACTIVE`, production `ACTIVE_HEALTHY`. 비활성 서버가 현재 외부 검사 차단 요인이다. 운영 공개 주소의 HTTP400은 정상 랭킹 조회 검증이 아니라 무인증/필수 쿼리 없는 진단 요청의 응답이다.
+- 다음: 현재 앱/닉네임·기록을 보존하고 삭제·재설치 검사 요구를 반복하지 않는다. App Store Connect 앱6815771701 distribution 접속이 로그인 화면으로 이동했으므로 사용자 로그인 후 등록 자료·설문·빌드 선택을 확인한다. 실제 업로드/심사 제출/공개는 아직 실행되지 않았다. T02 in_progress/전체 QA pending 유지.
+
+## 2026-09-30 · TestFlight6 사용자 동작 검사
+
+- 환경: TestFlight iOS / iPhone 15 Pro / 사용자 보고 iOS 27.2 / 1.0.0(6). EAS build `3fd87f8b-5d8e-479a-8fc8-e7cc3a8de37a`. 실제 테스트 날짜·시간은 추가 제공되지 않았으며 아래 날짜는 결과 수신일이다.
+- 증거: 사용자가 설정의 두 공개 링크 열기와 앱 복귀 질문에 “모두 정상”이라고 답했다. 독립 기기 조회/자동화 검사가 아닌 사용자 실행 결과다.
+- 추가 증거: 일시정지→처음으로→저장된 게임 이어하기가 중단했던 성공률에서 정상적으로 이어지는지 묻자 사용자가 1번(정상)을 선택했다. 동일 빌드·기기 맥락의 사용자 실행 결과다.
+- 추가 증거: 좌우 조작→게임오버→다시 도전 흐름에서 멈춤/조작 문제가 없는지 묻자 사용자가 1번(모두 정상)을 선택했다. 체감 결과이며 FPS 계측값은 없다.
+- 추가 증거: 홈→랭킹→내 순위에서 본인 닉네임과 온라인 최고기록이 정상 표시되는지 묻자 사용자가 1번(정상)을 선택했다. 새로운 최고기록 갱신·오프라인 제출 재시도·삭제 완료 검증으로 확대하지 않는다.
+- 추가 증거: Wi-Fi·셀룰러 데이터를 끈 뒤 새 게임이 정상 플레이되는지 묻자 사용자가 1번(정상)을 선택했다. 오프라인 시작 플레이만 확인하며 재연결 후 미등록·온라인 제출 재시도까지 통과한 것으로 취급하지 않는다.
+- 추가 증거: 일시정지→홈 저장 후 앱 완전 종료·재실행→저장된 게임 이어하기가 중단 성공률에서 이어지는지 묻자 사용자가 1번(정상)을 선택했다. 재설치나 기기 간 동기화 검증은 아니다.
+- 추가 증거: 100% 1회 달성 시 성실한 냥대리, 10회 달성 시 베테랑 냥대리의 해금·선택을 모두 확인했는지 묻자 사용자가 1번(둘 다 확인)을 선택했다. 각 캐릭터의 전체 모션·장시간 프레임 검사와는 별개다.
+- 추가 증거: TestFlight 빌드6에서 15%부터 커피가 생기고 51%부터 사무실 배경으로 바뀌는지 묻자 사용자가 1번(둘 다 정상)을 선택했다. 표시 전환 확인이며 물리 가속 수치나 모든 캐릭터 성능 검증으로 확대하지 않는다.
+- 추가 증거: 세 캐릭터 모두 선택 시 홈에 반영되고 걷기·위험 표정·넘어짐이 자연스럽게 나오는지 묻자 사용자가 1번(모두 정상)을 선택했다. 육안·체감 결과이며 장시간 FPS 측정이나 모든 화면 크기의 검증은 아니다.
+- 추가 증거: 게임 중 아이폰 홈이나 다른 앱으로 나갔다 돌아오면 일시정지되어 있고 이어하기를 눌러 정상 진행되는지 묻자 사용자가 1번(정상)을 선택했다. 일반 앱 전환·복귀 확인이며 통화/장시간 중단/OS 메모리 종료 등 모든 중단 상황의 검증은 아니다.
+- 추가 증거: 배경음·효과음·진동을 각각 껐다 켜면 실제로 적용되는지 묻자 사용자가 1번(모두 정상)을 선택했다. 설정의 즉시 반영 확인이며 재실행 후 설정 보존이나 무음 모드/통화 중 동작까지 확인한 것은 아니다.
+- 추가 증거: 좌우 버튼을 동시에 누른 뒤 모두 떼고 다시 조작해도 입력이 붙잡히거나 화면이 멈추지 않는지 묻자 사용자가 1번(정상)을 선택했다. 입력 해제·재조작의 사용자 결과이며 양쪽을 계속 누를 때의 난이도나 모든 OS 취소 경로까지 검증한 것은 아니다.
+- 추가 증거: 인터넷을 끄고 랭킹을 열어 오류 안내 확인 후 인터넷을 켜고 ‘랭킹 다시 불러오기’를 눌렀을 때 본인 닉네임·최고기록이 다시 보이는지 묻자 사용자가 1번(정상 복구)을 선택했다. 랭킹 읽기 복구의 증거이며 오프라인 중 점수 제출·자동 재시도·중복 제출 검증으로 확대하지 않는다.
+- 추가 증거: TestFlight 결과 화면에 ‘다시 도전’·‘처음으로’만 보이고 광고 버튼이나 가상 광고가 보이지 않는지 묻자 사용자가 1번(두 버튼만 표시)을 선택했다. 배포 결과 화면의 비노출 증거이며 실제 광고 SDK나 보상 지급 검증이 아니다.
+- 추가 증거: 랭킹 하단 ‘문의 · 신고 후속 안내’를 누르면 공식 고객지원 페이지가 열리고 앱으로 정상 복귀하는지 묻자 사용자가 1번(둘 다 정상)을 선택했다. 링크 열기·복귀 결과이며 실제 문의 발송/신고 처리나 복귀 후 저장 상태의 동일성 검증은 아니다.
+- 추가 증거: 가로 홈·게임·설정·랭킹의 글자/버튼이 노치나 화면 끝에 가리지 않고 스크롤로 하단 항목도 누를 수 있는지 묻자 사용자가 1번(모두 정상)을 선택했다. 보고된 iPhone 15 Pro의 화면 접근 결과이며 다른 기기 크기나 큰 글씨 설정 검증이 아니다.
+- 추가 증거: 온라인 시작 후 인터넷 차단·게임오버·다시 도전 시 ‘아직 등록 대기 중인 기록이 있어요’가 나오는지 묻자 사용자가 1번(안내 표시)을 선택했다. 미제출 기록의 안내만 확인했으며 재연결 후 서버 등록 성공/자동 재시도는 아직 미확인이다.
+- 추가 증거: 인터넷 복구 후 ‘등록 다시 시도’를 누르면 안내가 닫히고 새 게임이 시작되는지 묻자 사용자가 1번(새 게임 시작)을 선택했다. UI 전환 결과이며 해당 판의 서버 점수 등록을 확인한 것은 아니다.
+- 추가 증거: 인터넷을 끊고 끝냈던 판이 기존 온라인 최고기록보다 높았는지 묻자 사용자가 1번(높았음)을 선택했다. 갱신 여부를 비교할 조건만 확인했으며 새 점수의 실제 랭킹 반영은 아직 미확인이다. 해당 판의 성공률 수치도 아직 제공되지 않았다.
+- 추가 증거: 재연결 후 랭킹 새로고침에서 내 순위가 해당 판과 같은 성공률로 갱신됐는지 묻자 사용자가 1번(갱신됨)을 선택했다. 앞서 확인한 기존 최고 초과 조건과 함께 해당 판의 반영을 사용자 관찰로 기록한다. 정확한 성공률 숫자·서버 응답/로그·자동 재시도만의 성공 증거는 제공되지 않았다.
+- 추가 증거: 배경음·효과음·진동을 모두 끈 뒤 잠시 기다리고 앱 완전 종료·재실행에서도 꺼진 상태가 유지되는지 묻자 사용자가 1번(모두 유지)을 선택했다. 기존 즉시 적용 검사와 별도로 재실행 보존을 사용자 실행 결과로 기록한다. 재설치/저장 공간 초기화나 무음 모드 검증은 아니다.
+- 보조 자동 검사: `ControlButton.test.tsx`와 `inputState.test.ts` 2 suites/18 tests 통과. 손가락별 해제·취소·동시 입력의 mock 검사이며 실제 TestFlight 사용자 결과와 별도 증거다.
+
+| Scenario | Status | Observed |
+| --- | --- | --- |
+| SETTINGS_PRIVACY_OPEN | passed | 개인정보처리방침 페이지 정상 열림 |
+| SETTINGS_SUPPORT_OPEN | passed | 고객지원 페이지 정상 열림 |
+| SETTINGS_LINKS_RETURN_TO_APP | passed | 두 링크 열기 후 앱 복귀 정상 |
+| PAUSE_HOME_SAVED_RESUME | passed | 중단했던 성공률에서 정상적으로 이어짐(사용자 확인) |
+| GAMEPLAY_GAMEOVER_RETRY | passed | 좌우 조작→게임오버→다시 도전 정상, 멈춤·조작 문제 없음(사용자 확인) |
+| RANKING_OWN_BEST_DISPLAY | passed | 홈→랭킹→내 순위에서 본인 닉네임과 온라인 최고기록 정상 표시(사용자 확인) |
+| OFFLINE_NEW_GAME | passed | 인터넷을 끈 상태에서 새 게임 시작·플레이 정상(사용자 확인) |
+| APP_RESTART_SAVED_RESUME | passed | 저장 후 앱 완전 종료·재실행에서도 중단 성공률에서 이어짐(사용자 확인) |
+| CHARACTER_REWARD_UNLOCK | passed | 100% 1회→성실한 냥대리, 10회→베테랑 냥대리 해금·선택 모두 정상(사용자 확인) |
+| ACCOUNT_DELETE | not_run | 이번 릴리스에서 사용자 요청으로 테스트 생략; 기존 기록·삭제 기능 보존, 실제 삭제 성공 미검증 |
+| COFFEE_OFFICE_TRANSITION | passed | 15% 커피 획득·51% 사무실 배경 전환 모두 정상(사용자 확인) |
+| CHARACTER_VISUALS_MOTION | passed | 세 캐릭터 모두 홈 선택 반영·걷기/위험 표정/넘어짐 자연스럽게 표시(사용자 확인) |
+| BACKGROUND_PAUSE_RESUME | passed | 게임 중 앱 전환→복귀 시 일시정지, 이어하기로 정상 진행(사용자 확인) |
+| AUDIO_HAPTICS_SETTINGS | passed | 배경음·효과음·진동을 각각 껐다 켰을 때 실제 적용 정상(사용자 확인) |
+| SIMULTANEOUS_TOUCH_RELEASE | passed | 좌우 동시 터치 후 모두 떼고 재조작 정상, 입력 고착/화면 멈춤 없음(사용자 확인) |
+| RANKING_RECONNECT_DISPLAY | passed | 오프라인 오류 안내 후 재연결·다시 불러오기로 본인 닉네임/최고기록 정상 표시(사용자 확인); 점수 제출 큐 검증과 별개 |
+| ADS_RELEASE_DISABLED | passed | TestFlight 결과 화면에 다시 도전/처음으로만 표시, 광고 버튼·가상 광고 비노출(사용자 확인) |
+| RANKING_SUPPORT_OPEN_RETURN | passed | 랭킹 하단 문의 링크에서 공식 고객지원 페이지 열기·앱 복귀 모두 정상(사용자 확인) |
+| LANDSCAPE_SAFE_AREA_ACCESS | passed | 가로 홈/게임/설정/랭킹 글자·버튼 가림 없음, 스크롤 후 하단 항목 접근 정상(사용자 확인) |
+| RANKING_PENDING_UPLOAD_PROMPT | passed | 온라인 시작 후 인터넷 차단·게임오버·다시 도전에서 등록 대기 안내 표시(사용자 확인); 서버 제출 성공과 별개 |
+| RANKING_RETRY_UI_TRANSITION | passed | 재연결 후 등록 다시 시도에서 안내 닫힘·새 게임 시작 정상(사용자 확인); 서버 점수 등록과 별개 |
+| RANKING_RECONNECT_SCORE_ACK | passed | 기존 최고를 넘은 해당 판의 성공률로 내 순위 갱신(사용자 확인); 재연결·명시적 재시도 후 표시 증거, 서버 응답/로그 별도 미조회 |
+| AUDIO_SETTINGS_RESTART | passed | 배경음·효과음·진동 off가 앱 완전 종료·재실행 후에도 모두 유지(사용자 확인); 재설치 검증 아님 |
+| APP_REINSTALL | not_run | 이번 릴리스에서 사용자 요청으로 테스트 생략; 현재 앱·로컬 기록·익명 세션 보존 |
+
+- 범위: 사용자 확인은 위 22개 시나리오에 한정한다. 이어가기는 중단 성공률 유지, 캐릭터 모션은 육안·체감, 가로 화면 접근은 보고된 기기에 한정한다. 재연결·명시적 재시도 후 해당 판의 랭킹 반영은 사용자 확인했지만 자동 재시도만의 성공/오프라인 시작 판 미등록 정책·재설치·기기 간 동기화·내부 물리 상태 동일·삭제·통화 등 다른 중단 상황·장시간 FPS/다른 화면 크기는 미확인이다. `nativeQa`/`leaderboardQa` 전체는 pending, T02 in_progress 유지. 이번 기록 갱신에서 앱/서버 코드·데이터·이미지·원격 설정 변경 없음.
+
 ## 2026-09-29 · 성실한 냥대리 iOS 아이콘
 
 - 생성 원본에서 불투명 RGB 1024×1024 `icon.png`를 생성했다. 1024px와 64px 축소판에서 얼굴·눈·리본을 육안 확인했다.
@@ -499,3 +571,6 @@ First production smoke attempt reported `PUBLIC_BOARD:failed`. In `scripts/verif
 User-provided sanitized report evidence: `PUBLIC_BOARD` failed with `UNEXPECTED_HTTP_503`; all subsequent checks were `not_run` because the runner stops at the first failed assertion; `cleanupRequiredCount=0`, `signupResponseUncertain=false`, `smokePassed=false`. No test signup/score was attempted. Code review: startup guard returns 503 if Supabase URL/service-role key is unavailable, rate salt is missing/shorter than32 chars, or allowed origins are invalid; the repository also maps unexpected database/RPC errors to generic `UNAVAILABLE`/503. Exact root cause remains unknown. Do not rerun until configuration is checked.
 
 Follow-up production `supabase secrets list` showed only Supabase platform variables (`SUPABASE_URL`, legacy service-role key and other defaults); none of the three app variables appeared. User now reports that all three names are present in Dashboard Edge Functions > Secrets. Therefore the CLI/Dashboard evidence conflicts, and the earlier inference that the salt was definitely absent is withdrawn. Exact root cause is unresolved: verify the Dashboard project ref and the three value constraints locally, then inspect safe runtime/DB evidence before retry. No smoke test writes occurred.
+# 2026-09-29 · TestFlight 빌드 5 업로드
+
+EAS iOS 빌드 `bf4c00e9-6e5c-4d5b-bf0e-51ddf6b92e40`와 해당 제출 `40e5d3cf-97e8-41c4-a470-8a8767976ac8`는 모두 `FINISHED`. Apple의 처리·설치 가능·테스터 그룹 배정은 미확인(`eas submit:status`: Apple 401). 사용자의 Expo Go “잘돼”는 긍정적 체감 보고이나 빌드 5의 실기기/프레임 계측 증거는 아니다. 자동 검증 Jest 696/696, typecheck, ranked:check, release 7/7, veteran atlas `--check`, iOS export 통과. 상세 내용은 [iOS 배포 기록](ios-release.md) 참조.

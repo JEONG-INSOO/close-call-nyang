@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "status": "approved",
+  "approvedOn": "2026-09-30",
+  "scope": "five_landscape_images_and_captions",
+  "manifest": "store/screenshots/manifest.json",
+  "assetCommit": "2fe32ec",
+  "uploadedToAppStoreConnect": false,
+  "captureBuildConfirmed": true,
+  "captureBuild": {
+    "version": "1.0.0",
+    "buildNumber": "6",
+    "easBuildId": "3fd87f8b-5d8e-479a-8fc8-e7cc3a8de37a",
+    "confirmedOn": "2026-09-30",
+    "evidenceSource": "user_confirmation",
+    "deviceModel": "iPhone 15 Pro",
+    "iosVersion": "27.2"
+  }
+}

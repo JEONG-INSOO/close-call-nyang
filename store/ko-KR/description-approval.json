@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "status": "approved",
+  "approvedOn": "2026-09-30",
+  "locale": "ko-KR",
+  "scope": "description_only",
+  "metadata": "store/ko-KR/metadata.json",
+  "descriptionSha256": "53143762c5a7026b2a2b8413371b6f2a608052d2bdacd1c7b360442700ab2933",
+  "uploadedToAppStoreConnect": false
+}
