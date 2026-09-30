@@ -1,7 +1,25 @@
-import { CHARACTERS, DEFAULT_CHARACTER_ID, getUnlockedCharacterIds } from '../catalog';
+import { CHARACTERS, DEFAULT_CHARACTER_ID, getSelectableCharacterIds, getUnlockedCharacterIds } from '../catalog';
 import { ko } from '../../i18n/ko';
 
 describe('cosmetic character catalog', () => {
+  it('previews all characters only when the development flag is enabled, without awarding progress', () => {
+    const previous = process.env.EXPO_PUBLIC_TEST_UNLOCK_ALL_CHARACTERS;
+    const runtime = globalThis as typeof globalThis & { __DEV__: boolean };
+    const previousDev = runtime.__DEV__;
+    try {
+      delete process.env.EXPO_PUBLIC_TEST_UNLOCK_ALL_CHARACTERS;
+      expect(getSelectableCharacterIds(0)).toEqual(['rookie']);
+      process.env.EXPO_PUBLIC_TEST_UNLOCK_ALL_CHARACTERS = 'true';
+      expect(getSelectableCharacterIds(0)).toEqual(['rookie', 'diligent', 'veteran']);
+      expect(getUnlockedCharacterIds(0)).toEqual(['rookie']);
+      runtime.__DEV__ = false;
+      expect(getSelectableCharacterIds(0)).toEqual(['rookie']);
+    } finally {
+      runtime.__DEV__ = previousDev;
+      if (previous === undefined) delete process.env.EXPO_PUBLIC_TEST_UNLOCK_ALL_CHARACTERS;
+      else process.env.EXPO_PUBLIC_TEST_UNLOCK_ALL_CHARACTERS = previous;
+    }
+  });
   it('preserves the default, order, localization keys and exact unlock thresholds', () => {
     expect(DEFAULT_CHARACTER_ID).toBe('rookie');
     expect(CHARACTERS).toEqual([

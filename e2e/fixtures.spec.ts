@@ -97,13 +97,20 @@ for (const phone of PHONES) {
           const poseId = `${id}-${coffee ? 'coffee' : 'empty'}-${spec.id}`;
           const pose = page.getByTestId(`fixture-pose-${poseId}`);
           await expect(pose.getByText(NOTICE, { exact: true })).toBeVisible();
-          if (id === 'diligent') {
-            await expect(pose.getByTestId('diligent-sprite')).toHaveCount(1);
-            if (spec.id === 'walk-left' || spec.id === 'walk-right') {
-              const showA = spec.id === 'walk-left';
-              await expect.poll(() => svgOpacity(pose.getByTestId('diligent-step-a'))).toBe(showA ? 1 : 0);
-              await expect.poll(() => svgOpacity(pose.getByTestId('diligent-step-b'))).toBe(showA ? 0 : 1);
-            }
+          if (id === 'diligent' || id === 'veteran') {
+            await expect(pose.getByTestId(`${id}-sprite`)).toHaveCount(1);
+            await expect(pose.getByTestId(`${id}-atlas`)).toHaveCount(1);
+            const slot = spec.id.startsWith('fallen-') ? 5 : spec.id.startsWith('steep-') ? 4
+              : spec.id === 'walk-right' ? 3 : spec.id === 'walk-left' ? 1 : 0;
+            await expect.poll(() => svgTranslateX(pose.getByTestId(`${id}-atlas-shift`))).toBeCloseTo(-slot * 380, 4);
+            const clip = await pose.getByTestId(`${id}-atlas`).evaluate((atlas, characterId) => {
+              const group = atlas.parentElement?.parentElement as SVGGraphicsElement | undefined;
+              const clipId = group?.getAttribute('clip-path')?.match(/^url\(#([^)]+)\)$/)?.[1];
+              const rect = clipId ? group?.ownerSVGElement?.querySelector(`clipPath[id="${clipId}"] rect`) : null;
+              return clipId?.startsWith(`${characterId}-frame-`) &&
+                rect?.getAttribute('width') === '380' && rect?.getAttribute('height') === '425';
+            }, id);
+            expect(clip, `${id} must show one clipped atlas frame`).toBe(true);
           }
           else await expect(pose.getByTestId(`face-${id}`)).toHaveCount(1);
           await expect(pose).toContainText(`${coffee ? '커피 있음' : '커피 없음'} · angle ${angle.toFixed(2)} rad`);
@@ -122,21 +129,24 @@ for (const phone of PHONES) {
           const poseSvg = pose.locator('svg');
           await expect.poll(async () => (await poseSvg.boundingBox())?.width).toBeCloseTo(480 * scale, 1);
           await expect.poll(async () => (await poseSvg.boundingBox())?.height).toBeCloseTo(350 * scale, 1);
-          // Compare actual SVG bounds, not just the React label, at extreme poses.
-          const bounds = await pose.getByTestId('nyang-root').evaluate(element => {
-            const node = element as unknown as SVGGraphicsElement;
-            const box = node.getBBox();
-            const matrix = node.transform.baseVal.consolidate()!.matrix;
-            return [[box.x, box.y], [box.x + box.width, box.y],
-              [box.x, box.y + box.height], [box.x + box.width, box.y + box.height]]
-              .map(([x, y]) => ({ x: matrix.a * x + matrix.c * y + matrix.e,
-                y: matrix.b * x + matrix.d * y + matrix.f }));
-          });
-          for (const point of bounds) {
-            expect(point.x).toBeGreaterThanOrEqual(-240);
-            expect(point.x).toBeLessThanOrEqual(240);
-            expect(point.y).toBeGreaterThanOrEqual(-235);
-            expect(point.y).toBeLessThanOrEqual(115);
+          // SVG getBBox includes all six hidden atlas slots. Only the rookie's
+          // standalone art has bounds suitable for this geometric assertion.
+          if (id === 'rookie') {
+            const bounds = await pose.getByTestId('nyang-root').evaluate(element => {
+              const node = element as unknown as SVGGraphicsElement;
+              const box = node.getBBox();
+              const matrix = node.transform.baseVal.consolidate()!.matrix;
+              return [[box.x, box.y], [box.x + box.width, box.y],
+                [box.x, box.y + box.height], [box.x + box.width, box.y + box.height]]
+                .map(([x, y]) => ({ x: matrix.a * x + matrix.c * y + matrix.e,
+                  y: matrix.b * x + matrix.d * y + matrix.f }));
+            });
+            for (const point of bounds) {
+              expect(point.x).toBeGreaterThanOrEqual(-240);
+              expect(point.x).toBeLessThanOrEqual(240);
+              expect(point.y).toBeGreaterThanOrEqual(-235);
+              expect(point.y).toBeLessThanOrEqual(115);
+            }
           }
           // Individual labeled crops preserve all poses even when a tall grid scrolls.
           await saveFixture(pose, info, `fixture-${phone.width}x${phone.height}-pose-${poseId}`);

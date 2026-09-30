@@ -113,8 +113,8 @@ test('diligent uses approved ragdoll frames without touching the rookie or veter
   const frame = makeMutable<SceneFrame>({ ...initial, hasCoffee: true });
   await render(<Svg><NyangCharacter frame={frame} characterId="diligent" reduceMotion /></Svg>);
   expect(byId('diligent-sprite')).toBeTruthy();
-  expect(byId('diligent-step-a')).toBeTruthy();
-  expect(byId('diligent-step-b')).toBeTruthy();
+  expect(byId('diligent-atlas')).toBeTruthy();
+  expect(byId('diligent-atlas-shift')).toBeTruthy();
   expect(screen.queryByTestId('rookie-sprite')).toBeNull();
   expect(screen.queryByTestId('outfit-veteran')).toBeNull();
   expect(opacityOf('cup-visibility')).toBe(1);

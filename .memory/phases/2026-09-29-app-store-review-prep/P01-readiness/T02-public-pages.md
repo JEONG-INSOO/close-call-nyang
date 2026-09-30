@@ -1,0 +1,71 @@
+# Task: T02 지원·개인정보 안내 공개 페이지
+
+## Status: pending
+
+## Goal
+
+전 세계 사용자가 앱과 App Store의 지원/개인정보 URL에서 실제로 열 수 있는 한·영 안내를 제공하고, 앱의 데이터 처리와 삭제 경로를 코드 근거와 맞춘다.
+
+## Decision Summary
+- `mocca3232@naver.com`은 공개 허용된 지원 주소다. 공개 운영자 표기는 `Insoo Jeong`이다.
+- 기존 URL `https://jeong-insoo.github.io/close-call-nyang/support/` 및 `/privacy/`는 초안 주소다. 실제 HTTP 확인 없이 활성으로 표시하지 않는다.
+- Supabase 익명 인증·닉네임·기록·재생 증거·신고가 있어 `수집 없음`이라고 쓰지 않는다. 실제 보유 기간과 공급자 로그는 검증된 범위만 기재한다.
+
+## Implementation
+
+### I01. 페이지 원본과 빌드 연결
+- Related Files:
+  - `web-static/support/index.html`, `web-static/privacy/index.html` :: GitHub Pages의 `/support/`, `/privacy/` 정적 페이지; new
+  - `scripts/export-web.mjs` :: Expo export 완료 후 공개 페이지를 `dist`의 대응 경로에 안전 복사하는 빌드 흐름; modify
+  - `scripts/verify-web.mjs`, `scripts/verify-web.test.mjs` :: base path·내용/링크·민감 정보 미포함 검사; modify
+  - `.github/workflows/deploy-pages.yml` :: 기존 Pages export/verify 흐름과 정적 페이지 연결; modify only if necessary
+  - `store/privacy-inventory.md` :: 데이터 처리의 기존 근거; read-only, 불일치 시 근거 기록
+  - `src/online/client.ts`, `supabase/functions/leaderboard-api/handler.ts`, `supabase/migrations/202609210001_leaderboard.sql` :: 실제 데이터/삭제 흐름; read-only
+- **Signatures & Types**: 정적 경로 `support/index.html`, `privacy/index.html`은 UTF-8 HTML. 빌드 헬퍼를 추가하면 `copyPublicPages({sourceRoot:string, outputRoot:string, basePath:string}): Promise<void>`처럼 입력·출력을 명시하고 같은 위치 외 복사를 거부한다. 배포 루트는 `GITHUB_PAGES`일 때 `/close-call-nyang/`을 사용한다.
+- **Data & Schema Fields**: 정책 섹션은 `operator`, `contactEmail`, `lastUpdated`, `dataCategories[]`, `purpose`, `storage/retention`, `sharing/serviceProvider`, `deleteHow`, `contact`. 페이지는 한국어/영어를 언어 속성·명확한 전환 링크로 표시한다. 앱 서버 스키마는 변경하지 않는다.
+- **Execution Flow / Logic**:
+  1. 개인정보 inventory와 실제 저장소/삭제 코드·Supabase 설정을 대조한다. 불확실한 공급자 로그/보유기간은 단정하지 않고 출시 체크리스트로 남긴다.
+  2. support에는 문의 이메일, 랭킹/삭제/오프라인 문제 문의 방법을 넣는다. privacy에는 익명 계정이 계정 식별자라는 점, 공개 닉네임/점수, 비공개 플레이 증거, 신고, 기기 로컬 데이터, 삭제 방법과 공급자(Supabase)를 쉬운 언어로 기술한다. 향후 실제 광고가 도입되면 고지/동의와 페이지 개정이 선행되어야 함을 명시한다.
+  3. 기존 게임 export가 성공한 뒤 정적 페이지를 `dist`의 두 경로에 포함시킨다. 재실행 시 동일 결과여야 하고 다른 파일은 지우지 않는다. 웹 검증 테스트에 페이지 존재·내부 링크·비밀 값 노출 방지를 추가한다.
+  4. 로컬 웹 서버에서 두 URL을 열고 실제 GitHub Pages 배포 후 200/내용/모바일 가독성을 확인한다. 네트워크·권한 실패는 `not_verified`로 남기고 공개 완료라 주장하지 않는다.
+- **Error & Exception Handling**: 법적 사실·서버 로그 보유 기간이 불확실하면 임의 작성하지 않고 사용자/운영 설정 확인을 요청한다. 출력 경로가 `dist` 밖이거나 비밀 파일이 발견되면 빌드 실패. `dist` 사용자 변경 여부 확인 전 재export하지 않는다.
+- **State Transition & Return**: 소스 페이지, 빌드/원격 URL 검증 결과, 남은 개인정보 응답 근거.
+
+### I02. 학습 기록
+- Related Files: `docs/learning-notes.md`, `docs/ios-release.md` :: 데이터 흐름과 URL 검증 차이; modify selectively.
+- 로컬 HTML 존재와 실제 GitHub Pages 200의 차이, 공개 닉네임과 비공개 Auth ID의 차이, 앱 삭제와 서버 데이터 삭제의 차이를 기록한다.
+
+## Acceptance Criteria
+- [ ] 두 경로가 로컬 빌드에서 열리고 한국어·영어·연락처·삭제 경로가 코드와 부합한다.
+- [ ] 공개 배포 후 실제 URL 200과 내용 검증을 기록한다. 미배포면 Task 완료로 표시하지 않는다.
+- [ ] 키·토큰·비공개 식별자 및 미검증 보존 약속을 페이지에 포함하지 않는다.
+
+## Validation
+- `npm.cmd run web:export` — 정책 페이지 포함 최신 로컬 export.
+- `npm.cmd run web:verify` — base/path/HTML 유효성.
+- `node --test scripts/verify-web.test.mjs` — 페이지 누락/잘못된 링크/비밀 문자열 회귀.
+- `npm.cmd run test:release` — 공개 URL·메타데이터 관계.
+- 실제 `https://jeong-insoo.github.io/close-call-nyang/support/` 및 `/privacy/` HTTP/브라우저 검사 — 원격 배포 증거.
+- `git -c safe.directory=D:/GrillmeEDU diff --check`.
+
+## Learning
+- 개념: 데이터 수집 고지, 공급자와 운영자 역할, 정적 페이지를 앱 번들 배포에 붙이는 방법.
+- 예상 디버깅: GitHub Pages의 프로젝트 base path 누락, SPA가 `/privacy/`를 404로 처리, 캐시된 이전 배포.
+- 복습 질문: HTML 파일 존재만으로 지원 URL이 유효하다고 할 수 없는 이유는? 익명 로그인도 왜 데이터 처리인가? 서버 삭제와 로컬 삭제는 어떻게 다른가?
+
+## Commit Message
+```text
+feat(store): publish bilingual support and privacy pages
+
+Plan: 2026-09-29-app-store-review-prep
+Phase: P01-readiness
+Task: T02-public-pages
+
+- Add code-aligned support and privacy disclosures for global release.
+- Verify Pages routes and document remaining provider checks.
+```
+
+## Progress
+- [ ] 구현·검증 완료
+- [ ] 실제 공개 URL 검증 및 범위 한정 커밋
+- commit: pending

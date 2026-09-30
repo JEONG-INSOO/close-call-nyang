@@ -61,13 +61,9 @@ describe('GameScene contracts', () => {
   it.each(CHARACTERS.map(character => character.id))('forwards %s to the same body rig', async id => {
     await mountScene(frame(), id);
     expect(byId('character-anchor').props.transform).toBe('translate(270 425)');
-    if (id === 'veteran') {
-      expect(byId('veteran-sprite')).toBeTruthy();
-      expect(byId('veteran-atlas')).toBeTruthy();
-    } else if (id === 'diligent') {
-      expect(byId('diligent-sprite')).toBeTruthy();
-      expect(byId('diligent-step-a')).toBeTruthy();
-      expect(byId('diligent-step-b')).toBeTruthy();
+    if (id === 'diligent' || id === 'veteran') {
+      expect(byId(`${id}-sprite`)).toBeTruthy();
+      expect(byId(`${id}-atlas`)).toBeTruthy();
       expect(screen.queryByTestId('rookie-sprite', hidden)).toBeNull();
     } else {
       expect(byId(`face-${id}`)).toBeTruthy();
@@ -132,32 +128,64 @@ describe('GameScene contracts', () => {
     expect(matrix[4]).toBe(-380);
   });
 
-  it('alternates only the diligent ragdoll frames by distance without mutating the game frame', async () => {
-    const sample = frame({ distanceM: NYANG_WALK.metersPerCycle / 4 });
+  it('cycles through all four supplied diligent poses by distance without mutating the game frame', async () => {
+    const sample = frame({ distanceM: NYANG_WALK.metersPerCycle / 8 });
     const rendered = await render(<Svg><NyangCharacter frame={sample} characterId="diligent" reduceMotion /></Svg>);
-    expect(byId('diligent-step-a')).toHaveAnimatedProps({ opacity: 1 });
-    expect(byId('diligent-step-b')).toHaveAnimatedProps({ opacity: 0 });
-    const next = { ...sample.value, distanceM: NYANG_WALK.metersPerCycle * 3 / 4 };
-    await act(() => { sample.value = next; });
-    await waitFor(() => {
-      expect(byId('diligent-step-a')).toHaveAnimatedProps({ opacity: 0 });
-      expect(byId('diligent-step-b')).toHaveAnimatedProps({ opacity: 1 });
-    });
-    expect(sample.value).toEqual(next);
+    for (let index = 0; index < 4; index++) {
+      const next = { ...sample.value, distanceM: NYANG_WALK.metersPerCycle * (index * 2 + 1) / 8 };
+      await act(() => { sample.value = next; });
+      await waitFor(() => {
+        const props = byId('diligent-atlas-shift').props.jestAnimatedProps.value;
+        expect((props.matrix ?? props.transform)[4]).toBe(-index * 380);
+      });
+      expect(sample.value).toEqual(next);
+    }
     await rendered.unmount();
   });
 
-  it('keeps the diligent frame fixed while paused and reuses the shared fall/protection cues', async () => {
+  it('shows the diligent falling expression while paused and reuses the shared fall/protection cues', async () => {
     const sample = frame({ distanceM: NYANG_WALK.metersPerCycle * 3 / 4,
       playing: false, fallen: true, angleRad: 65 * Math.PI / 180, protectionSeconds: 1 });
     const original = { ...sample.value };
     await render(<Svg><NyangCharacter frame={sample} characterId="diligent" reduceMotion /></Svg>);
-    expect(byId('diligent-step-a')).toHaveAnimatedProps({ opacity: 0 });
-    expect(byId('diligent-step-b')).toHaveAnimatedProps({ opacity: 1 });
+    const props = byId('diligent-atlas-shift').props.jestAnimatedProps.value;
+    expect((props.matrix ?? props.transform)[4]).toBe(-5 * 380);
     expect(byId('protection-outline')).toHaveAnimatedProps({ opacity: 0.5 });
     const root = byId('nyang-root').props.jestAnimatedProps.value;
     expect((root.matrix ?? root.transform)[1]).toBeCloseTo(Math.sin(82 * Math.PI / 180));
     expect(sample.value).toEqual(original);
+  });
+
+  it.each([-1, 1])('shows the diligent worried expression at the shared danger angle (%s)', async direction => {
+    const sample = frame({ angleRad: direction * 40 * Math.PI / 180 });
+    await render(<Svg><NyangCharacter frame={sample} characterId="diligent" reduceMotion /></Svg>);
+    const atlasX = () => {
+      const props = byId('diligent-atlas-shift').props.jestAnimatedProps.value;
+      return (props.matrix ?? props.transform)[4];
+    };
+    expect(atlasX()).toBe(-4 * 380);
+    await act(() => { sample.value = { ...sample.value, angleRad: 0 }; });
+    await waitFor(() => expect(atlasX()).toBeCloseTo(0));
+  });
+
+  it('restores the current walking pose after a diligent revive', async () => {
+    const sample = frame({ distanceM: NYANG_WALK.metersPerCycle * 7 / 8 });
+    await render(<Svg><NyangCharacter frame={sample} characterId="diligent" reduceMotion /></Svg>);
+    const before = { ...sample.value };
+    const atlasX = () => {
+      const props = byId('diligent-atlas-shift').props.jestAnimatedProps.value;
+      return (props.matrix ?? props.transform)[4];
+    };
+    expect(atlasX()).toBe(-3 * 380);
+    await act(() => { sample.value = { ...sample.value, fallen: true }; });
+    await waitFor(() => {
+      expect(atlasX()).toBe(-5 * 380);
+    });
+    await act(() => { sample.value = { ...sample.value, fallen: false }; });
+    await waitFor(() => {
+      expect(atlasX()).toBe(-3 * 380);
+    });
+    expect(sample.value).toEqual(before);
   });
 
   it.each([false, true])('uses engine coffee state, not a duplicate score threshold (%s)', async hasCoffee => {

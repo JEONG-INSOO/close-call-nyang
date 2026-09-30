@@ -229,7 +229,8 @@ export default function App(): React.JSX.Element {
         <StatusBar style="dark" />
         <LandscapeGate blocked={portraitBlocked} onInactive={pause}>
           <GameScreen frame={frame} snapshot={snapshot} controller={controller}
-            characterId={runCharacter} reduceMotion={preferences.value.settings.reduceMotion} />
+            characterId={screen === 'title' ? preferences.value.collection.selectedCharacter : runCharacter}
+            reduceMotion={preferences.value.settings.reduceMotion} />
           {screen === 'title' && <TitleScreen bestScore={preferences.value.bestScore} onStart={start}
             onSettings={openSettings} onCharacters={openCharacters} startBusy={ranking.startBusy}
             onResume={resumeSaved} resumeAvailable={!resumeLoading && resumeState !== null}

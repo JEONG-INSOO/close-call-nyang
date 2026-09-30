@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { getUnlockedCharacterIds } from '../characters/catalog';
+import { getSelectableCharacterIds, getUnlockedCharacterIds } from '../characters/catalog';
 import type { CharacterId } from '../characters/catalog';
 import { applyCompletion, normalizeCollection } from './characterProgress';
 import { loadPreferences, parsePreferences, savePreferences, SETTINGS_KEYS, updateBest } from './preferences';
@@ -171,7 +171,7 @@ export function usePreferences(): {
   const selectCharacter = useCallback((id: CharacterId) => {
     if (!mounted.current) return false;
     const session = sessionRef.current!;
-    if (!getUnlockedCharacterIds(session.value.collection.completedRuns).includes(id)) return false;
+    if (!getSelectableCharacterIds(session.value.collection.completedRuns).includes(id)) return false;
     if (!session.hydrated) session.touchedSelection = true;
     const next: Preferences = { ...session.value, collection: { ...session.value.collection, selectedCharacter: id } };
     publish(next);

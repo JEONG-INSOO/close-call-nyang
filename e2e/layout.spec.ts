@@ -6,24 +6,33 @@ test('all three character portraits fit the unchanged collection preview without
   for (const id of ['rookie', 'diligent', 'veteran']) {
     const preview = page.getByTestId(`character-preview-${id}`);
     await preview.scrollIntoViewIfNeeded();
-    if (id === 'diligent') {
-      await expect(preview.getByTestId('diligent-sprite')).toHaveCount(1);
-      await expect(preview.getByTestId('diligent-step-a')).toHaveCount(1);
-      await expect(preview.getByTestId('diligent-step-b')).toHaveCount(1);
+    if (id === 'diligent' || id === 'veteran') {
+      await expect(preview.getByTestId(`${id}-sprite`)).toHaveCount(1);
+      await expect(preview.getByTestId(`${id}-atlas`)).toHaveCount(1);
     } else {
       await expect(preview.getByTestId(`face-${id}`)).toHaveCount(1);
       await expect(preview.getByTestId(`outfit-${id}`)).toHaveCount(1);
     }
-    // Rookie uses generated PNG parts, diligent uses two complete PNG steps, veteran stays flat SVG.
+    // Rookie uses generated PNG parts; the reward characters use clipped atlases.
     await expect(preview.getByTestId('rookie-sprite')).toHaveCount(id === 'rookie' ? 1 : 0);
-    const fits = await preview.locator('svg').evaluate(element => {
+    const fits = await preview.locator('svg').evaluate((element, characterId) => {
       const svg = element as SVGSVGElement;
+      // getBBox includes the hidden atlas slots even though the SVG clip hides them.
+      // Check that the actual atlas is bounded by its expected one-frame clip.
+      if (characterId !== 'rookie') {
+        const atlas = svg.querySelector(`[data-testid="${characterId}-atlas"]`);
+        const clip = atlas?.parentElement?.parentElement?.getAttribute('clip-path');
+        const clipId = clip?.match(/^url\(#([^)]+)\)$/)?.[1];
+        const clipRect = clipId ? svg.querySelector(`clipPath[id="${clipId}"] rect`) : null;
+        return !!clipId?.startsWith(`${characterId}-frame-`) &&
+          clipRect?.getAttribute('width') === '380' && clipRect?.getAttribute('height') === '425';
+      }
       const box = (svg.querySelector('[data-testid="nyang-root"]') as SVGGraphicsElement).getBBox();
       const view = svg.viewBox.baseVal;
       // Include an extra stroke margin; an unclipped mathematical centerline is insufficient.
       return box.x - 3 >= view.x && box.y - 3 >= view.y &&
         box.x + box.width + 3 <= view.x + view.width && box.y + box.height + 3 <= view.y + view.height;
-    });
+    }, id);
     expect(fits).toBe(true);
     const path = info.outputPath(`actual-character-preview-${id}.png`);
     await preview.screenshot({ path });
@@ -97,6 +106,7 @@ test('subpath assets have real content and landscape controls keep their target 
   const js = resources.filter(item => /\.js($|\?)/.test(item.url));
   expect(js.length).toBeGreaterThan(0);
   expect(js.every(item => item.status === 200 && /javascript/.test(item.type) && item.url.includes('/close-call-nyang/'))).toBe(true);
-  await expect.poll(() => resources.filter(item => /\.wav($|\?)/.test(item.url)).length).toBeGreaterThanOrEqual(5);
+  // The danger sound was removed; four active WAV assets remain.
+  await expect.poll(() => resources.filter(item => /\.wav($|\?)/.test(item.url)).length).toBeGreaterThanOrEqual(4);
   expect(resources.filter(item => /\.wav($|\?)/.test(item.url)).every(item => item.status === 200 && /audio/.test(item.type))).toBe(true);
 });

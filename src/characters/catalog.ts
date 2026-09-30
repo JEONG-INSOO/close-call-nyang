@@ -23,3 +23,11 @@ export function getUnlockedCharacterIds(completedRuns: number): readonly Charact
   return CHARACTERS.filter((character) => character.requiredCompletions <= completions)
     .map((character) => character.id);
 }
+
+/** Preview every cosmetic in Expo Go without changing earned progress or release builds. */
+export function getSelectableCharacterIds(completedRuns: number): readonly CharacterId[] {
+  if (typeof __DEV__ !== 'undefined' && __DEV__ && process.env.EXPO_PUBLIC_TEST_UNLOCK_ALL_CHARACTERS === 'true') {
+    return CHARACTERS.map((character) => character.id);
+  }
+  return getUnlockedCharacterIds(completedRuns);
+}

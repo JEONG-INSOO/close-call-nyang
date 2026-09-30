@@ -1,17 +1,18 @@
-import React from 'react';
+import React, { useId } from 'react';
 import Animated, { useAnimatedProps, type SharedValue } from 'react-native-reanimated';
-import { Ellipse, G, Image, Path, Rect } from 'react-native-svg';
+import { ClipPath, Defs, Ellipse, G, Image, Path, Rect } from 'react-native-svg';
 import type { GProps } from 'react-native-svg';
 import { palette } from '../theme/tokens';
+import { expressionAt } from './RookieSprite';
+import { svgTransform, svgTransformAdapter } from './svgMotion';
 import type { SceneFrame } from './types';
-import { strideFor, type EmployeePose } from './walk';
+import { walkPhaseAt, type EmployeePose } from './walk';
 
-/** The 380×425 frames have the same 415px feet baseline and a 387.5px visible height. */
+/** Four supplied poses share a 380×425 canvas and the existing y=415 feet pivot. */
 export const DILIGENT_ART = Object.freeze({ width: 380, height: 425, feetY: 415, scale: 200 / 387.5 });
-const FRAME = {
-  a: require('../../assets/characters/diligent/step-a.png'),
-  b: require('../../assets/characters/diligent/step-b.png'),
-};
+// Playback order follows the user's four photos: 1 → 2 → 4 → 3.
+// Slots: walking 1,2,4,3; worried; fallen.
+const ATLAS = require('../../assets/characters/diligent/walk-atlas-v4.png');
 const AnimatedG = Animated.createAnimatedComponent(G);
 
 interface DiligentSpriteProps {
@@ -27,13 +28,19 @@ export function DiligentProtectionShape(): React.JSX.Element {
   </G>;
 }
 
+/** Art-only index; game distance and physics are never changed by the walk cycle. */
+export function diligentFrameIndexAt(pose: EmployeePose, distanceM: number): number {
+  'worklet';
+  return pose === 'game' ? Math.min(3, Math.floor(walkPhaseAt(distanceM) * (2 / Math.PI))) : 0;
+}
+
 export function DiligentSprite({ frame, pose }: DiligentSpriteProps): React.JSX.Element {
-  const stepAProps = useAnimatedProps<GProps>(() => ({
-    opacity: strideFor(pose, frame.value.distanceM) >= 0 ? 1 : 0,
-  }), [frame, pose]);
-  const stepBProps = useAnimatedProps<GProps>(() => ({
-    opacity: strideFor(pose, frame.value.distanceM) < 0 ? 1 : 0,
-  }), [frame, pose]);
+  const clipId = `diligent-frame-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
+  const atlasProps = useAnimatedProps<GProps>(() => {
+    const expression = expressionAt(frame.value.angleRad, frame.value.fallen);
+    const slot = expression === 2 ? 5 : expression === 1 ? 4 : diligentFrameIndexAt(pose, frame.value.distanceM);
+    return { transform: svgTransform(0, -slot * DILIGENT_ART.width, 0) };
+  }, [frame, pose], svgTransformAdapter);
   const coffeeProps = useAnimatedProps<GProps>(() => ({
     opacity: pose === 'game' && frame.value.hasCoffee ? 1 : 0,
   }), [frame, pose]);
@@ -42,12 +49,12 @@ export function DiligentSprite({ frame, pose }: DiligentSpriteProps): React.JSX.
   const y = -DILIGENT_ART.feetY * DILIGENT_ART.scale;
   return <G testID="diligent-sprite">
     <G transform={`translate(${x} ${y}) scale(${DILIGENT_ART.scale})`}>
-      <AnimatedG testID="diligent-step-a" animatedProps={stepAProps}>
-        <Image href={FRAME.a} x={0} y={0} width={DILIGENT_ART.width} height={DILIGENT_ART.height} />
-      </AnimatedG>
-      <AnimatedG testID="diligent-step-b" animatedProps={stepBProps}>
-        <Image href={FRAME.b} x={0} y={0} width={DILIGENT_ART.width} height={DILIGENT_ART.height} />
-      </AnimatedG>
+      <Defs><ClipPath id={clipId}><Rect x={0} y={0} width={DILIGENT_ART.width} height={DILIGENT_ART.height} /></ClipPath></Defs>
+      <G clipPath={`url(#${clipId})`}>
+        <AnimatedG testID="diligent-atlas-shift" animatedProps={atlasProps}>
+          <Image testID="diligent-atlas" href={ATLAS} x={0} y={0} width={DILIGENT_ART.width * 6} height={DILIGENT_ART.height} />
+        </AnimatedG>
+      </G>
     </G>
     <AnimatedG testID="cup-visibility" animatedProps={coffeeProps}>
       <G testID="cup" transform="translate(64 -60)" stroke="#54372C" strokeWidth={2.5} strokeLinejoin="round">

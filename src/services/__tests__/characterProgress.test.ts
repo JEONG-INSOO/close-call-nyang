@@ -6,6 +6,20 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
 }));
 
 describe('collection normalization', () => {
+  test('development preview preserves selection without changing earned completions', () => {
+    const previous = process.env.EXPO_PUBLIC_TEST_UNLOCK_ALL_CHARACTERS;
+    try {
+      process.env.EXPO_PUBLIC_TEST_UNLOCK_ALL_CHARACTERS = 'true';
+      expect(normalizeCollection({ completedRuns: 0, selectedCharacter: 'veteran' }))
+        .toEqual({ completedRuns: 0, selectedCharacter: 'veteran' });
+      delete process.env.EXPO_PUBLIC_TEST_UNLOCK_ALL_CHARACTERS;
+      expect(normalizeCollection({ completedRuns: 0, selectedCharacter: 'veteran' }))
+        .toEqual({ completedRuns: 0, selectedCharacter: 'rookie' });
+    } finally {
+      if (previous === undefined) delete process.env.EXPO_PUBLIC_TEST_UNLOCK_ALL_CHARACTERS;
+      else process.env.EXPO_PUBLIC_TEST_UNLOCK_ALL_CHARACTERS = previous;
+    }
+  });
   test.each([undefined, null, [], false, 'veteran', 100])('defaults invalid collection %s', (raw) => {
     expect(normalizeCollection(raw)).toEqual({ completedRuns: 0, selectedCharacter: 'rookie' });
   });

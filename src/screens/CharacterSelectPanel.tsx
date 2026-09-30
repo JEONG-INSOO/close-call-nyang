@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import Svg, { G } from 'react-native-svg';
-import { CHARACTERS, getUnlockedCharacterIds, type CharacterId } from '../characters/catalog';
+import { CHARACTERS, getSelectableCharacterIds, type CharacterId } from '../characters/catalog';
 import { ko } from '../i18n/ko';
 import { NyangCharacter } from '../scene/NyangCharacter';
 import type { SceneFrame } from '../scene/types';
@@ -31,7 +31,7 @@ const CharacterPreview = memo(function CharacterPreview({ characterId }: { chara
 
 export function CharacterSelectPanel({ visible, collection, onSelect, onClose }: CharacterSelectPanelProps) {
   const completed = Number.isFinite(collection.completedRuns) ? Math.min(10, Math.max(0, Math.floor(collection.completedRuns))) : 0;
-  const unlocked = getUnlockedCharacterIds(completed);
+  const unlocked = getSelectableCharacterIds(completed);
   return (
     <ServicePanelFrame visible={visible} title={ko.characterSelect} testID="character-panel" onClose={onClose} maxWidth={720}>
       <Text style={styles.hint}>{ko.characterSelectHint}</Text>

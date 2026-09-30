@@ -34,3 +34,19 @@ Thumbs.db
 /test
 /CODEBURN-SETUP.md
 /supabase/
+
+# Release upload contains app runtime only, not local workflow or QA material.
+/AGENTS.md
+/README.md
+/e2e/
+/scripts/
+/store/
+/jest.config.cjs
+/jest.setup.ts
+/playwright.config.ts
+**/__tests__/
+
+# Only the packed diligent texture is used at runtime; keep frame sources in Git.
+/assets/characters/diligent/step-*.png
+/assets/characters/diligent/alarm-v3.png
+/assets/characters/diligent/fall-v3.png
