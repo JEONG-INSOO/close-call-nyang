@@ -4,11 +4,12 @@
 
 ## Goal
 
-현재 게임과 일치하는 한국어·영어 스토어 소개 초안을 만들고 가격/지역/저작권/지원 정보를 채우며, 실제 최신 iPhone 가로 캡처만 제출 가능한 자료로 분류한다.
+현재 게임과 일치하는 한국어·영어 스토어 소개 초안을 만들고 가격/지역/저작권/지원 정보를 채우며, 새 TestFlight 설치 후 실제 iPhone 가로 캡처를 확보할 촬영 계약을 준비한다. 원본 확보·사용자 최종 승인은 P02의 별도 필수 게이트다.
 
 ## Decision Summary
 - 전 세계 무료·IAP 없음; 저작권 `2026 Insoo Jeong`; 공개 문의 `mocca3232@naver.com`.
-- App Store 소개 문구는 최종 제출 전 사용자 재확인이 필요하다. 실제 스크린샷 파일과 사용자 제공 방식은 아직 미확정이다.
+- App Store 소개 문구는 최종 제출 전 사용자 재확인이 필요하다. 사용자가 최신 TestFlight iPhone 가로 원본을 보내고 조수가 규격·편집을 확인하는 방식은 확정했다. 원본 파일은 아직 없으며 새 빌드 후 P02-T02에서 확보한다.
+- 2026-09-30 순서 보강: 이 Task는 draft와 촬영 계획까지만 완료할 수 있다. 최종 소개 승인은 P02-T03에 기록하며, 실제 캡처를 빌드보다 먼저 요구하지 않는다. 실제 이미지/승인 없이 최종 심사 준비를 완료할 수 없다는 제약은 유지한다.
 
 ## Implementation
 
@@ -32,18 +33,18 @@
 - Related Files: `store/screenshots/README.md` :: 장면·기기·빌드·원본 파일명·승인 체크리스트; modify. `store/screenshots/iphone-landscape/` :: 제공된 원본만 저장; new when user supplies.
 - **Signatures & Types**: 캡처 기록 `{file:string,deviceModel:string,iosVersion:string,appVersion:string,buildNumber:string,capturedAt:string,scene:'commute'|'coffee'|'office'|'result',source:'iPhone TestFlight',approved:boolean}`. 원본에 타인 닉네임·비밀키·디버그 오버레이가 없어야 한다.
 - **Execution Flow / Logic**: Apple 최신 가로 규격 확인 → 최신 빌드 설치 후 홈/출근/커피/사무실/결과 장면 실제 iPhone 캡처 → 크기·알파·잘림 확인 → 사용자 육안 승인. 웹·fixture·생성 일러스트를 실제 게임 캡처로 대체하지 않는다.
-- **Error & Exception Handling**: 원본 미도착/지원 해상도 아님/빌드 식별 불가면 `pending` 유지, 가짜 이미지 생성 금지.
+- **Error & Exception Handling**: 원본 미도착/지원 해상도 아님/빌드 식별 불가면 캡처 레코드를 `pending`으로 유지하고 P02-T02/P02-T03를 완료하지 않는다. 이 Task의 촬영 계획 작성과 실제 확보를 혼동하지 않는다. 가짜 이미지 생성 금지.
 - **State Transition & Return**: 제출 가능한 실제 캡처 목록 또는 명확한 대기 상태.
 
 ## Acceptance Criteria
 - [ ] 한·영 초안과 release-inputs가 현재 기능/선택과 일치하고 필드 검사 통과.
-- [ ] 실제 최신 iPhone 원본 캡처가 확보·승인되었다. 미제공이면 이 Task는 `in_progress` 또는 `blocked`이고 제출은 불가.
-- [ ] 최종 소개 문구 사용자 확인을 기록했다.
+- [ ] 실제 iPhone 촬영 계약·장면/기기/빌드/규격 확인 체크리스트가 준비되고 원본 미확보 상태와 P02-T02 후속 게이트가 명시됐다.
+- [ ] 최종 소개 문구 확인은 P02-T03의 필수 게이트로 기록하고, 본 Task의 문구는 draft를 유지했다.
 
 ## Validation
 - `npm.cmd run test:release` — 길이·필드·브랜딩 검사.
 - `npm.cmd run typecheck` — 앱 소스와 자료 경계 확인.
-- 실제 iPhone 이미지 `width/height/alpha` 검사 및 화면 육안 확인 — 기기·빌드 번호 기록.
+- 캡처 README의 장면·실제 원본/기기/빌드·width/height/alpha 체크 계약 확인 — 실제 픽셀 검사는 P02-T02에서 수행한다.
 - `git -c safe.directory=D:/GrillmeEDU diff --check`.
 
 ## Learning
@@ -60,10 +61,10 @@ Phase: P01-readiness
 Task: T03-store-assets
 
 - Align Korean and English copy with the verified game.
-- Record approved iPhone screenshots and release inputs.
+- Record approved release inputs and the post-build iPhone capture contract.
 ```
 
 ## Progress
-- [ ] 메타데이터·캡처·승인 완료
+- [ ] 메타데이터 초안·촬영 계획·후속 승인 게이트 준비 완료
 - [ ] 검증·범위 한정 커밋 완료
 - commit: pending

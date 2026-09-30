@@ -1,5 +1,11 @@
 # Current Context
 
+## Latest checkpoint — 2026-09-30 공개 페이지 T02 구현·push 완료, 원격 검증 진행
+- `fbfd41c`: 한·영 지원·개인정보 페이지, export 복사, 필수 페이지/안전 검사, CI와 브라우저 검증을 범위 한정 커밋했다. Node22/release8/typecheck/ranked8/env10/로컬 브라우저6 통과. 기존 dist/무관 dirty는 보존했다.
+- 사용자 명시 승인으로 main을 `a4c5ee2`→`fbfd41c` 정상 push했다. Pages 실행 `36653859313`의 완료·원격 URL200는 아직 pending이다. 실제 배포 확인 전 T02를 done으로 바꾸거나 T03로 이동하지 않는다. 빌드/원격 심사 제출 없음.
+- 발견한 후속 출시 요구: 앱 내 개인정보 링크와 기존 GitHub 지원 링크 연결, 새 TestFlight 후 iPhone 캡처 확보라는 의존성. 이번 Task는 정적 페이지만 구현했으며 앱 코드/서버는 불변이다.
+- 사용자는 설정의 두 정책/지원 링크와 기존 랭킹 문의를 새 지원 페이지로 연결하는 추천안을 승인했다. [결정](./decisions/2026-09-30-store-policy-links.md), [단일 Task 계획](./plans/2026-09-30-store-policy-links.md) 작성 완료. 공개 페이지 T02 완료 후 이 Task를 먼저 실행하고 원래 P01-T03로 복귀한다. 캡처 확보/소개 최종 승인은 새 빌드 뒤 P02로 이동해 순환 의존성을 제거했다. 이번 계획 보강 단계는 앱 구현 코드를 수정하지 않았다.
+
 ## Latest checkpoint — 2026-09-30 출시 소스 T01 완료
 - `838d7c1`: 최신 홈/캐릭터 소스를 범위 한정 커밋했다. Jest691/49 suites, 타입·ranked8·release8, 브라우저5/5, iOS Hermes export 통과. EAS 아카이브111파일은 커밋 입력과 전부 일치하고 실제 비밀 파일은 없다.
 - Active Task는 공개 지원·개인정보 페이지 T02로 이동한다. 이전 베테랑/원래 iOS T03 실기기 QA는 미완료로 보존한다. 새 IPA/업로드/원격 배포/심사 제출은 아직 없다.
