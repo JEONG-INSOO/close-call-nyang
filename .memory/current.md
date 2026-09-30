@@ -1,5 +1,10 @@
 # Current Context
 
+## Latest checkpoint — 2026-09-30 TestFlight build6 전달 완료
+- 고정 소스 `09a7a0949efc21554fee29a3e77e14c18328efe3`(설정 링크089c8bd/성실 아이콘 포함), 실제 archive112파일: blob mismatch0/untracked0/비밀·로그0. branding/release8/type/ranked8 통과, 직전 전체700검증 소스 유지. EAS production 공개2변수 값비노출 readback 일치.
+- build `3fd87f8b-5d8e-479a-8fc8-e7cc3a8de37a` 및 정확한 ID submission `e0347b70-45bb-4aac-a9f2-d76c8d8cf60d` FINISHED. Apple 최종 재조회:1.0.0(6) VALID/IN_BETA_TESTING/READY_FOR_BETA_SUBMISSION/expired=false. 업로드완료306f338, 기존 서명 재사용·freeze-credentials, 이전5번 상태 history 보존. 실제 iPhone 설치·기기 QA는 사용자 확인 대기.
+- T01 done/완료 증거 커밋 후 Active는 T02 native QA. TestFlight에서6번 업데이트→새 아이콘/설정 링크·Safari복귀/캐릭터 걷기·터치/닉네임/랭킹/이어가기 확인 후 실제 가로 캡처를 받는다. P01-T03 소개 초안은 pending 보존, App Review/공개/외부 초대/push/웹재배포 실행 없음.
+
 ## Latest checkpoint — 2026-09-30 TestFlight 업로드 우선 요청
 - 사용자가 최신 코드의 TestFlight 배포를 명시 요청했다. 스토어 초안 P01-T03은 pending 보존하고 P02-T01 전달을 먼저 실행한다. 기존 Expo 계정 insoojeong 정상, 최신 원격 iOS build5 FINISHED이며 진행 중 중복 빌드는 없다.
 - 최신 정책 링크/아이콘/캐릭터가 포함된 고정 소스→archive 검사→새 build 한 개→정확한 ID submit. Apple 처리/기기 QA는 별도이며 App Review/공개/외부 초대/웹재배포/push는 요청 범위가 아니다. 기존 dirty 파일 보존.
@@ -201,10 +206,10 @@
 [P02 iOS 전달·심사 준비](./phases/2026-09-29-app-store-review-prep/P02-ios-delivery/phase.md)
 
 ## Active Task
-[T01 새 iOS 빌드와 정확한 TestFlight 업로드](./phases/2026-09-29-app-store-review-prep/P02-ios-delivery/T01-eas-build-upload.md)
+[T02 최신 TestFlight iPhone QA](./phases/2026-09-29-app-store-review-prep/P02-ios-delivery/T02-native-qa.md)
 
 ## Status
-- Active status: `in_progress` (app-store-review-prep P02-T01; 사용자 TestFlight 요청 우선). P01-T03 pending 보존. 이전 베테랑/원래 iOS QA 미완료도 보존한다.
+- Active status: `in_progress` (app-store-review-prep P02-T02; 사용자 실제 iPhone 설치·QA·캡처 증거 대기). T01 전달 완료306f338, Apple6번VALID/내부베타 테스트 확인. P01-T03 pending 및 이전 베테랑/원래 iOS QA 미완료 보존.
 - Historical checkpoint: 원래 P03-T03 nativeQA. 렉돌 P01-T01/T02는 `55b72ff`/`19b0a79`로 로컬 완료. 새 소스의 웹·iOS 재배포는 별도 확인 필요.
 - Historical checkpoint: 원래 P03-T03 nativeQA. 닉네임 안내 T01은8ac885a로 완료. 사용자 build4 확인담당은 유지하되 이번 기능은 build4에 미포함.
 - Latest completed request (2026-09-22): rookie를 생성 이미지 PNG 부품(우측 3/4, 다리·팔 절반, 표정 평소/위험40도/넘어짐)으로 교체, commit 5cf570d. [결정](./decisions/2026-09-22-side-view-walk.md), [학습노트](../docs/learning-notes/2026-09-22-side-view-walk.md). Jest650, Chromium34pass/11skip/0fail(3.4min), rules f7245064c9459310 불변, 4173=dist index-298ee86edf82ff1bbdd0079e1339a79f.js. 보상 2종은 P02(시트 필요). 사용자 요청: 다른 사람이 테스트할 환경(예/아니오만 답함=네) — 방식 미정.

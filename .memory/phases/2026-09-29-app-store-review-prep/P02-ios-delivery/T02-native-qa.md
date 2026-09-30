@@ -1,6 +1,10 @@
 # Task: T02 최신 TestFlight iPhone QA
 
-## Status: pending
+## Status: in_progress
+
+## Handoff — 2026-09-30
+- T01 완료306f338. 빌드3fd87f8b-5d8e-479a-8fc8-e7cc3a8de37a,1.0.0(6), 제출e0347b70-45bb-4aac-a9f2-d76c8d8cf60d 모두FINISHED. Apple6번VALID/IN_BETA_TESTING/READY_FOR_BETA_SUBMISSION, expired=false 확인.
+- Apple 처리·내부 테스트 상태 확인까지만 완료. 실제 iPhone 설치/모델·iOS/장면별QA/랭킹·삭제/최신 원본 캡처는 not_run이며 사용자 증거 대기. 기기 설치와 QA를 대신 확인할 연결 장치는 없다. T02 전체 완료/완료커밋은 하지 않는다.
 
 ## Goal
 

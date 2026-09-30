@@ -77,4 +77,4 @@ Task: T01-eas-build-upload
 ## Progress
 - [x] archive·환경·빌드 확인
 - [x] 정확한 빌드 업로드 및 증거 기록
-- commit: 완료 증거 커밋에 기록; source `09a7a09`
+- commit: `306f338`; source `09a7a09`
