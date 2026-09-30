@@ -62,4 +62,4 @@ Task: T01-screenshot-drafts
 
 ## Progress
 - [x]시안·검증·학습완료
-- commit: pending
+- commit: `2fe32ec`

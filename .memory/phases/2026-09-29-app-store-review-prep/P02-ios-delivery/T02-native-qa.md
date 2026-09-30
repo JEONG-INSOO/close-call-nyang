@@ -3,6 +3,8 @@
 ## Status: in_progress
 
 ## Handoff — 2026-09-30
+- 사용자가2번 JPG 확대 시안 선택. 별도 시안 Task 완료2fe32ec:5장2868×1320 RGB PNG, 원본 raw픽셀·캡처영역 동일, Node6/release8/육안 통과. 원형 JPG 메타데이터는 ignored 보존하고 공개 source에서는 EXIF/IPTC/COM lossless제거. 이미지 승인과 기종·iOS·buildNumber/실기기 QA는 아직 미확인. 랭킹4번 제외. 원격 업로드·심사 제출 없음.
+- 사용자가 실제 플레이 캡처6장을 제공했다. System.Drawing 읽기 검사:모두1280×590 JPG. 홈/캐릭터선택/랭킹/일시정지/카운트다운/4% 기울어진 플레이가 관찰된다. 기종·iOS·빌드번호/커피·사무실·해금/동작·오프라인·삭제·Safari복귀 검증은 확인 안 됨. 현재 캡처를 제출 규격 원본이라고 간주하지 않는다. 사용자선택후확대시안완료、승인대기. 랭킹 타인 닉네임 공개는 보류.
 - T01 완료306f338. 빌드3fd87f8b-5d8e-479a-8fc8-e7cc3a8de37a,1.0.0(6), 제출e0347b70-45bb-4aac-a9f2-d76c8d8cf60d 모두FINISHED. Apple6번VALID/IN_BETA_TESTING/READY_FOR_BETA_SUBMISSION, expired=false 확인.
 - Apple 처리·내부 테스트 상태 확인까지만 완료. 실제 iPhone 설치/모델·iOS/장면별QA/랭킹·삭제/최신 원본 캡처는 not_run이며 사용자 증거 대기. 기기 설치와 QA를 대신 확인할 연결 장치는 없다. T02 전체 완료/완료커밋은 하지 않는다.
 
