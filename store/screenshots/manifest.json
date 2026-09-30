@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "status": "draft_awaiting_approval",
+  "width": 2868,
+  "height": 1320,
+  "captureBuildNumber": null,
+  "deviceModel": null,
+  "iosVersion": null,
+  "qualityNote": "User-approved enlargement of supplied 1280x590 JPG captures, not native-resolution screenshots.",
+  "background": {
+    "path": "store/screenshots/design/soft-background-v1.png",
+    "sha256": "ee9bbcddb1566fbc281f0d7b4ad813d0c4a6744248e12a87a32dfe69a2731bd1"
+  },
+  "items": [
+    {
+      "order": 1,
+      "source": "store/screenshots/source/2026-09-30/photo-1.jpg",
+      "sourceSha256": "8e83203f30e7794ff945149ba84a4c0f2b77480539c71339fcc825c71a5114d2",
+      "sourceWidth": 1280,
+      "sourceHeight": 590,
+      "output": "store/screenshots/iphone-landscape/drafts-v1/01-gameplay.png",
+      "title": "좌우로 버티는 냥대리 출근길",
+      "subtitle": "버틴 만큼 프로젝트 성공률이 올라가요",
+      "sourceOriginalSha256": "e1e6e0e4a93b11c4490d0264902d2d6efbdbdc33080bae28478c0b95c43a0805"
+    },
+    {
+      "order": 2,
+      "source": "store/screenshots/source/2026-09-30/photo-5.jpg",
+      "sourceSha256": "49004eb09d94f7651ec2bb4e733fe13637d52ca142fef52605387a5575955536",
+      "sourceWidth": 1280,
+      "sourceHeight": 590,
+      "output": "store/screenshots/iphone-landscape/drafts-v1/02-characters.png",
+      "title": "100% 달성하고 동료 냥대리를 만나세요",
+      "subtitle": "1회 달성하면 성실한 냥대리, 10회 달성하면 베테랑 냥대리",
+      "sourceOriginalSha256": "06fd1e1fb2318788c899cd930ce0dab010f3b0a4c3ae220db737ee1d52b07713"
+    },
+    {
+      "order": 3,
+      "source": "store/screenshots/source/2026-09-30/photo-6.jpg",
+      "sourceSha256": "f986fae92a6db1cc9b50696574a81a9687a8c03664ad2396b6cd314ee8fd3e19",
+      "sourceWidth": 1280,
+      "sourceHeight": 590,
+      "output": "store/screenshots/iphone-landscape/drafts-v1/03-home.png",
+      "title": "오늘도, 우당탕탕 냥대리",
+      "subtitle": "새로운 도전도 저장된 게임 이어하기도 한눈에",
+      "sourceOriginalSha256": "95e8273bf04ed19f197be71caee202f15a7bfd9b64d0a201918fe51862678819"
+    },
+    {
+      "order": 4,
+      "source": "store/screenshots/source/2026-09-30/photo-3.jpg",
+      "sourceSha256": "35207e6b349004c3340c6be1ad7f65bf7dc24d0e03af04c10de556fabef1c300",
+      "sourceWidth": 1280,
+      "sourceHeight": 590,
+      "output": "store/screenshots/iphone-landscape/drafts-v1/04-ready.png",
+      "title": "준비되셨나요? 업무 시작!",
+      "subtitle": "좌우 버튼으로 균형을 잡아보세요",
+      "sourceOriginalSha256": "070afa9a897c2a02618a787396076d4a9a672279691b5d4062c2795c6a92026b"
+    },
+    {
+      "order": 5,
+      "source": "store/screenshots/source/2026-09-30/photo-2.jpg",
+      "sourceSha256": "25f29eea2de960659a2e977164e8f3f5e44c99ce910d3730f9b46b4fcb683540",
+      "sourceWidth": 1280,
+      "sourceHeight": 590,
+      "output": "store/screenshots/iphone-landscape/drafts-v1/05-pause.png",
+      "title": "잠깐 멈춰도, 출근길은 계속",
+      "subtitle": "쉬었다가 다시 이어갈 수 있어요",
+      "sourceOriginalSha256": "2f0b45214b7a46cef8308ae962d8318351cd8852c21a17524783ba6a39d593e0"
+    }
+  ]
+}

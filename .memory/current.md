@@ -1,5 +1,9 @@
 # Current Context
 
+## Latest checkpoint — 2026-09-30 실제 캡처6장 수신·공개 심사 요청
+- 사용자가 캡처 편집과 App Store 배포를 요청했다.6장 모두1280×590 JPG(47,326~72,582bytes), 실제 홈/출근길·기울기/카운트다운/일시정지/랭킹/잠긴 보상캐릭터 화면을 확인했다. 촬영 기종·iOS·정확한buildNumber는 미확인. T02 in_progress 유지, 전체 기기QA 통과로 취급하지 않는다.
+- Apple 공식 가로 규격 확인. 확대는 원본 세부정보 복원이 아니므로 고해상도 원본 또는 현재 확대시안 선택을 확인한 뒤 편집한다. 타인 닉네임이 있는 랭킹은 공개후보에서 보류. 심사 소개 문구 최종 확인 약속·개인정보/연령/운영 입력 등의 미완료 게이트 유지. 이 턴에는 이미지 편집/원격 업로드/심사 제출/공개/새IPA를 실행하지 않았다.
+
 ## Latest checkpoint — 2026-09-30 TestFlight build6 전달 완료
 - 고정 소스 `09a7a0949efc21554fee29a3e77e14c18328efe3`(설정 링크089c8bd/성실 아이콘 포함), 실제 archive112파일: blob mismatch0/untracked0/비밀·로그0. branding/release8/type/ranked8 통과, 직전 전체700검증 소스 유지. EAS production 공개2변수 값비노출 readback 일치.
 - build `3fd87f8b-5d8e-479a-8fc8-e7cc3a8de37a` 및 정확한 ID submission `e0347b70-45bb-4aac-a9f2-d76c8d8cf60d` FINISHED. Apple 최종 재조회:1.0.0(6) VALID/IN_BETA_TESTING/READY_FOR_BETA_SUBMISSION/expired=false. 업로드완료306f338, 기존 서명 재사용·freeze-credentials, 이전5번 상태 history 보존. 실제 iPhone 설치·기기 QA는 사용자 확인 대기.
@@ -200,16 +204,16 @@
 - 아이콘 Task 완료 후 Active Task를 보존된 베테랑 P01-T03로 복귀한다. 원래 iOS P03-T03도 별도 미완료이고 기존 미커밋 변경은 보존한다.
 
 ## Active Plan
-[App Store 공개 심사 준비](./plans/2026-09-29-app-store-review-prep.md)
+[App Store JPG 캡처 시안](./plans/2026-09-30-store-screenshot-drafts.md)
 
 ## Active Phase
-[P02 iOS 전달·심사 준비](./phases/2026-09-29-app-store-review-prep/P02-ios-delivery/phase.md)
+[P01 캡처 시안](./phases/2026-09-30-store-screenshot-drafts/P01-assets/phase.md)
 
 ## Active Task
-[T02 최신 TestFlight iPhone QA](./phases/2026-09-29-app-store-review-prep/P02-ios-delivery/T02-native-qa.md)
+[T01 실제 JPG 캡처 가로 시안](./phases/2026-09-30-store-screenshot-drafts/P01-assets/T01-screenshot-drafts.md)
 
 ## Status
-- Active status: `in_progress` (app-store-review-prep P02-T02; 사용자 실제 iPhone 설치·QA·캡처 증거 대기). T01 전달 완료306f338, Apple6번VALID/내부베타 테스트 확인. P01-T03 pending 및 이전 베테랑/원래 iOS QA 미완료 보존.
+- Active status: `in_progress` (store-screenshot-drafts P01-T01;사용자2번JPG확대시안선택). 원래app-store-review-prep P02-T02 미완료보존,시안완료후복귀. 이미지/소개승인전원격제출없음.
 - Historical checkpoint: 원래 P03-T03 nativeQA. 렉돌 P01-T01/T02는 `55b72ff`/`19b0a79`로 로컬 완료. 새 소스의 웹·iOS 재배포는 별도 확인 필요.
 - Historical checkpoint: 원래 P03-T03 nativeQA. 닉네임 안내 T01은8ac885a로 완료. 사용자 build4 확인담당은 유지하되 이번 기능은 build4에 미포함.
 - Latest completed request (2026-09-22): rookie를 생성 이미지 PNG 부품(우측 3/4, 다리·팔 절반, 표정 평소/위험40도/넘어짐)으로 교체, commit 5cf570d. [결정](./decisions/2026-09-22-side-view-walk.md), [학습노트](../docs/learning-notes/2026-09-22-side-view-walk.md). Jest650, Chromium34pass/11skip/0fail(3.4min), rules f7245064c9459310 불변, 4173=dist index-298ee86edf82ff1bbdd0079e1339a79f.js. 보상 2종은 P02(시트 필요). 사용자 요청: 다른 사람이 테스트할 환경(예/아니오만 답함=네) — 방식 미정.
@@ -252,6 +256,7 @@
 - T01 Pages CI gate 구현·검증 완료. Production bundle 검사 통과, typecheck/ranked/Jest/ranking/Playwright 통과. T02 원격 GitHub 인증/production backend preflight로 이동.
 
 ## Next Step (IMPORTANT)
+현재 최우선:store-screenshot-drafts/P01-assets/T01-screenshot-drafts.md의원본보존·5장합성·검증을실행하고시안을보여준다. 완료후원래P02-T02실기기QA로복귀한다. 아래는과거지시다.
 현재 최우선: `2026-09-29-app-store-review-prep/P01-readiness/T02-public-pages.md`에 따라 한·영 지원·개인정보 페이지와 export/검증 흐름을 구현하고 로컬·공개 HTTP 결과를 구별해 기록한다. 아래 지시는 과거 기록이다. 실기기 증거가 없는 이전 T03는 미완료로 유지하며 캡처는 최신 TestFlight 원본을 사용자에게 받아 확인한다.
 현재 최우선: `2026-09-29-veteran-mentor-sprite/P01-character/T03-veteran-qa.md`에 따라 웹/Expo Go에서 네 걸음, 위험·넘어짐, 컵, 보호, 프레임 손맛을 실제로 확인한다. T01 원본 네 장을 임의 수정하지 않는다. 아래 T02/이전 지시는 과거 맥락이다.
 현재 최우선: `2026-09-29-veteran-mentor-sprite/P01-character/T02-veteran-renderer.md`를 읽고 승인한 6칸 아틀라스를 `veteran` 장면에 연결하며 기존 SVG 가정을 테스트에서 교체한다. 01·03 오른발 반복은 사용자 승인대로 수정하지 않는다. 원래 P03-T03으로의 복귀는 베테랑 P01 완료 뒤이며, 아래 지시들은 모두 과거 맥락이다.
