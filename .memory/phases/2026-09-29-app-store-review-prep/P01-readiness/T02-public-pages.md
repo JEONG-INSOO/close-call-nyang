@@ -1,6 +1,6 @@
 # Task: T02 지원·개인정보 안내 공개 페이지
 
-## Status: in_progress
+## Status: done
 
 ## Goal
 
@@ -38,7 +38,7 @@
 
 ## Acceptance Criteria
 - [x] 두 경로가 로컬 빌드에서 열리고 한국어·영어·연락처·삭제 경로가 코드와 부합한다.
-- [ ] 공개 배포 후 실제 URL 200과 내용 검증을 기록한다. 미배포면 Task 완료로 표시하지 않는다.
+- [x] 공개 배포 후 실제 URL 200과 내용 검증을 기록한다. 미배포면 Task 완료로 표시하지 않는다.
 - [x] 키·토큰·비공개 식별자 및 미검증 보존 약속을 페이지에 포함하지 않는다.
 
 ## Validation
@@ -60,6 +60,7 @@
 - 배포 CI의 browser 단계가 오래 실행되어 운영 설정 로컬에서 held-keyboard test를 15초 제한으로 재현: 첫 닉네임 안내 modal이 시작 버튼을 가려 click timeout. 이전 local-only 빌드는 welcome이 없어 통과했다. 배포 검증 복구에 필요한 test-only 조정으로 공통 gameplay fixture는 returning guest로 준비하고, 실제 ‘나중에’ 클릭/저장/reload/시작/가입 쓰기0는 별도 synthetic-configured test로 검증한다. 실제 게임 안내·인증·캐릭터/점수는 바꾸지 않는다.
 
 ## Learning
+- 실제 공개 완료: source `fbfd41c`, 배포 test repair `03c67539575b626b798c0326e30bf8e5e884b782`; Actions `36655593459` build/deploy success. support/privacy 모두 HTTP200 UTF-8이고 CRLF 정규화 SHA-256이 저장소 HTML과 일치한다. support `96dcf8deaba317177c592464aff901a5911457dcb05f8f5fb56e509d2ad643a3`, privacy `0be7e56b6b7db7f4a34cd7c17829a309af0f4b0063dd9d1bc9b6ac98507fee98`. 원격 Playwright6/6(16.9s), 세 화면 크기/언어/경로 검증 및 휴대폰 두 캡처 육안 확인. 실제 iPhone 앱 QA/법적 적합성 인증은 아니다.
 - CI 첫 실행 `36653859313`는 stale onboarding helper로 지연되어 cancelled 확인했다. 테스트만 수정한 후 운영 구성 전체 Playwright는 46 passed/11 환경별 intentional skips, 3.8m. 실제 새 CI/원격200는 재배포 후 검증한다.
 - 개념: 데이터 수집 고지, 공급자와 운영자 역할, 정적 페이지를 앱 번들 배포에 붙이는 방법.
 - 예상 디버깅: GitHub Pages의 프로젝트 base path 누락, SPA가 `/privacy/`를 404로 처리, 캐시된 이전 배포.
@@ -78,6 +79,6 @@ Task: T02-public-pages
 ```
 
 ## Progress
-- [ ] 구현·검증 완료
-- [ ] 실제 공개 URL 검증 및 범위 한정 커밋
-- commit: pending
+- [x] 구현·검증 완료
+- [x] 실제 공개 URL 검증 및 범위 한정 커밋
+- commit: `fbfd41c` (구현), `03c6753` (배포 테스트 복구); 완료 기록은 별도 커밋

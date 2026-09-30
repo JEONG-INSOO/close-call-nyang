@@ -1,6 +1,6 @@
 # Task: T01 앱 개인정보·고객지원 링크
 
-## Status: pending
+## Status: in_progress
 
 ## Goal
 

@@ -1,5 +1,9 @@
 # Current Context
 
+## Latest checkpoint — 2026-09-30 공개 페이지 T02 완료, 앱 링크 T01 시작
+- `03c6753` push 후 Actions `36655593459` build/deploy success. 공식 support/privacy HTTP200 UTF-8, 소스 hash 일치, 원격 브라우저6/6·휴대폰 캡처 확인. 이전 `36653859313`는 cancelled이며 성공 증거가 아니다. 로컬 전체 브라우저46 passed/11 intentional skips.
+- 공개 페이지 T02 done(`fbfd41c`, `03c6753`). 사용자가 승인한 설정의 개인정보·고객지원/랭킹 문의 연결 단일 Task를 순서대로 시작한다. 완료 후 원래 app-store-review-prep P01-T03로 복귀한다. IPA/업로드/심사 제출은 이번 웹 배포에 포함되지 않는다.
+
 ## Latest checkpoint — 2026-09-30 공개 페이지 T02 구현·push 완료, 원격 검증 진행
 - `fbfd41c`: 한·영 지원·개인정보 페이지, export 복사, 필수 페이지/안전 검사, CI와 브라우저 검증을 범위 한정 커밋했다. Node22/release8/typecheck/ranked8/env10/로컬 브라우저6 통과. 기존 dist/무관 dirty는 보존했다.
 - 사용자 명시 승인으로 main을 `a4c5ee2`→`fbfd41c` 정상 push했다. Pages 실행 `36653859313`의 완료·원격 URL200는 아직 pending이다. 실제 배포 확인 전 T02를 done으로 바꾸거나 T03로 이동하지 않는다. 빌드/원격 심사 제출 없음.
@@ -182,16 +186,16 @@
 - 아이콘 Task 완료 후 Active Task를 보존된 베테랑 P01-T03로 복귀한다. 원래 iOS P03-T03도 별도 미완료이고 기존 미커밋 변경은 보존한다.
 
 ## Active Plan
-[App Store 공개 심사 준비](./plans/2026-09-29-app-store-review-prep.md)
+[설정·랭킹 공개 안내 링크](./plans/2026-09-30-store-policy-links.md)
 
 ## Active Phase
-[P01 출시 자료·소스 준비](./phases/2026-09-29-app-store-review-prep/P01-readiness/phase.md)
+[P01 공개 안내 링크](./phases/2026-09-30-store-policy-links/P01-links/phase.md)
 
 ## Active Task
-[T02 지원·개인정보 안내 공개 페이지](./phases/2026-09-29-app-store-review-prep/P01-readiness/T02-public-pages.md)
+[T01 앱 개인정보·고객지원 링크](./phases/2026-09-30-store-policy-links/P01-links/T01-policy-links.md)
 
 ## Status
-- Active status: `in_progress` (app-store-review-prep P01-T02). T01은 `838d7c1`로 완료했다. 베테랑 P01-T03와 원래 P03-T03 출시·기기 검증은 보존된 `in_progress` 작업이다. 성실한 냥대리 앱 아이콘 P01-T01은 `e809381`로 완료했다.
+- Active status: `in_progress` (store-policy-links P01-T01). 원래 출시 P01-T01/T02는 완료하고 T03는 이 링크 작업 후 복귀한다. 베테랑 P01-T03와 원래 P03-T03 출시·기기 검증은 보존된 `in_progress` 작업이다.
 - Historical checkpoint: 원래 P03-T03 nativeQA. 렉돌 P01-T01/T02는 `55b72ff`/`19b0a79`로 로컬 완료. 새 소스의 웹·iOS 재배포는 별도 확인 필요.
 - Historical checkpoint: 원래 P03-T03 nativeQA. 닉네임 안내 T01은8ac885a로 완료. 사용자 build4 확인담당은 유지하되 이번 기능은 build4에 미포함.
 - Latest completed request (2026-09-22): rookie를 생성 이미지 PNG 부품(우측 3/4, 다리·팔 절반, 표정 평소/위험40도/넘어짐)으로 교체, commit 5cf570d. [결정](./decisions/2026-09-22-side-view-walk.md), [학습노트](../docs/learning-notes/2026-09-22-side-view-walk.md). Jest650, Chromium34pass/11skip/0fail(3.4min), rules f7245064c9459310 불변, 4173=dist index-298ee86edf82ff1bbdd0079e1339a79f.js. 보상 2종은 P02(시트 필요). 사용자 요청: 다른 사람이 테스트할 환경(예/아니오만 답함=네) — 방식 미정.
