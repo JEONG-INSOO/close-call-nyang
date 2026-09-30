@@ -1,6 +1,6 @@
 # Task: T01 새 iOS 빌드와 정확한 TestFlight 업로드
 
-## Status: in_progress
+## Status: done
 
 ## Goal
 
@@ -38,18 +38,26 @@ P01에서 고정한 소스·공개 환경으로 새 아이콘이 들어간 서�
 - 업로드 성공과 설치 가능 상태를 구분하고 `autoIncrement` buildNumber의 의미를 기록한다.
 
 ## Acceptance Criteria
-- [ ] 소스·아이콘·운영 설정과 실제 archive의 대응이 검증되었다.
-- [ ] 새 iOS EAS build가 FINISHED이며 정확한 ID가 기존 ASC 앱으로 업로드 FINISHED.
-- [ ] Apple 처리·실기기 QA를 아직 확인하지 않았다면 미확인으로 남긴다.
+- [x] 소스·아이콘·운영 설정과 실제 archive의 대응이 검증되었다.
+- [x] 새 iOS EAS build가 FINISHED이며 정확한 ID가 기존 ASC 앱으로 업로드 FINISHED.
+- [x] Apple 처리·실기기 QA를 아직 확인하지 않았다면 미확인으로 남긴다.
 
 ## Validation
 - `npm.cmd run branding:verify`, `npm.cmd run test:release`, `npm.cmd run typecheck`, `npm.cmd run ranked:check` — 로컬 release 게이트.
 - `npx.cmd --yes eas-cli@24.7.0 project:info` 및 `eas env:list --environment production` — 소유 계정/공개 변수 이름 확인(비밀 값 미출력).
 - `npx.cmd --yes eas-cli@24.7.0 build:view <build-id> --json` — 정확한 빌드 상태·번호.
-- `npx.cmd --yes eas-cli@24.7.0 submit:status --id <submission-id>` — 업로드 상태. Apple API 실패 시 EAS 사실까지만 기록.
+- `eas.cmd submit:view <submission-id> --json` — 정확한 EAS 업로드 상태, 필요한 ID/상태/시각만 출력.
+- `eas.cmd submit:status --platform ios --profile production --json --non-interactive` — 실제 Apple 처리 상태. 실제24.7.0 help에는 --id가 없으므로 앱/번호로 조회한다. Apple API 실패 시 EAS 사실까지만 기록.
 - `git -c safe.directory=D:/GrillmeEDU diff --check`.
 
+## Validation Results — 2026-09-30 upload completed
+- branding 원본일치1024/48 opaque, release8/typecheck/ranked8 통과. 최근 앱 소스의 전체700/50 suites·웹 링크3 통과 결과 유지. 앱 runtime diff 없음.
+- EAS계정·projectID, production 공개2변수의 URL/ref와 publishable형식 일치(값비출력). 기존 team/active profile 사용·freeze-credentials. 실제 archive112파일 전부09a7a09 Git blob과 일치, untracked0/forbidden0, 아이콘/링크/아틀라스 포함. /debug.log 제외했고 기존 dirty파일 보존.
+- build `3fd87f8b-5d8e-479a-8fc8-e7cc3a8de37a`, 1.0.0(6), source09a7a0949efc21554fee29a3e77e14c18328efe3, FINISHED2026-09-30T02:23:28.174Z. 정확한 ID 제출 `e0347b70-45bb-4aac-a9f2-d76c8d8cf60d` FINISHED2026-09-30T02:24:43.663Z, ASC6815771701 연결 일치.
+- Apple 최종 재조회에서6번 VALID/IN_BETA_TESTING/READY_FOR_BETA_SUBMISSION, expired=false, uploadedDate2026-09-30T11:25:45+09:00 확인. 기기 설치·QA 미확인. App Review/공개/외부 초대는 실행하지 않았다.
+
 ## Learning
+- EAS build 완료·정확한 ID 제출 완료와 Apple VALID/내부 베타 테스트 상태를 별도 조회로 확인했다. 첫 Apple 목록에서는6번이 없었으므로 즉시 설치 가능이라 추측하지 않았고, 재조회 증거 이후 상태를 갱신했다. 실제 기기 QA와 공개 심사는 별개다. 상세 학습노트2026-09-30-testflight-upload.md.
 - 개념: source snapshot과 cloud archive, 원격 buildNumber, Apple 업로드 파이프라인.
 - 예상 디버깅: 이전 더티 파일이 archive에 섞임, EAS 계정/ASC 앱 불일치, 401을 앱 미존재로 잘못 해석.
 - 복습 질문: 빌드 성공이 왜 TestFlight 설치 성공이 아닌가? 새 아이콘을 확인할 때 어떤 buildNumber를 보아야 하는가? 원격 서명을 임의 교체하면 어떤 위험이 있는가?
@@ -67,6 +75,6 @@ Task: T01-eas-build-upload
 ```
 
 ## Progress
-- [ ] archive·환경·빌드 확인
-- [ ] 정확한 빌드 업로드 및 증거 커밋
-- commit: pending
+- [x] archive·환경·빌드 확인
+- [x] 정확한 빌드 업로드 및 증거 기록
+- commit: 완료 증거 커밋에 기록; source `09a7a09`

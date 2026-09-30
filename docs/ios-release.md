@@ -1,5 +1,12 @@
 # iOS 출시 준비와 Expo Go 검사
 
+## 2026-09-30 · 최신 설정 링크·성실 아이콘 TestFlight 1.0.0(6)
+
+- 소스 `09a7a0949efc21554fee29a3e77e14c18328efe3`(089c8bd 포함). archive112파일 전부 커밋 blob과 일치, untracked/비밀/로그0. 기존 dirty 작업 보존. branding/release8/type/ranked8 통과, 직전 runtime700 tests 유지.
+- build `3fd87f8b-5d8e-479a-8fc8-e7cc3a8de37a` FINISHED2026-09-30T02:23:28.174Z,1.0.0(6). 정확한 이 ID를 ASC6815771701로 제출한 `e0347b70-45bb-4aac-a9f2-d76c8d8cf60d`도 FINISHED2026-09-30T02:24:43.663Z.
+- Apple 최종 재조회에서6번 processingState=VALID/internalState=IN_BETA_TESTING/externalState=READY_FOR_BETA_SUBMISSION/expired=false 확인(uploadedDate2026-09-30T11:25:45+09:00). 내부 TestFlight 테스트 상태이며 실제 기기 설치·QA는 미확인. 사용자 기기에서6번 업데이트 후 아이콘/설정 링크·Safari 복귀/걷기·터치/닉네임 안내를 확인한다. App Review/공개 출시/외부 초대/웹 재배포는 실행하지 않았다.
+- remote 서명 재사용·freeze-credentials, production 공개2변수 확인, 모의 광고·replay진단off. 이전5번 상태는 store/build-history/2026-09-29-build5.json에 보존했다. 로컬 app.config 번호1이 아니라 원격 번호6으로 실제 IPA를 식별한다.
+
 ## 2026-09-30 · 공개 페이지 게시 및 앱 링크 구현
 
 - `03c6753`/Actions36655593459의 공식 웹 재배포 성공. support/privacy HTTP200·소스 hash 일치·원격 브라우저6 통과.

@@ -1,5 +1,9 @@
 # 우당탕탕 냥대리 학습노트
 
+## 2026-09-30 · 최신 설정 링크·아이콘 TestFlight 전달
+
+[상세 학습노트](./learning-notes/2026-09-30-testflight-upload.md): 업로드 입력112파일을 고정 커밋과 대조하고1.0.0(6)을 빌드·업로드했다. EAS 완료와 Apple 처리·실제 설치를 구분하며, 이전5번 상태는 history로 보존했다. 기기 QA는 아직 남았다.
+
 ## 2026-09-30 · 앱 안의 개인정보·고객지원 링크
 
 [상세 학습노트](./learning-notes/2026-09-30-public-links.md): 공통 URL·사용자 탭·브라우저 오류와 close/reopen의 비동기 경계를 정리했다. 전체700 tests와 웹 링크3건을 검증했으며 실제 iPhone Safari 복귀는 새 TestFlight에서 확인한다.
