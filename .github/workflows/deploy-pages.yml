@@ -93,7 +93,7 @@ jobs:
         run: npm run web:verify
 
       - name: Public page regression tests
-        run: node --test scripts/verify-web.test.mjs
+        run: node --test scripts/verify-web.test.mjs scripts/policy-supplement.test.mjs
 
       - name: Build isolated browser fixtures
         run: |

@@ -208,13 +208,13 @@
 - 아이콘 Task 완료 후 Active Task를 보존된 베테랑 P01-T03로 복귀한다. 원래 iOS P03-T03도 별도 미완료이고 기존 미커밋 변경은 보존한다.
 
 ## Active Plan
-[App Store 공개 심사 준비](./plans/2026-09-29-app-store-review-prep.md)
+[개인정보 방침 보완 배포](./plans/2026-10-01-policy-supplement-deploy.md)
 
 ## Active Phase
-[P02 iOS 전달·심사 준비](./phases/2026-09-29-app-store-review-prep/P02-ios-delivery/phase.md)
+[P01 방침 게시](./phases/2026-10-01-policy-supplement-deploy/P01-publication/phase.md)
 
 ## Active Task
-[T02 최신 TestFlight iPhone QA](./phases/2026-09-29-app-store-review-prep/P02-ios-delivery/T02-native-qa.md)
+[T01 승인 방침 보완 검증](./phases/2026-10-01-policy-supplement-deploy/P01-publication/T01-policy-contract.md)
 
 ## Status
 - Active status: `in_progress` (app-store-review-prep P02-T02;시안5장2fe32ec완료、사용자승인/최신촬영빌드·기종·iOS/남은실기기QA증거대기). P01-T03및소개최종확인게이트보존、원격제출없음.
