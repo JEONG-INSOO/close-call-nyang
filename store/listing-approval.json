@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "approvedAt": "2026-09-30",
+  "evidenceSource": "user_confirmation",
+  "answer": "파일의 한·영 등록 문구 승인 (추천)",
+  "fields": ["name", "subtitle", "promotionalText", "description", "keywords"],
+  "hashEncoding": "SHA-256 of UTF-8 JSON.stringify({name,subtitle,promotionalText,description,keywords}) in this key order",
+  "locales": {
+    "ko-KR": "6410f3f905070a7ced3e5a4537d499db651a55e3feb06ddb35a173c764b299e0",
+    "en-US": "a5b51532e16462e0ceaa17fbba8f5f6144a11cd0c58e0a88a21029af113e78a7"
+  },
+  "privacyAnswersApproved": false,
+  "finalReviewSubmissionApproved": false
+}

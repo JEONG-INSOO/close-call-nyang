@@ -13,7 +13,17 @@
   "leaderboardQa": "pending",
   "backendUrl": "https://fgojrxmpxpzdiwsktjsx.supabase.co",
   "testflightStatus": "apple_valid_internal_beta_testing_device_qa_pending",
-  "reviewStatus": "not_started",
+  "reviewStatus": "waiting_for_review",
+  "appStoreVersion": "1.0",
+  "appReviewSubmission": {
+    "id": "3d829fe4-2709-47fd-9708-016771fa9d3f",
+    "observedLocalDateTime": "2026-10-01 11:37",
+    "timeZone": "Asia/Seoul",
+    "status": "WAITING_FOR_REVIEW",
+    "evidence": "Apple submission receipt and details; version1.0 / 1.0.0(6). Separate from the existing EAS upload submissionId/submittedAt below",
+    "reviewApproved": false,
+    "publicReleaseCompleted": false
+  },
   "releaseMode": "manual",
   "submissionId": "e0347b70-45bb-4aac-a9f2-d76c8d8cf60d",
   "submittedAt": "2026-09-30T02:24:43.663Z"

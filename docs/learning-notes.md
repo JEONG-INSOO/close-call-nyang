@@ -1,5 +1,7 @@
 # 우당탕탕 냥대리 학습노트
 
+최신 심사 학습: [초안·EAS 업로드·App Review 접수·공개의 차이](learning-notes/2026-10-01-app-review-submission.md).
+
 최신 독립 배포 학습: [개인정보 방침 보완의 검증·공식 게시](learning-notes/2026-10-01-policy-supplement.md).
 
 ## 2026-09-30 · 검사 범위 완료와 전체 통과의 차이

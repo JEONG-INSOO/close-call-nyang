@@ -1,9 +1,10 @@
 {
   "schemaVersion": 1,
-  "supportEmail": null,
-  "copyrightHolder": null,
-  "price": null,
-  "territories": null,
+  "supportEmail": "mocca3232@naver.com",
+  "copyrightHolder": "2026 Insoo Jeong",
+  "price": "free",
+  "territories": "worldwide_except_eu_china_vietnam",
+  "excludedTerritories": ["AUT", "BEL", "BGR", "HRV", "CYP", "CZE", "DNK", "EST", "FIN", "FRA", "DEU", "GRC", "HUN", "IRL", "ITA", "LVA", "LTU", "LUX", "MLT", "NLD", "POL", "PRT", "ROU", "SVK", "SVN", "ESP", "SWE", "CHN", "VNM"],
   "appleTeamId": "S9RLQ8474U",
   "ascAppId": "6815771701"
 }

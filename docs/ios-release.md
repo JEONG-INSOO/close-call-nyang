@@ -1,5 +1,75 @@
 # iOS 출시 준비와 Expo Go 검사
 
+## 2026-10-01 · App Review 실제 제출 완료
+
+- 사용자 “앱심사 제출까지 가자” 승인 후 버전1.0/빌드6/자료·수동 출시 확인, 심사에 추가와 실제 최종 제출을 각각 수행했다. Apple “1개의 항목 제출됨” 및 상세 iOS1.0/1.0.0(6)·심사 대기 중·2026-10-01 11:37 확인. AppReview ID `3d829fe4-2709-47fd-9708-016771fa9d3f`는 EAS upload ID와 다르다. ignored asc-review-submitted-receipt.jpg/asc-review-submitted.jpg.
+- 초기 자동 권한 검토 시간 초과 뒤 현재 초안 상태를 읽고 단 한 번 재시도했다. 접수 후 취소·재제출 없음. 무료/IAP없음/수동 출시/승인 지역 제외/DSA 별도 문의 및 미검증 QA는 그대로다. 승인/공개 완료가 아니며 새로운 약관 동의·DSA 신고를 수행하지 않았다. 아래 미제출 문장은 과거 기록이다.
+- 상세 학습: [App Review 접수](learning-notes/2026-10-01-app-review-submission.md). 심사 결과 확인과 승인 후 수동 공개는 향후 사용자 요청에서 진행한다.
+
+## 2026-10-01 · 중국 본토·베트남 이번 출시 제외
+
+- 사용자1 승인으로 정확한 앱6815771701의 두 지역만 선택 해제/2지역 제외 확인 후 reload했다.146개지역 선택·중국 본토/베트남 사용 불가·EU27 보류 유지, 한국/미국/대만/홍콩 유지. `release-inputs.json` 제외29개 ISO3와 `connect-checkpoint.json`을 맞췄다. ignored `output/store-review/asc-china-vietnam-deferred.jpg`.
+- 실제 허가를 취득하거나 임의 번호/증빙을 입력하지 않았다. `chinaVietnamPermits: not_run`은 유지하고 지역 제외만 완료로 기록한다. 새 IPA 필요 없음, App Review 제출/공개 없음. 남은 공식 방침 보완 배포/계정 DSA/최종 경고·체크리스트는 별개다. 과거148지역 기록은 EU만 보류한 당시 상태다.
+
+## 2026-10-01 · 한국 연락처 확인 완료
+
+- 사용자 이메일 확인 완료 보고 후 실제 대한민국 전자상거래법 행은 한국/2026-10-01/활성화됨이며 한국 미완료 배너가 사라졌다. 세부 조회에서 `mocca3232@naver.com`과 한국 App Store 제품 페이지 공개 안내를 확인했다. 이전 마스킹된 입력값의 불일치와 최종 저장값 표시 확인은 별개로 기록한다. 에이전트 인증코드 입력/최종 동의 클릭 없이 실제 결과를 읽었다.
+- `koreaCompliance: passed`는 이 연락처 절차의 활성화 증거이며 DSA 신고·중국/베트남 허가·앱 심사 제출 완료는 아니다. 개인정보 없는 행 증거 ignored `output/store-review/asc-korea-compliance-active.jpg`. 다음은 허가 미확인 두 지역의 배포 유지/보류 선택이다.
+
+## 2026-10-01 · 한국 공개 이메일 승인과 인증 인계
+
+- 사용자가 한국 공개 연락처로 `mocca3232@naver.com` 사용에 동의하고 사업자가 없다고 확인했다. 실제 한국 모달 입력/BRN 없음(NO) 선택 후 Next로 Apple 인증 iframe의 `Enter verification code`·입력6칸까지 진행했다. 아직 사용자 직접 코드 입력·최종 이메일 검토/확인은 남았다. 입력값이 readback에서 마스킹되어 정확한 문자열 대조 성공으로 주장하지 않는다.
+- `koreaContactApproval`의 공개 동의/BRN 없음/실제 선택과 인증 미완료를 구분한다. 코드/신분 증빙·등록번호 원문은 저장하지 않는다. 개인정보 없는 증거 ignored `output/store-review/asc-korea-email-verification.jpg`. EU 제외/기존 문의 유지, 앱 심사 제출 아님.
+
+## 2026-10-01 · EU27개국 보류와 나머지 심사 준비
+
+- 사용자 요청으로 이 앱만 EU27개국 선택 해제/제외 확인 후 재조회했다.148개지역 선택 및 EU27행 모두 사용 불가; 한국·미국·영국·노르웨이·스위스 유지. `store/release-inputs.json`의 제외 ISO3 목록과 Connect 증거를 맞춘다. 다른 앱/기존 문의/계정 거래자 상태 변경 없음. ignored `output/store-review/asc-eu-deferred.jpg`.
+- [Apple DSA 안내](https://developer.apple.com/help/app-store-connect/manage-compliance-information/manage-european-union-digital-services-act-trader-requirements/)는 비EU 배포에도 거래자 상태 신고가 필요하다고 설명한다. 지역 제외가 신고·증빙 검증 완료나 제출 가능 보장이 아니다. EU 증빙만 보류하고 남은 신고 경고는 실제 최종 준비 화면에서 확인한다.
+- 한국 실제 모달에는 연락처 이메일 및 ‘대한민국 거주/유효BRN 개발자’ 예·아니요 질문이 있다. 아직 선택/입력/확인하지 않았다. 지원 이메일을 한국 공개 연락처로 쓰는 동의와 BRN 존재 여부만 질문했다. [Apple 한국 안내](https://developer.apple.com/help/app-store-connect/manage-compliance-information/manage-korea-compliance-information).
+- 중국 ICP/베트남 게임 허가는 앱 정보에서 설정되지 않은 상태다. [Apple 지역 요건](https://developer.apple.com/help/app-store-connect/reference/app-information/app-information)은 중국 게임 승인번호 및 베트남 게임 허가를 설명한다. 두 국가 제외나 허가 준비는 별도 사용자 선택 필요, 임의 서류/번호 입력 금지.
+- 기존 빈 심사 메모에 가로/Korean UI, 조작, 첫 닉네임 설정 경로, 온라인 익명 인증·랭킹, 신고/숨기기·온라인 삭제·정책 링크, 캐릭터 해금, 광고/IAP 없음 안내를 저장했다. reload 후 전체 문자열 일치, ignored `output/store-review/asc-review-notes-saved.jpg`. 심사 제출은 하지 않았다.
+
+## 2026-10-01 · Apple DSA 증빙 문의 접수 완료
+
+- 사용자1이 아래 문의와 현재 회원 이름/Apple 계정 이메일의 Apple 지원 전달을 승인했다. 초안 문자열 일치·발송 버튼 활성화를 확인하고 한 번 발송했다. 실제 접수 화면의 감사 문구·케이스 생성·이메일 회신 안내를 확인했다. 계정 이메일/케이스 ID 원문은 저장하지 않는다. 개인정보 없는 증거: ignored `output/store-review/apple-dsa-support-sent.jpg`.
+- 상태는 `submitted_awaiting_reply`이며 답변/허용 서류 확인/증빙 업로드/DSA 최종 신고/앱 심사 제출은 아직 아니다. 답변의 인정 서류·가림·번역 기준을 확인한 뒤 실제 발급 서류와 구체적 업로드 승인을 받아야 한다. 아래 미발송 기록은 초안 당시 상태다.
+
+## 2026-10-01 · DSA 개인 증빙 지원 문의 초안
+
+- 사용자에게 사업/법원 증빙이 없으며 대체 허용 서류를 Apple에 문의하는1번 경로를 선택했다. 실제 Apple Developer Support → 새로운 문제 → 멤버십 및 계정 → 계약 및 계약서 → 이메일 양식에 아래 초안을 입력하고 문자열 일치 확인. 아직 메시지 보내기 미실행/답변 없음. 신분증·주소·전화 원문 및 회원 이메일은 저장하지 않는다. 지원 답변으로 허용 여부와 가림 범위를 확인하기 전 임의 증빙 생성/업로드하지 않는다.
+
+문의 제목: 개인 개발자의 DSA 거래자 이름·주소 증빙 대체 서류 문의
+
+안녕하세요. 대한민국에서 Apple Developer Program 개인 회원으로 등록되어 있으며, EU App Store 배포를 위해 DSA 거래자 정보를 확인하는 중입니다.
+
+App Store Connect에서 문서 언어를 한국어로 선택한 뒤 “이름 확인 문서” 단계에 진입했습니다. 화면에서는 이름을 확인할 수 있는 비즈니스 문서 또는 법원 문서 사본을 요구하지만, 현재 해당 서류를 보유하고 있지 않습니다.
+
+아래 사항을 안내해 주시기 바랍니다.
+
+1. 개인 회원은 이름 확인용으로 어떤 대체 서류를 제출할 수 있나요? 정부 발급 신분증 또는 증명서도 허용되는지, 허용되는 서류의 정확한 명칭을 알려 주세요.
+2. 주소 확인에는 어떤 공식 서류가 허용되나요? 이름 확인과 주소 확인에 동일한 서류를 사용할 수 있나요?
+3. 주민등록번호, 신분증 번호, 생년월일 등 불필요한 개인정보를 가려도 되나요? 반드시 보여야 하는 항목을 알려 주세요.
+4. 한국어 서류의 영문 번역이나 공증이 필요한가요? 계정의 영문 이름과 한국어 서류의 이름은 어떻게 대조하나요?
+
+실제로 발급받은 허용 서류를 준비한 후 제출하고자 합니다. 안전한 제출 방법과 기준을 안내해 주시면 감사하겠습니다.
+
+- 공식 문의 경로: https://developer.apple.com/contact/ . 지원 답변은 아직 없으며, 특정 서류가 수락된다는 뜻이 아니다. 문서 문의와 DSA 최종 신고/앱 심사 제출은 별도다.
+
+## 2026-10-01 · DSA 공개 연락처 단계 인계
+
+- 사용자가 향후 광고 수익·사업·홍보 목적을 확인했다. 거래자 경로 선택 후 공개 주소/전화/이메일 입력 모달로 진행했다. 실제 필드 모두 비어 있음, 기존 회원/심사 연락처 복사나 새 정보 입력 없음. 검증/증빙/최종 신고/앱 심사 제출도 하지 않았다.
+- 공개용 연락처 승인과 최종 준수 확인은 사용자 직접 진행을 권장한다. private 회원정보가 배경에 보여 모달 부분만 캡처한 ignored asc-dsa-contact-entry.jpg로 인계한다. T03 in_progress, 완료 커밋/정책 보완 공식 재배포 대기 유지.
+
+## 2026-10-01 · 콘텐츠 권한 저장, EU 자격 신고 대기
+
+- 사용자 캐릭터 자체 제작/AI 생성·배포 권한 확인과 자체 합성 오디오 근거 확보. 랭킹에 다른 사용자의 닉네임 표시가 있으므로 ASC 콘텐츠 권한은 필요한 권한 있음으로 저장하고 모달 닫힘/실제 문구 확인했다. ignored asc-content-rights-saved.jpg. 심사 승인이나 독립적인 권리 심사 결과는 아니다.
+- Business 화면은 DSA 거래자 자격 신고 및 Korea compliance 안내를 표시한다. DSA 선택은 둘 다 미선택, 사용자 상업/사업 목적 확인 필요. 계정의 비공개 주소/전화 원문을 기록·공개하지 않았고 계약 서명/신고 제출도 하지 않았다. T03·정책 보완 공식 배포·지역 요건·최종 제출 게이트 계속 미완료.
+
+## 2026-10-01 · App Privacy 공개표 게시 완료
+
+- 기존 ASC6815771701의7개 수집 유형을 기능목적/계정연결/추적no로 승인받고 저장했다. 사용자 게시 동의를 별도로 받은 뒤 게시 완료 문구를 실제 확인했다. ignored output/store-review/asc-privacy-published.jpg, store/privacy-approval.json 및 connect-checkpoint.json에 근거 기록. 심사 제출/공개 출시는 아니다.
+- 승인 정책 보완은 한영2문단/날짜만 로컬 적용; release9/9·페이지 안전22/22·기존dist web:verify passed. 이 보완의 공식 사이트 재배포는 아직 미실행, 새 IPA는 생성하지 않았다. 콘텐츠 권한/지역 규정·최종 검토가 남아 T03 in_progress/완료 커밋 대기, 전체QA pending/삭제·재설치 생략 유지.
+
 ## 2026-09-30 · 최신 설정 링크·성실 아이콘 TestFlight 1.0.0(6)
 
 - 소스 `09a7a0949efc21554fee29a3e77e14c18328efe3`(089c8bd 포함). archive112파일 전부 커밋 blob과 일치, untracked/비밀/로그0. 기존 dirty 작업 보존. branding/release8/type/ranked8 통과, 직전 runtime700 tests 유지.
@@ -123,3 +193,32 @@ npx.cmd expo start --go --lan --clear
 ## 배포로 넘어가기 전
 
 실기기 결과확인 → 기존 PagesT03·개인정보/지원URL·아이콘/스토어자료·EAS설정 준비 → 서명된iOS클라우드빌드 → 정확한빌드TestFlight업로드/처리/실기기검사 → 앱스토어소개문구/최종심사제출사용자승인. ExpoGo테스트통과를 AppStore출시완료로 표시하지 않는다. TeamID/ascAppID/EASprojectID를 추측하거나 비밀번호/2FA를 채팅/문서에 저장하지 않는다.
+# 2026-09-29 · 베테랑 냥대리 TestFlight 후보 1.0.0(5)
+
+- EAS iOS build `bf4c00e9-6e5c-4d5b-bf0e-51ddf6b92e40`가 `FINISHED`(2026-09-29 06:45:34 UTC). [빌드 확인](https://expo.dev/accounts/insoojeong/projects/close-call-nyang/builds/bf4c00e9-6e5c-4d5b-bf0e-51ddf6b92e40).
+- 정확히 이 build를 App Store Connect 앱 `6815771701`에 제출했고 EAS submission `40e5d3cf-97e8-41c4-a470-8a8767976ac8`도 `FINISHED`(2026-09-29 06:47:04 UTC). [제출 확인](https://expo.dev/accounts/insoojeong/projects/close-call-nyang/submissions/40e5d3cf-97e8-41c4-a470-8a8767976ac8).
+- Apple TestFlight 처리·테스터 그룹 배정·설치 가능 상태는 **미확인**이다. `eas submit:status`가 App Store Connect API 키 401을 반환했다. 제출 중 그룹 설정도 Apple 401로 건너뛰었으므로 App Store Connect에서 빌드 처리 결과와 그룹 배정을 별도 확인해야 한다. App Review/공개 출시는 하지 않았다.
+- 소스 표기 HEAD는 `4f42251344202dc4e412034cdace4e1a4ddb51d5`지만 **업로드 아카이브에는 커밋되지 않은 현재 작업 트리 변경도 포함**되어 있어 이 해시만으로 바이너리를 재현할 수 없다. 특히 베테랑·성실한 냥대리 최신 아틀라스와 런타임 변경을 포함한 아카이브 파일 해시를 대조했다. 향후 배포는 소스 커밋 후 재현 가능한 스냅샷으로 고정한다.
+- production EAS 환경의 공개 Supabase URL·publishable key가 설정된 것을 확인했고 모의 광고와 replay 진단은 꺼진 상태다. 개발용 전체 캐릭터 해금은 `__DEV__`에 한정되므로 배포 빌드의 베테랑 해금은 원래 100% 완료 10회 규칙을 따른다. 로컬 `ranking:env-check`의 `dist-config-match`는 오래된 `dist` 때문에 실패했으며, 이번 iOS 원격 빌드의 성공 근거로 삼지 않았다.
+- 검증: Jest 696/696, typecheck, ranked:check, release 7/7, 베테랑 아틀라스 `--check`, iOS export 통과. 사용자는 Expo Go에서 “잘돼”라고 보고했지만 TestFlight 5번 빌드의 실제 기기 QA와 상세 장면 매트릭스는 아직 남아 있다. 원래 베테랑 T03와 iOS 출시 P03-T03는 완료 처리하지 않는다.
+## 2026-09-30 · App Store 등록 준비 진행(심사 미제출)
+
+- 앱6815771701의 스토어 버전1.0에 TestFlight1.0.0(6)을 연결했다. Apple build ID103a4776-f5b9-4ef1-9428-8f72ea8c1539. 저장 후 reload에서 연결 유지 확인했다. IPA 새 빌드/재업로드가 아닌 스토어 후보 연결이다.
+- 지원URL `https://jeong-insoo.github.io/close-call-nyang/support/`, 저작권 `2026 Insoo Jeong`, 수동 출시를 저장하고 재조회했다. 심사 ‘로그인 필요’ 해제는 비밀번호 없는 앱의 데모 계정 정보 설정일 뿐 Supabase 인증을 꺼둔 것이 아니다.
+- 승인된 가로 이미지5장을 en-US/iPhone6.9 슬롯에 업로드하고 gameplay→characters→home→ready→pause로 정렬, reload에서5장/순서 확인했다. 6.5는 해당 자산을 재사용한다. 근거: `store/screenshots/approval.json.uploadEvidence`; 화면 캡처는 ignored `output/store-review/asc-screenshots-saved.jpg`.
+- 남음: 한/영 문구 최종 승인·한국어 등록, 전화번호 등 심사 연락처, 가격/전세계 설정, 연령등급·App Privacy 근거 확인 및 최종 제출 승인. 전체 QA pending, 삭제·재설치 사용자 생략2개 not_run을 유지한다. 앱/기존 기록 삭제와 App Review 제출/공개는 하지 않았다.
+- 후속 연락처: 사용자가 Apple 심사 용도로 제공한 전화번호와 공개 승인 이메일, Insoo Jeong을 입력·저장했다. reload 후 이름 유지와 전화/이메일의 비어 있지 않은 개인정보 마스킹 표시를 확인했다. 브라우저 마스킹 때문에 숫자/이메일 원문 일치는 독립 확인하지 못했다. 전화번호 원문은 저장소에 기록하지 않는다.
+- 검증: npm.cmd run test:release 8/8 passed, exit 0. 자료 등록은 부분 진행이며 최종 심사 제출은 하지 않았다.
+
+### 한·영 문구 승인 후 등록 — 2026-09-30
+
+- 사용자 승인한 name/subtitle/promotionalText/description/keywords를 listing-approval.json으로 고정했다. 두 언어의 설명·프로모션·키워드를 ASC 버전 화면에 저장하고 다시 방문해 로컬과 해시 일치를 확인했다. 부제와 Games/Casual도 저장했다. 지원/개인정보 공개 페이지의 실제 한·영 내용을 읽고 en-US/ko-KR privacy URL을 등록했다.
+- 무료 가격 및175개 국가의 출시 후 사용 가능 설정 저장, 테스트하지 않은 Mac/Vision Pro 배포 opt-in 제외. 이는 각 국가의 추가 허가 완료나 공개 출시가 아니다.
+- 연령 설문 초안: 공개 닉네임 UGC yes, 상시 랭킹 시합 frequent, 그 외 광고·채팅·도박·폭력 등 없음으로13+ 계산. Apple이 모로코·아프가니스탄 제한 안내를 표시했다. 아직 최종 저장하지 않았으며 사용자 검토 중이다. App Privacy 수집 답변·콘텐츠 권한·DSA/지역 허가·최종 누락 경고·사용자 제출 승인도 남았다.
+- 근거 store/connect-checkpoint.json. npm.cmd run test:release8/8 passed. 전체 nativeQa/leaderboardQa pending과 삭제·재설치2개 not_run 유지. T03 완료 커밋/심사 제출/공개 없음.
+
+### 연령 저장 후 개인정보 확인 — 2026-09-30
+
+- 사용자13+ 초안 저장 승인 후 ASC 저장 완료 확인. 글로벌13+172개 지역, 한국12+, 베트남12+, 이전OS 글로벌12+ 표시이며 모로코·아프가니스탄 제한은 유지한다. 위 승인 대기 항목은 이전 기록이다.
+- production Auth 감사 로그를 읽기 전용 조회한 결과0건/boolean 집계 null. 외부 Supabase 로그 범위/보존은 별도 확인이 필요하다. 브라우저 로그인이 GitHub Supabase OAuth 이메일 읽기 권한 승인 단계여서 사용자 직접 승인을 요청했다. App Privacy 공개표 미저장/미게시, 콘텐츠 권한·지역 규정·최종 제출 승인 남음. 기존 계정·기록 변경/심사 제출 없음.
+- 로그인 후 실제 finalize 로그에서 IP 기반 지역·계정 subject·실행시간 존재 확인.7유형 초안은 store/privacy-inventory.md 참조, 사용자 승인 대기이며 수집 설문 미저장/미게시. 정확한 제공자 보존기간과 공개 정책의 대략 위치 설명 일치 검토는 남아 있다. 로그 원문 다운로드/계정 변경 없음.

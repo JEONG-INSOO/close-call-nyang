@@ -27,7 +27,10 @@
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
 | P01 | `in_progress` | 소스·QA 고정, 공개 지원/개인정보 페이지, 한·영 스토어 자료 | [P01](../phases/2026-09-29-app-store-review-prep/P01-readiness/phase.md) |
-| P02 | `in_progress` | 사용자 요청으로 새 TestFlight 전달 우선, 심사·문구 승인은 별도 | [P02](../phases/2026-09-29-app-store-review-prep/P02-ios-delivery/phase.md) |
+| P02 | `done` | 사용자 최종 요청 후 iOS1.0/빌드6 실제 심사 대기; 승인·수동 공개와 DSA는 별도 | [P02](../phases/2026-09-29-app-store-review-prep/P02-ios-delivery/phase.md) |
+
+## 2026-10-01 실제 제출 후
+AppReview `3d829fe4-2709-47fd-9708-016771fa9d3f`가 심사 대기 중이다. 접수는 공개/승인/DSA완료가 아니다. 선행 방침 공개 배포도 별도 완료했다. P01-T03 자료 준비 문서가 pending인 것은 기록 정리 부채이며 다음 포인터에서 실제 승인/등록 증거를 대조한다. 임의 Task완료/추가 원격 저장·심사 취소는 하지 않는다.
 
 ## Exit condition
 

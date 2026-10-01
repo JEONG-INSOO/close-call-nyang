@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "approvedAt": "2026-10-01",
+  "evidenceSource": "user_confirmation",
+  "answer": "1",
+  "approvedOption": "초안대로 저장·게시하기",
+  "ascAppId": "6815771701",
+  "dataTypes": ["USER_ID", "GAMEPLAY_CONTENT", "PRODUCT_INTERACTION", "OTHER_USER_CONTENT", "COARSE_LOCATION", "PERFORMANCE_DATA", "OTHER_DIAGNOSTIC_DATA"],
+  "purposes": ["APP_FUNCTIONALITY"],
+  "linkedToUser": true,
+  "usedForTracking": false,
+  "policySupplement": {
+    "ko-KR": "Supabase의 서비스 운영 로그에는 IP 주소와 이 주소에서 추정한 국가·도시·지역 등 대략적인 위치 정보, 요청 상태·기술 정보·처리시간, 인증된 요청의 계정 식별자가 포함될 수 있습니다. 이는 인증·보안·남용 방지와 서비스 장애 대응에 사용하며 광고 추적에 사용하지 않습니다. 이 IP 기반 지역 정보는 기기의 GPS 위치를 요청하여 수집하는 정보와 다릅니다.",
+    "en-US": "Supabase operational logs may include IP addresses and approximate location inferred from them, such as country, city and region, together with request status, technical details, processing time and account identifiers for authenticated requests. These support authentication, security, abuse prevention and troubleshooting, not advertising-based tracking. This IP-derived regional information is different from requesting your device's GPS location."
+  },
+  "privacyPublicationApproved": true,
+  "publicationTermsConfirmation": {
+    "confirmedAt": "2026-10-01",
+    "answer": "동의하고 개인정보 공개표 게시 (추천)",
+    "scope": "Apple privacy answers accuracy, applicable compliance and prompt updates when data processing changes; not App Review submission"
+  },
+  "policyPublicationApproved": true,
+  "finalReviewSubmissionApproved": false
+}

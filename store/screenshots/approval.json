@@ -5,7 +5,17 @@
   "scope": "five_landscape_images_and_captions",
   "manifest": "store/screenshots/manifest.json",
   "assetCommit": "2fe32ec",
-  "uploadedToAppStoreConnect": false,
+  "uploadedToAppStoreConnect": true,
+  "uploadEvidence": {
+    "ascAppId": "6815771701",
+    "storeVersion": "1.0",
+    "locale": "en-US",
+    "display": "iPhone 6.9",
+    "imageCount": 5,
+    "verifiedAfterReloadOn": "2026-09-30",
+    "order": ["01-gameplay.png", "02-characters.png", "03-home.png", "04-ready.png", "05-pause.png"],
+    "reviewSubmitted": false
+  },
   "captureBuildConfirmed": true,
   "captureBuild": {
     "version": "1.0.0",
