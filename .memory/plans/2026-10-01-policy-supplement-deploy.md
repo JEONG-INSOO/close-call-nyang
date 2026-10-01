@@ -9,4 +9,7 @@
 ## Phases
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | 소스 검증·커밋 후 실제 Pages 배포 확인 | [P01](../phases/2026-10-01-policy-supplement-deploy/P01-publication/phase.md) |
+| P01 | `done` | f2d9dd1/run36804961625·공식HTTP/hash/한영화면 검증 완료 | [P01](../phases/2026-10-01-policy-supplement-deploy/P01-publication/phase.md) |
+
+## Completion
+`store/policy-deployment.json`에 정확한 배포 sourceSHA와 증거를 기록했다. 원래 App Store P02-T03으로 복귀하며 DSA/최종 체크리스트·별도 심사 승인은 아직 남아 있다.

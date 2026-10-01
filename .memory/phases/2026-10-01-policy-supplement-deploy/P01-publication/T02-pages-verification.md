@@ -1,6 +1,12 @@
 # Task: T02 공식 Pages 배포·내용 검증
 
-## Status: pending
+## Status: done
+
+## Result — 2026-10-01
+- source `f2d9dd1630e1ef78902ff0927e16fa29e518807c` 정상 main push, run `36804961625` build/deploy 모두 success.
+- 공식 privacy/support 모두200·HTML UTF8. privacy SHA256 `6618302091ef0683ef7c7e70259a0d6a21e35c62b4cf0501f718eab3703e0fad`가 해당 commit 파일과 완전 일치. 승인 한영 두 문단 각각1회·2026-10-01 확인.
+- 실제 공개 브라우저에서 한/영 문단 가독성·표시 확인, ignored 두 jpg 증거. `store/policy-deployment.json`에 sanitized 근거 저장.
+- 회귀26/26. 원래 App Store T03 in_progress 복귀, 심사 미제출/DSA 문의 대기 유지. 완료 기록 commit/push는 별도이며 검증된 sourceSHA를 바꾸지 않는다.
 
 ## Goal
 T01의 source commit을 정상 main push하고 정확한 source SHA의 Pages 성공 및 공식 privacy의 승인 원문/hash·실제 브라우저 가독성을 확인한다.
@@ -25,9 +31,9 @@ T01의 source commit을 정상 main push하고 정확한 source SHA의 Pages 성
 - completion증거를 정확히 한정 commit하고 기존 승인에 따라 정상 push. 기록-only push의 Pages run은 새 정책 소스와 같은 hash, 실패시최종응답에구분. 공개상태검증sourceSHA를 임의 newSHA로바꾸지 않는다.
 
 ## Acceptance Criteria
-- [ ] 정확한 T01 sourceSHA의 workflow build/deploy success.
-- [ ] 공식 두 URL200/UTF8, privacy committedhash/원문일치, CUA한영문단확인·증거.
-- [ ] evidence/no secret/learning/Phase완료·원래T03복귀 및 정확한범위commit/push.
+- [x] 정확한 T01 sourceSHA의 workflow build/deploy success.
+- [x] 공식 두 URL200/UTF8, privacy committedhash/원문일치, CUA한영문단확인·증거.
+- [x] evidence/no secret/learning/Phase완료·원래T03복귀 및 정확한범위commit/push.
 
 ## Validation
 - `node --test scripts/policy-supplement.test.mjs scripts/verify-web.test.mjs`
@@ -51,6 +57,6 @@ Task: T02-pages-verification
 ```
 
 ## Progress
-- [ ] 정확한 원격 배포·공개 검증
-- [ ] 복귀·학습 기록
-- commit: pending
+- [x] 정확한 원격 배포·공개 검증
+- [x] 복귀·학습 기록
+- commit: this T02 completion commit (exact message below); verified publication source is f2d9dd1.

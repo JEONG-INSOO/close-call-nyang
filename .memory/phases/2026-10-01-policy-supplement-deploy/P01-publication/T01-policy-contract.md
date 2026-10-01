@@ -57,4 +57,4 @@ Task: T01-policy-contract
 ## Progress
 - Validation: policy/page26/26, release10/10, isolated export/static verification and diff-check passed. Source commit is made below; exact hash is recorded by T02.
 - [x] 구현·검증 완료
-- commit: pending
+- commit: f2d9dd1

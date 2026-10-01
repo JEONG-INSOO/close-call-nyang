@@ -18,7 +18,11 @@
 ## 검증 기록
 - T01: 승인 계약4개+공개 페이지 안전22개=26/26, release10/10, isolated Expo web export와 static verify passed(스크립트1/자산18/한영support/privacy). 기존 사용자 dist를 덮어쓰지 않았다. local env가 적용된 export의 production 연결 여부는 이번 검사의 보장이 아니며 T02 CI가 production env를 검증한다.
 - `git diff --check` 통과(LF/CRLF 경고만). 공유 문서 index 패치가 처음엔 문맥 부족으로 거절돼 `--check --recount --unidiff-zero`로 지정 hunk를 검증한 뒤 적용한다. 원본 dirty 파일을 되돌리거나 전체 stage하지 않는다.
-- 원격 배포·공개 hash/UI 증거는 T02에서 확인할 때만 추가한다.
+- T01 source `f2d9dd1` 정상 main push 후 정확한 GitHub run `36804961625`의 build/deploy success를 각각 확인했다. CI는 production 공개 환경 검사·브라우저 검사도 포함한다.
+- T02: 공식 privacy/support HTTP200·HTML UTF8. 공개 privacy SHA256 `6618302091ef0683ef7c7e70259a0d6a21e35c62b4cf0501f718eab3703e0fad` = `git show f2d9dd1:web-static/privacy/index.html` 바이트 hash. 승인 한국어/영어 문단 각각1회와 갱신 날짜가 모두 일치했다.
+- 실제 공개 브라우저에서도 두 언어의 Providers 제목/보완 문단을 읽고 각각 화면 증거를 ignored output/store-review에 저장했다. 기계적인 hash 검사와 사람이 읽는 가독성 검사는 다른 문제를 잡는다. 회귀26/26 재통과.
+- `store/policy-deployment.json`에 공개 근거만 기록했다. 완료 기록의 후속 commit/push는 새로운 workflow를 만들 수 있지만 공개 내용 검증 기준은 f2d9dd1로 유지한다. 기록 commit의 SHA를 실제 검증한 배포 SHA로 둔갑시키지 않는다.
+- 별도 계획2/2 완료 후 `.memory/current.md`는 원래 App Store T03으로 복귀한다. 한국/출시 지역·기존 문의·미완료 T03 문서는 이 웹 방침 commit에 일괄 포함하지 않는다. AppReview 제출/승인과는 별개다.
 
 ## 요청 밖 발견
 추가 게임 결함 없음. Sandbox 네트워크 차단으로 CLI 인증 확인이 실패했지만 승인된 네트워크 접근에서는 기존 GitHub 인증이 정상이다. 실패 메시지 하나로 토큰 만료를 단정하거나 불필요한 재로그인을 하지 않았다.

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "state": "passed",
+  "sourceCommit": "f2d9dd1630e1ef78902ff0927e16fa29e518807c",
+  "workflowRunId": "36804961625",
+  "workflowConclusion": "success",
+  "workflowUrl": "https://github.com/JEONG-INSOO/close-call-nyang/actions/runs/36804961625",
+  "jobs": { "build": "success", "deploy": "success" },
+  "publicPrivacyUrl": "https://jeong-insoo.github.io/close-call-nyang/privacy/",
+  "publicSupportUrl": "https://jeong-insoo.github.io/close-call-nyang/support/",
+  "checks": {
+    "privacyHttp200": true,
+    "supportHttp200": true,
+    "utf8": true,
+    "privacyHashMatchesSource": true,
+    "approvedSupplementPresent": true,
+    "browserReadable": true
+  },
+  "privacySourceSha256": "6618302091ef0683ef7c7e70259a0d6a21e35c62b4cf0501f718eab3703e0fad",
+  "privacyPublicSha256": "6618302091ef0683ef7c7e70259a0d6a21e35c62b4cf0501f718eab3703e0fad",
+  "supportPublicSha256": "96dcf8deaba317177c592464aff901a5911457dcb05f8f5fb56e509d2ad643a3",
+  "browserProof": [
+    "output/store-review/policy-supplement-public.jpg",
+    "output/store-review/policy-supplement-public-en.jpg"
+  ],
+  "verifiedDate": "2026-10-01",
+  "reviewSubmitted": false,
+  "scope": "Public policy supplement only; later evidence-only commits do not replace the exact verified source SHA. No IPA, App Review, DB or account change."
+}

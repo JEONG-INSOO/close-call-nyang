@@ -1,5 +1,8 @@
 # Current Context
 
+## Latest checkpoint — 2026-10-01 승인 방침 보완 공식 배포 완료
+- 별도 policy-supplement-deploy P01 2/2 완료. source f2d9dd1 정상 main push/run36804961625 build·deploy success. 공식 privacy/support200·UTF8, privacy committed/public SHA256 6618302091ef0683ef7c7e70259a0d6a21e35c62b4cf0501f718eab3703e0fad 일치·한영 보완 문단 각1회/날짜 확인, 실제 공개 화면 두 장 증거. 회귀26/26, sanitized store/policy-deployment.json/전용 학습노트 기록. 원래 App Store P02-T03 in_progress 복귀, 기존 T03·사용자 아트 보존/심사 미제출. 다음 DSA 문의 답변·남은 계정 신고 및 최종 경고/체크리스트·별도 제출 승인. 아래 체크포인트는 당시 기록이다.
+
 ## Latest checkpoint — 2026-09-30 JPG 캡처 시안5장 완료
 - 사용자2번선택에따라2868×1320 RGB PNG5장시안을생성했다. 완료2fe32ec, Node6/release8/원본raw픽셀·시안캡처영역/재현/육안5장통과. AI는바깥장식배경만,실제화면·점수·잠금은불변. JPG개인메타데이터는lossless제거,원형bytes는ignored보존. 랭킹4번은제외. ZIP output/store-screenshots/nyang-app-store-drafts-v1.zip.
 - 시안Task/Phase done후원래app-store-review-prep P02-T02로복귀. 사용자이미지·캡션승인과촬영빌드/기종·iOS확인、실기기QA및소개최종확인대기. 원격업로드·AppReview/공개/push/새IPA없음. 이전dirty작업보존.
@@ -208,15 +211,16 @@
 - 아이콘 Task 완료 후 Active Task를 보존된 베테랑 P01-T03로 복귀한다. 원래 iOS P03-T03도 별도 미완료이고 기존 미커밋 변경은 보존한다.
 
 ## Active Plan
-[개인정보 방침 보완 배포](./plans/2026-10-01-policy-supplement-deploy.md)
+[App Store 공개 심사 준비](./plans/2026-09-29-app-store-review-prep.md)
 
 ## Active Phase
-[P01 방침 게시](./phases/2026-10-01-policy-supplement-deploy/P01-publication/phase.md)
+[P02 iOS 전달·심사 준비](./phases/2026-09-29-app-store-review-prep/P02-ios-delivery/phase.md)
 
 ## Active Task
-[T01 승인 방침 보완 검증](./phases/2026-10-01-policy-supplement-deploy/P01-publication/T01-policy-contract.md)
+[T03 App Store Connect 심사 직전 상태](./phases/2026-09-29-app-store-review-prep/P02-ios-delivery/T03-review-ready.md)
 
 ## Status
+- Active status: `in_progress` (app-store-review-prep P02-T03). 선행 policy-supplement-deploy P01 done2/2·공식 게시 검증 완료. DSA/최종 경고·체크리스트·별도 제출 승인 대기. 아래는 이전 기록이다.
 - Active status: `in_progress` (app-store-review-prep P02-T02;시안5장2fe32ec완료、사용자승인/최신촬영빌드·기종·iOS/남은실기기QA증거대기). P01-T03및소개최종확인게이트보존、원격제출없음.
 - Historical checkpoint: 원래 P03-T03 nativeQA. 렉돌 P01-T01/T02는 `55b72ff`/`19b0a79`로 로컬 완료. 새 소스의 웹·iOS 재배포는 별도 확인 필요.
 - Historical checkpoint: 원래 P03-T03 nativeQA. 닉네임 안내 T01은8ac885a로 완료. 사용자 build4 확인담당은 유지하되 이번 기능은 build4에 미포함.
@@ -260,6 +264,7 @@
 - T01 Pages CI gate 구현·검증 완료. Production bundle 검사 통과, typecheck/ranked/Jest/ranking/Playwright 통과. T02 원격 GitHub 인증/production backend preflight로 이동.
 
 ## Next Step (IMPORTANT)
+현재 최우선: 원래 app-store-review-prep/P02-ios-delivery/T03-review-ready.md. 승인 방침 보완은 f2d9dd1/run36804961625/공식 hash·한영 화면으로 완료했다. 기존 DSA 문의 답변·남은 계정 신고와 ASC 최종 경고/사용자 체크리스트 확인을 진행하되 심사 제출은 별도 승인 전 금지. 기존 계정·기록/삭제·재설치 not_run/전체QA pending 유지. 아래는 이전 지시다.
 현재 최우선: 원래 app-store-review-prep/P02-ios-delivery/T02-native-qa.md의 시안 승인, 촬영 빌드·기종·iOS와 남은 실기기 QA를 확인한다. 이미지5장 시안과 ZIP은2fe32ec으로 완료. 이후 스토어 소개 최종 확인·개인정보/연령/운영 입력 준비를 거쳐 실제 심사 제출한다. 아래는 과거 지시다.
 현재 최우선: `2026-09-29-app-store-review-prep/P01-readiness/T02-public-pages.md`에 따라 한·영 지원·개인정보 페이지와 export/검증 흐름을 구현하고 로컬·공개 HTTP 결과를 구별해 기록한다. 아래 지시는 과거 기록이다. 실기기 증거가 없는 이전 T03는 미완료로 유지하며 캡처는 최신 TestFlight 원본을 사용자에게 받아 확인한다.
 현재 최우선: `2026-09-29-veteran-mentor-sprite/P01-character/T03-veteran-qa.md`에 따라 웹/Expo Go에서 네 걸음, 위험·넘어짐, 컵, 보호, 프레임 손맛을 실제로 확인한다. T01 원본 네 장을 임의 수정하지 않는다. 아래 T02/이전 지시는 과거 맥락이다.
