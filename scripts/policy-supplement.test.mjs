@@ -6,7 +6,36 @@ import { validatePublicPage } from './public-pages.mjs';
 
 const read = path => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 const approval = JSON.parse(await read('store/policy-supplement-approval.json'));
+const textAd = JSON.parse(await read('store/mock-ad-publication.json'));
 const html = (await read('web-static/privacy/index.html')).replace(/\r\n/g, '\n');
+
+function beforeTextAdPublication() {
+  let previous = html;
+  for (const disclosure of Object.values(textAd.disclosures)) {
+    previous = previous.replace(`<p>${disclosure.current}</p>`, `<p>${disclosure.previous}</p>`);
+  }
+  return previous.replace(`<time datetime="${textAd.updateDate}">${textAd.updateDate}</time>`,
+    `<time datetime="${textAd.previousDate}">${textAd.previousDate}</time>`);
+}
+
+test('public text-ad contract permits only the requested local promotion and preserves prior policy', () => {
+  assert.equal(textAd.schemaVersion, 1);
+  assert.equal(textAd.evidenceSource, 'user_request');
+  assert.equal(textAd.approvedAt, '2026-10-12');
+  assert.equal(textAd.publicTextAdEnabled, true);
+  assert.equal(textAd.externalAdSdkEnabled, false);
+  assert.equal(textAd.advertisingTrackingEnabled, false);
+  assert.equal(textAd.appReviewSubmissionApproved, false);
+  assert.equal(textAd.previousDate, approval.approvedAt);
+  assert.equal(textAd.updateDate, textAd.approvedAt);
+  for (const [locale, language] of [['ko-KR', 'ko'], ['en-US', 'en']]) {
+    const disclosure = textAd.disclosures[locale];
+    assert.match(disclosure.current, /DEXCONSULTING/);
+    assert.equal(html.split(`<p>${disclosure.current}</p>`).length - 1, 1);
+    assert.equal(html.includes(`<p>${disclosure.previous}</p>`), false);
+    assert.ok(html.split(`<section id="${language}" lang="${language}"`)[1]?.split('</section>')[0].includes(disclosure.current));
+  }
+});
 
 test('policy publication contract is explicit and does not authorize App Review', () => {
   assert.equal(approval.schemaVersion, 1);
@@ -26,11 +55,11 @@ test('each approved paragraph appears exactly once in its language section', () 
     const section = html.split(`<section id="${language}" lang="${language}"`)[1]?.split('</section>')[0];
     assert.ok(section?.includes(`<p>${paragraph}</p>`));
   }
-  assert.equal(html.split('<time datetime="2026-10-01">2026-10-01</time>').length - 1, 1);
+  assert.equal(html.split(`<time datetime="${textAd.updateDate}">${textAd.updateDate}</time>`).length - 1, 1);
 });
 
 test('only the approved paragraphs and update date differ from the original policy', () => {
-  let baseline = html;
+  let baseline = beforeTextAdPublication();
   for (const paragraph of Object.values(approval.policySupplement)) {
     baseline = baseline.replace(`    <p>${paragraph}</p>\n`, '');
   }

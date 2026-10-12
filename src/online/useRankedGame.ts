@@ -89,8 +89,10 @@ export function useRankedGame(options: {
   useEffect(() => controller.subscribeTicks(tick => {
     const recording = activeRecording.current;
     if (!recording || recording.session !== currentSession.current || tick.runId !== recording.engineRunId) return;
-    if (controller.readState().run?.reviveUsed) { recording.session.freeze(); activeRecording.current = null; return; }
+    // Detach revived play without freezing the first fall's pending upload.
+    if (controller.readState().run?.reviveUsed) { activeRecording.current = null; return; }
     recording.session.record(tick);
+    if (tick.terminal) activeRecording.current = null;
   }), [controller]);
 
   useEffect(() => {

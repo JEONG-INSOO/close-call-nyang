@@ -1,6 +1,6 @@
 import { test, expect, openGame, startGame, loseWithRight, leanDegrees, capture } from './helpers';
 
-test('real held keyboard input leans, falls, retries, and never exposes production ads', async ({ cleanPage: page }, info) => {
+test('real held keyboard input leans, falls, retries, and offers the text revival', async ({ cleanPage: page }, info) => {
   await openGame(page);
   await capture(page, info, 'actual-title');
   await startGame(page);
@@ -32,11 +32,41 @@ test('real held keyboard input leans, falls, retries, and never exposes producti
   await expect(page.getByTestId('result-screen')).toBeVisible();
   await page.keyboard.up('ArrowRight');
   await capture(page, info, 'actual-result');
-  await expect(page.getByTestId('revive-button')).toHaveCount(0);
+  await expect(page.getByTestId('revive-button')).toBeVisible();
   await expect(page.getByText('개발용 가상 광고', { exact: true })).toHaveCount(0);
   await startGame(page, true);
   await expect(page.getByTestId('game-score')).toHaveText('0%');
   await page.getByTestId('pause-button').click();
+});
+
+test('DexConsulting text ad cancels safely, pauses when hidden and grants one revival', async ({ cleanPage: page }, info) => {
+  await openGame(page); await startGame(page); await loseWithRight(page);
+  await page.getByTestId('revive-button').click();
+  await expect(page.getByTestId('mock-ad-screen')).toBeVisible();
+  await expect(page.getByTestId('mock-ad-disclosure')).toHaveText('덱스컨설팅 텍스트 가상 광고입니다.');
+  await capture(page, info, 'dexconsulting-text-ad');
+  await page.getByTestId('mock-ad-cancel').click();
+  await expect(page.getByTestId('result-screen')).toBeVisible();
+  await expect(page.getByTestId('revive-button')).toBeVisible();
+  await page.getByTestId('revive-button').click();
+  await expect(page.getByTestId('mock-ad-seconds')).toBeVisible();
+  await page.evaluate(() => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'hidden' });
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await expect(page.getByTestId('pause-overlay')).toBeVisible();
+  await page.waitForTimeout(700);
+  await page.evaluate(() => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'visible' });
+    document.dispatchEvent(new Event('visibilitychange'));
+    window.dispatchEvent(new Event('focus'));
+  });
+  await expect(page.getByTestId('pause-overlay')).toBeVisible();
+  await page.getByRole('button', { name: '이어하기', exact: true }).click();
+  await expect(page.getByTestId('mock-ad-screen')).toHaveCount(0, { timeout: 9000 });
+  await expect(page.getByTestId('control-right')).toBeEnabled({ timeout: 5000 });
+  await loseWithRight(page);
+  await expect(page.getByTestId('revive-button')).toHaveCount(0);
 });
 
 test('pause, focus loss and portrait freeze the game until explicit resume', async ({ cleanPage: page }) => {

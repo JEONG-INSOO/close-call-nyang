@@ -210,19 +210,38 @@ describe('character collection integrated with real application services', () =>
     expect(screen.queryByTestId('character-unlock-notice')).toBeNull();
   });
 
-  it('excludes development mock-ad-enabled attempts, even before an ad is used', async () => {
+  it('keeps normal completion eligible even when the text ad button is available', async () => {
     process.env.EXPO_PUBLIC_ENABLE_MOCK_AD = 'true';
     await render(<App />);
     await startPlaying();
     await injectDistance(200, true);
     expect(screen.getByRole('button', { name: ko.revive })).toBeOnTheScreen();
     await waitFor(async () => expect((await persisted()).bestScore).toBe(200));
-    expect((await persisted()).collection.completedRuns).toBe(0);
-    expect(screen.queryByTestId('character-unlock-notice')).toBeNull();
+    await expectCompletions(1);
+    expect(screen.getByTestId('character-unlock-notice')).toBeOnTheScreen();
     await fireEvent.press(screen.getByTestId('result-home'));
     await fireEvent.press(screen.getByTestId('title-characters'));
-    expect(screen.getByTestId('select-diligent')).toBeDisabled();
+    expect(screen.getByTestId('select-diligent')).toBeEnabled();
     expect(screen.getByTestId('select-veteran')).toBeDisabled();
+  });
+
+  it('excludes a completion first reached after revival, then accepts the next normal attempt', async () => {
+    process.env.EXPO_PUBLIC_ENABLE_MOCK_AD = 'true';
+    await render(<App />); await startPlaying(); await injectDistance(99, true);
+    await expectCompletions(0);
+    await fireEvent.press(screen.getByRole('button', { name: ko.revive }));
+    await advance(301);
+    expect(controller.readState()).toMatchObject({ screen: 'countdown', run: { reviveUsed: true } });
+    await advance(180);
+    expect(controller.readState().screen).toBe('playing');
+    await advance(100); // Let the real 1.5-second revival protection expire before falling.
+    expect(controller.readState().run!.protectionSeconds).toBe(0);
+    await injectDistance(200, true);
+    await waitFor(async () => expect((await persisted()).bestScore).toBe(200));
+    await expectCompletions(0);
+    expect(screen.queryByTestId('character-unlock-notice')).toBeNull();
+    await startPlaying(true); await injectDistance(100, true);
+    await expectCompletions(1);
   });
 
   it('keeps the same actual engine fall state for all three skins with reduced motion off and on', async () => {

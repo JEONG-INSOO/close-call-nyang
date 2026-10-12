@@ -1,12 +1,13 @@
 import { test, expect, openGame, startGame, loseWithRight, capture } from './helpers';
 
-test('retry is first, home second, and no other result action appears without mock ads', async ({ cleanPage: page }, info) => {
+test('retry is first, home second and text-ad revival is third with equal spaced rows', async ({ cleanPage: page }, info) => {
   await openGame(page); await startGame(page); await loseWithRight(page);
   const result = page.getByTestId('result-screen');
   const buttons = result.getByRole('button');
-  await expect(buttons).toHaveCount(2);
+  await expect(buttons).toHaveCount(3);
   await expect(buttons.nth(0)).toHaveAttribute('aria-label', '다시 도전');
   await expect(buttons.nth(1)).toHaveAttribute('aria-label', '처음으로');
+  await expect(buttons.nth(2)).toHaveAttribute('aria-label', '광고 보고 일어서기');
   const boxes = await buttons.evaluateAll(elements => elements.map(element => {
     const rect = element.getBoundingClientRect();
     return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };

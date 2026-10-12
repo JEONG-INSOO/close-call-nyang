@@ -6,8 +6,9 @@ export const PUBLIC_WEB_URL = 'https://jeong-insoo.github.io/close-call-nyang/';
 export type FeatureFlags = Readonly<{ mockAdsEnabled: boolean }>;
 
 export function getFeatureFlags(
-  isDev: boolean,
+  _isDev: boolean,
   enableMockAd: string | undefined,
 ): FeatureFlags {
-  return { mockAdsEnabled: isDev && enableMockAd === 'true' };
+  // An explicit build-time opt-in exposes only the bundled text provider, never an SDK.
+  return { mockAdsEnabled: enableMockAd === 'true' };
 }

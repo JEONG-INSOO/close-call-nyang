@@ -62,14 +62,14 @@ jobs:
         env:
           EXPO_PUBLIC_SUPABASE_URL: ${{ vars.EXPO_PUBLIC_SUPABASE_URL }}
           EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
-          EXPO_PUBLIC_ENABLE_MOCK_AD: 'false'
+          EXPO_PUBLIC_ENABLE_MOCK_AD: 'true'
           EXPO_PUBLIC_REPLAY_DIAGNOSTICS: 'false'
         run: npm run web:export
 
       - name: Export unconfigured PR web app
         if: github.event_name == 'pull_request'
         env:
-          EXPO_PUBLIC_ENABLE_MOCK_AD: 'false'
+          EXPO_PUBLIC_ENABLE_MOCK_AD: 'true'
           EXPO_PUBLIC_REPLAY_DIAGNOSTICS: 'false'
         run: npm run web:export
 
@@ -78,14 +78,14 @@ jobs:
         env:
           EXPO_PUBLIC_SUPABASE_URL: ${{ vars.EXPO_PUBLIC_SUPABASE_URL }}
           EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
-          EXPO_PUBLIC_ENABLE_MOCK_AD: 'false'
+          EXPO_PUBLIC_ENABLE_MOCK_AD: 'true'
           EXPO_PUBLIC_REPLAY_DIAGNOSTICS: 'false'
         run: npm run ranking:env-check
 
       - name: Inspect local-only PR bundle
         if: github.event_name == 'pull_request'
         env:
-          EXPO_PUBLIC_ENABLE_MOCK_AD: 'false'
+          EXPO_PUBLIC_ENABLE_MOCK_AD: 'true'
           EXPO_PUBLIC_REPLAY_DIAGNOSTICS: 'false'
         run: npm run ranking:env-check -- --allow-unconfigured
 

@@ -62,11 +62,11 @@ export default function App(): React.JSX.Element {
   }, []);
   const closePanel = useCallback(() => changePanel(null), [changePanel]);
   const ranking = useRankedGame({
-    controller, online, eligible: !__DEV__ && !flags.mockAdsEnabled,
+    controller, online, eligible: !__DEV__,
     canStart: () => !portraitBlocked && panelRef.current === null,
     onAcceptedStart: runId => {
       setRunCharacter(services.current.preferences.value.collection.selectedCharacter);
-      attempt.current = { id: services.current.preferences.beginAttempt(!flags.mockAdsEnabled), runId };
+      attempt.current = { id: services.current.preferences.beginAttempt(true), runId };
     },
   });
 
@@ -135,7 +135,9 @@ export default function App(): React.JSX.Element {
       current.audio.setPlaying(state.screen === 'playing' && panelRef.current === null);
       if (!state.run) return;
       const score = scoreOf(state.run.distanceM);
-      if (attempt.current?.runId === state.run.id) current.preferences.observeAttempt(attempt.current.id, score);
+      if (attempt.current?.runId === state.run.id && !state.run.reviveUsed) {
+        current.preferences.observeAttempt(attempt.current.id, score);
+      }
       if (state.screen === 'result' || state.screen === 'paused') current.preferences.recordScore(score);
     };
     const unsubscribe = controller.subscribe(observe);

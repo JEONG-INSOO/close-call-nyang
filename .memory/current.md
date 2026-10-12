@@ -220,10 +220,10 @@
 [P01 웹 업데이트](./phases/2026-10-12-mock-ad-safari-focus/P01-web-update/phase.md)
 
 ## Active Task
-[T02 공개 텍스트 광고 부활](./phases/2026-10-12-mock-ad-safari-focus/P01-web-update/T02-public-mock-ad.md)
+[T03 GitHub 업로드와 Pages 확인](./phases/2026-10-12-mock-ad-safari-focus/P01-web-update/T03-pages-publish.md)
 
 ## Status
-- Active status: `in_progress` (2026-10-12 P01-T02). T01 Jest28/UI2/typecheck/ranked8 완료. 사용자 공개 가상광고/500ms 포커스/GitHub push 요청. 이전 스토어 자료 P01-T03 pending 보존 후 복귀; 심사/국가 변경/새 IPA 없음. 아래는 과거 기록.
+- Active status: `in_progress` (2026-10-12 P01-T03). T01 48db104, T02 Jest716/UI55/11skip·공개광고/정상기록 경계·타입/ranked 검증 완료. 다음 GitHub push/정확한 Pages run·공개 번들 확인. 이전 스토어 자료 P01-T03 pending 보존 후 복귀; 심사/국가 변경/새 IPA 없음. 아래는 과거 기록.
 - Active status: `pending` (app-store-review-prep P01-T03 자료 기록 정리). P02-T03 실제 심사 접수/P02 3/3 완료. Apple 승인/공개와 DSA는 별도 미완료. 아래는 이전 기록이다.
 - Active status: `in_progress` (app-store-review-prep P02-T02;시안5장2fe32ec완료、사용자승인/최신촬영빌드·기종·iOS/남은실기기QA증거대기). P01-T03및소개최종확인게이트보존、원격제출없음.
 - Historical checkpoint: 원래 P03-T03 nativeQA. 렉돌 P01-T01/T02는 `55b72ff`/`19b0a79`로 로컬 완료. 새 소스의 웹·iOS 재배포는 별도 확인 필요.
@@ -268,7 +268,7 @@
 - T01 Pages CI gate 구현·검증 완료. Production bundle 검사 통과, typecheck/ranked/Jest/ranking/Playwright 통과. T02 원격 GitHub 인증/production backend preflight로 이동.
 
 ## Next Step (IMPORTANT)
-현재 최우선: 2026-10-12-mock-ad-safari-focus/P01-web-update/T02-public-mock-ad.md. 광고/정상 기록 경계·공개 문구·CI 환경 검사 뒤 GitHub 배포 T03. 기존 스토어 자료 정리/나라 변경·심사는 별도이며 아래 지시는 과거 기록이다.
+현재 최우선: 2026-10-12-mock-ad-safari-focus/P01-web-update/T03-pages-publish.md. 검증된 T02 source 정상 push, 정확한 Pages CI·공개 JS/방침 확인. 기존 스토어 자료 정리/나라 변경·심사는 별도이며 아래 지시는 과거 기록이다.
 현재 최우선: 보존된 app-store-review-prep/P01-readiness/T03-store-assets.md 기록 정리. 이미 승인·등록·실제 접수된 자료를 기존 청사진과 대조해 상태를 정리하되 새 시안/메타데이터 변경·재빌드·심사 취소를 하지 않는다. 외부 다음 상태는 Apple 심사 결과/DSA 지원 답변이며 사용자 요청 시 읽기 확인한다. 승인 후 수동 공개는 별도 사용자 승인, 자동 감시/공개 없음. 기존 계정·기록/삭제재설치 not_run/전체QA pending 유지. 아래는 이전 지시다.
 현재 최우선: 원래 app-store-review-prep/P02-ios-delivery/T02-native-qa.md의 시안 승인, 촬영 빌드·기종·iOS와 남은 실기기 QA를 확인한다. 이미지5장 시안과 ZIP은2fe32ec으로 완료. 이후 스토어 소개 최종 확인·개인정보/연령/운영 입력 준비를 거쳐 실제 심사 제출한다. 아래는 과거 지시다.
 현재 최우선: `2026-09-29-app-store-review-prep/P01-readiness/T02-public-pages.md`에 따라 한·영 지원·개인정보 페이지와 export/검증 흐름을 구현하고 로컬·공개 HTTP 결과를 구별해 기록한다. 아래 지시는 과거 기록이다. 실기기 증거가 없는 이전 T03는 미완료로 유지하며 캡처는 최신 TestFlight 원본을 사용자에게 받아 확인한다.

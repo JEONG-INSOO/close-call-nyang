@@ -33,7 +33,7 @@ test('valid config passes static checks without claiming runtime/hosted evidence
   assert.equal(report.mode, 'hosted-config');
   assert.equal(report.scannedFiles, 2);
   assert.match(report.limitations.join(' '), /do not prove runtime/);
-  assert.match(report.limitations.join(' '), /mock ads are unreachable/);
+  assert.match(report.limitations.join(' '), /mock-ad rewards/);
   assert.equal(JSON.stringify(report).includes(KEY_VALUE), false);
   assert.equal(JSON.stringify(report).includes(URL_VALUE), false);
 }));
@@ -97,9 +97,13 @@ test('private process env fields are neither copied nor accessed', () => {
   assert.deepEqual(selectPublicEnvironment(environment), ENV);
 });
 
-test('production flag inputs accept only blank or exact false', async () => withExport(async directory => {
+test('production text-ad opt-in is allowed but malformed flags and diagnostics are rejected', async () => withExport(async directory => {
+  const optedIn = await inspectPublicEnvironment({ directory, environment: { ...ENV, EXPO_PUBLIC_ENABLE_MOCK_AD: 'true' } });
+  assert.equal(optedIn.status, 'passed');
+  assert.equal(check(optedIn, 'mock-ad-input').status, 'passed');
   for (const name of ['EXPO_PUBLIC_ENABLE_MOCK_AD', 'EXPO_PUBLIC_REPLAY_DIAGNOSTICS']) {
-    for (const value of ['true', 'TRUE', '1', 'unexpected']) {
+    for (const value of ['true', 'TRUE', '1', 'unexpected', ' true ', 'false ']) {
+      if (name === 'EXPO_PUBLIC_ENABLE_MOCK_AD' && value === 'true') continue;
       const result = await inspectPublicEnvironment({ directory, environment: { ...ENV, [name]: value } });
       assert.equal(result.status, 'failed');
     }

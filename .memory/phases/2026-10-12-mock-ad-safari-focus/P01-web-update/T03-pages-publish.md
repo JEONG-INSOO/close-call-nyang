@@ -1,6 +1,6 @@
 # Task: T03 GitHub 업로드와 Pages 확인
 
-## Status: pending
+## Status: in_progress
 
 ## Goal
 검증한 소스 commit만 정상 main push하고 같은 SHA의 CI/Pages와 공개 번들을 확인한다.

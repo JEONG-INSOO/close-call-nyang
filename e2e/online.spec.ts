@@ -138,12 +138,12 @@ test('simulated API: genuine short run submits inputs, then start outage falls b
   await expect(page.getByTestId('ranking-receipt')).toHaveCount(0);
   await page.screenshot({ path: info.outputPath('simulated-submission.png'), fullPage: true });
   expect(api.writes.some(path => path.endsWith('/runs/chunks'))).toBe(true);
-  await expect(page.getByTestId('revive-button')).toHaveCount(0);
+  await expect(page.getByTestId('revive-button')).toBeVisible();
   await expect(page.getByTestId('replay-diagnostics-open')).toHaveCount(0);
   api.setFailStart(true); await page.getByTestId('retry-button').click();
   await expect(page.getByTestId('control-right')).toBeEnabled();
   await page.keyboard.down('ArrowRight'); await expect(page.getByTestId('result-screen')).toBeVisible(); await page.keyboard.up('ArrowRight');
-  await expect(page.getByTestId('result-screen').getByRole('button')).toHaveCount(2);
+  await expect(page.getByTestId('result-screen').getByRole('button')).toHaveCount(3);
   expect(api.errors).toEqual([]);
   await info.attach('simulated-api-scope', { body: JSON.stringify({ hostedEvidence: false, receivedRoutes: api.writes }), contentType: 'application/json' });
 });

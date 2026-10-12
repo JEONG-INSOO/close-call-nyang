@@ -19,6 +19,7 @@ export function MockAdScreen({ secondsRemaining, onCancel }: MockAdScreenProps) 
         </View>
         <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
           <Text style={styles.brand}>{ko.mockAdBrand}</Text>
+          <Text testID="mock-ad-disclosure" style={styles.note}>{ko.mockAdDisclosure}</Text>
           <Text style={styles.copy}>{ko.mockAdCopy}</Text>
           <Text testID="mock-ad-seconds" accessibilityLiveRegion="polite" style={styles.seconds}>{ko.mockAdRemaining} {seconds}초</Text>
           <Text style={styles.reward}>{ko.mockAdReward}</Text>
@@ -38,7 +39,7 @@ const styles = StyleSheet.create({
   cancelText: { color: palette.ink, fontSize: 14, fontWeight: '600' },
   scroll: { flexShrink: 1, paddingVertical: 8 },
   content: { paddingHorizontal: 20, paddingTop: 28, paddingBottom: 28, alignItems: 'center', gap: 10 },
-  brand: { color: palette.ink, fontSize: 28, lineHeight: 36, fontWeight: '800' },
+  brand: { color: palette.ink, fontSize: 28, lineHeight: 36, fontWeight: '800', textAlign: 'center' },
   copy: { color: palette.muted, fontSize: 13, lineHeight: 21, textAlign: 'center' },
   seconds: { color: palette.scoreSuccess, fontSize: 22, lineHeight: 30, fontWeight: '800', fontVariant: ['tabular-nums'], marginTop: 3 },
   reward: { color: palette.ink, fontSize: 13, lineHeight: 19, textAlign: 'center' },

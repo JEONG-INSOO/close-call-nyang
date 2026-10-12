@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "approvedAt": "2026-10-12",
+  "evidenceSource": "user_request",
+  "request": "SDK 없이 덱스컨설팅 가상광고와 광고 보고 일어서기를 켜고 GitHub에 업로드",
+  "publicTextAdEnabled": true,
+  "externalAdSdkEnabled": false,
+  "advertisingTrackingEnabled": false,
+  "appReviewSubmissionApproved": false,
+  "previousDate": "2026-10-01",
+  "updateDate": "2026-10-12",
+  "disclosures": {
+    "ko-KR": {
+      "previous": "현재 공개 출시 설정에서는 실제 광고 SDK와 광고 기반 추적을 사용하지 않습니다. 테스트용 가상 광고는 실제 광고 네트워크가 아닙니다. 향후 실제 광고를 도입한다면 데이터 처리 안내와 필요한 동의를 먼저 검토하고 이 방침을 업데이트합니다. 중요한 변경은 이 페이지의 업데이트 날짜와 안내에 반영합니다.",
+      "current": "게임은 DEXCONSULTING(덱스컨설팅) 홍보 문구를 표시하는 5초 텍스트 가상 광고와 판당 1회 일어서기를 제공합니다. 외부 광고 SDK, 광고 네트워크와 광고 기반 추적은 사용하지 않으며, 이 광고를 위해 추가 정보를 수집하거나 광고 서버로 전송하지 않습니다. 향후 외부 광고를 도입한다면 데이터 처리 안내와 필요한 동의를 먼저 검토하고 이 방침을 업데이트합니다. 중요한 변경은 이 페이지의 업데이트 날짜와 안내에 반영합니다."
+    },
+    "en-US": {
+      "previous": "The current public release configuration uses no real advertising SDK or advertising-based tracking. Test-only simulated ads are not an advertising network. If real ads are introduced, we will first review disclosures and necessary consent and update this policy. Material changes will be reflected here with an updated date and notice.",
+      "current": "The game offers a five-second simulated text ad displaying DEXCONSULTING promotional copy and one revival per run. No external advertising SDK, advertising network or advertising-based tracking is used. This ad does not collect additional information or send it to an advertising server. If external ads are introduced, we will first review disclosures and necessary consent and update this policy. Material changes will be reflected here with an updated date and notice."
+    }
+  }
+}

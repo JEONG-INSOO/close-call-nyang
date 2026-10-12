@@ -122,7 +122,7 @@ describe('whole-run fixed-time and production regressions', () => {
     game.dispose();
   });
 
-  it.each(['true', 'TRUE', '1', undefined])('rejects direct reward dispatch spam in production even with env=%s', env => {
+  it.each(['false', 'TRUE', '1', ' true ', undefined])('rejects reward dispatch spam without an exact opt-in (env=%s)', env => {
     const flags = getFeatureFlags(false, env);
     const time = clock(60, flags);
     const game = time.controller;
@@ -137,9 +137,25 @@ describe('whole-run fixed-time and production regressions', () => {
     expect(game.readState()).toBe(result);
     expect(result.run!.reviveUsed).toBe(false);
     expect(time.effects.filter(item => item.effect.type === 'revive')).toHaveLength(0);
-    // Even a forged, near-complete ad fixture cannot obtain the reward with release flags.
+    // A forged near-complete fixture cannot obtain a reward with disabled flags.
     const forged: GameState = { ...result, screen: 'ad', adSeconds: DT };
     expect(transition(forged, { type: 'TICK', dt: DT, input: NO_INPUT }, flags)).toEqual({ state: forged, effects: [] });
+    game.dispose();
+  });
+
+  it('production text-ad opt-in does not grant rewards from repeated request/cancel/resume spam', () => {
+    const time = clock(60, getFeatureFlags(false, 'true'));
+    const game = time.controller;
+    time.start(); time.advance(3);
+    game.setInput('keyboard', 'KeyD', 1, true); time.advance(2);
+    const result = game.readState();
+    for (let i = 0; i < 100; i++) {
+      game.dispatch({ type: 'REQUEST_AD' }); game.dispatch({ type: 'CANCEL_AD' }); game.dispatch({ type: 'RESUME' });
+      time.gap(10);
+    }
+    expect(game.readState()).toEqual(result);
+    expect(game.readState().run!.reviveUsed).toBe(false);
+    expect(time.effects.filter(item => item.effect.type === 'revive')).toHaveLength(0);
     game.dispose();
   });
 

@@ -28,8 +28,8 @@ beforeEach(async () => {
   await AsyncStorage.clear(); previousAppState = AppState.currentState; AppState.currentState = 'active';
 });
 afterEach(async () => { await cleanup(); await act(async () => {}); AppState.currentState = previousAppState; jest.restoreAllMocks(); });
-function setup(eligible = true) {
-  const controller = createGameController({ mockAdsEnabled: false });
+function setup(eligible = true, mockAdsEnabled = false) {
+  const controller = createGameController({ mockAdsEnabled });
   const api = createApi();
   const onAcceptedStart = jest.fn();
   const settings = { controller, online: { api, userId, profile, status: 'ready' as OnlineStatus }, eligible,
@@ -67,6 +67,34 @@ test('server challenge starts the canonical run and the falling tick reaches its
   expect(api.finalizeRun).toHaveBeenCalledTimes(1);
   expect(result.current.receipt?.runId).toBe(challenge().runId);
   expect(onAcceptedStart).toHaveBeenCalledTimes(1);
+});
+
+test.each(['submitted', 'pending'] as const)('revival preserves the first %s result and never appends revived ticks', async state => {
+  const { settings, api, controller } = setup(true, true);
+  if (state === 'pending') api.sendChunk.mockRejectedValueOnce(new OnlineApiError('UNAVAILABLE'));
+  const hook = await renderHook(() => useRankedGame(settings)); await ready();
+  await act(() => hook.result.current.start()); await act(() => playAndFall(controller));
+  await waitFor(() => expect(hook.result.current.submissionState).toBe(state));
+  const firstProof = JSON.stringify(api.sendChunk.mock.calls[0][0]);
+  await act(() => {
+    controller.dispatch({ type: 'REQUEST_AD' });
+    controller.advanceFrame(0);
+    for (let i = 1; i <= 481; i++) controller.advanceFrame(i * 1000 / 60);
+  });
+  expect(controller.readState()).toMatchObject({ screen: 'playing', run: { reviveUsed: true } });
+  await act(() => {
+    controller.setInput('keyboard', 'right', 1, true);
+    for (let i = 482; i <= 1200 && controller.readState().screen !== 'result'; i++) controller.advanceFrame(i * 1000 / 60);
+  });
+  expect(controller.readState().screen).toBe('result');
+  expect(api.sendChunk).toHaveBeenCalledTimes(1);
+  if (state === 'pending') await act(() => hook.result.current.retrySubmission());
+  // A pending upload still obeys its one-second backoff; revival must not bypass it.
+  await waitFor(() => expect(hook.result.current.submissionState).toBe('submitted'), { timeout: 5000 });
+  expect(api.sendChunk).toHaveBeenCalledTimes(state === 'pending' ? 2 : 1);
+  expect(api.finalizeRun).toHaveBeenCalledTimes(1);
+  for (const [chunk] of api.sendChunk.mock.calls) expect(JSON.stringify(chunk)).toBe(firstProof);
+  await hook.unmount(); controller.dispose();
 });
 
 test('a late challenge cannot attach after cancellation and local start', async () => {

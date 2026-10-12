@@ -13,7 +13,7 @@ const MAX_FILES = 10_000;
 const LIMITATIONS = [
   'Static text checks only: encoded, split, arbitrary secrets and binary assets are not proven safe.',
   'Matching public literals do not prove runtime use, deployment identity, server permissions or a live connection.',
-  'Disabled input flags and absent known diagnostic markers do not prove mock ads are unreachable; run production feature-flag and browser tests.',
+  'Input flags and absent diagnostic markers do not prove mock-ad rewards or runtime behavior; run production feature-flag and browser tests.',
   'No environment values, matched text, credentials or file contents are included in this report.',
 ];
 
@@ -115,8 +115,11 @@ export async function inspectPublicEnvironment({ environment = {}, directory = '
   const unsafeValues = Object.values(publicEnv).some(value => detectUnsafeText(value).length > 0);
   add('public-secret-boundary', unsafeName || unsafeValues ? 'failed' : 'passed', 'Public environment names and values checked against forbidden server/credential patterns.');
   for (const [name, id] of [['EXPO_PUBLIC_ENABLE_MOCK_AD', 'mock-ad-input'], ['EXPO_PUBLIC_REPLAY_DIAGNOSTICS', 'diagnostic-input']]) {
-    const value = (publicEnv[name] ?? '').trim();
-    add(id, !value || value === 'false' ? 'passed' : 'failed', 'Production inspection accepts this development flag only when absent or exactly false; runtime tests are still required.');
+    const value = publicEnv[name] ?? '';
+    const valid = !value || value === 'false' || (name === 'EXPO_PUBLIC_ENABLE_MOCK_AD' && value === 'true');
+    add(id, valid ? 'passed' : 'failed', name === 'EXPO_PUBLIC_ENABLE_MOCK_AD'
+      ? 'Bundled text ads accept only an exact true/false opt-in or no value; runtime tests are still required.'
+      : 'Production diagnostics must be absent or exactly false.');
   }
 
   const findings = new Set();

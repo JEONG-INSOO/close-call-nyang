@@ -3,9 +3,11 @@ import { APP_NAME, APP_SLUG, IOS_BUNDLE_ID, PUBLIC_WEB_URL, getFeatureFlags } fr
 
 describe('getFeatureFlags', () => {
   it.each([
-    [false, 'true', false],
+    [false, 'true', true],
     [false, 'false', false],
     [false, undefined, false],
+    [false, 'TRUE', false],
+    [false, ' true ', false],
     [true, 'true', true],
     [true, 'false', false],
     [true, undefined, false],

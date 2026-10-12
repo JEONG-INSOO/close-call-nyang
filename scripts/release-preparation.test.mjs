@@ -66,7 +66,9 @@ test('privacy publication approval is separate and bilingual policy includes the
   assert.equal(approval.usedForTracking, false);
   const policy = await read('web-static/privacy/index.html');
   for (const text of Object.values(approval.policySupplement)) assert.ok(policy.includes(text));
-  assert.ok(policy.includes(`<time datetime="${approval.approvedAt}">${approval.approvedAt}</time>`));
+  const textAd = JSON.parse(await read('store/mock-ad-publication.json'));
+  assert.equal(textAd.previousDate, approval.approvedAt);
+  assert.ok(policy.includes(`<time datetime="${textAd.updateDate}">${textAd.updateDate}</time>`));
   assert.match(policy, /7일/);
   assert.match(policy, /90 days/);
 });

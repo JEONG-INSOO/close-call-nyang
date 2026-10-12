@@ -31,6 +31,8 @@ visible blur만 500ms 유예하고 hidden/pagehide는 즉시 정지하며, 게�
 - `git diff --check`
 
 ## Learning
+완료 커밋: `48db104`.
+
 blur는 포커스 상실, hidden은 탭 비노출. timer 취소와 cleanup, foreground와 자동 재개를 구분한다. 질문: 499ms/500ms 경계는? hidden을 기다리지 않는 이유는? 화면 재개와 업로드 재시도는 왜 다른가?
 
 ## Commit Message

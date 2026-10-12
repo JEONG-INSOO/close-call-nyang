@@ -166,13 +166,14 @@ describe('settings and development reward integration', () => {
     expect(controller.readState().run!.reviveUsed).toBe(false);
   });
 
-  it('cannot display or dispatch production ads even with public env opt-in', async () => {
+  it('displays and dispatches the bundled text ad after explicit production opt-in', async () => {
     jest.mocked(config.getFeatureFlags).mockImplementation(() => realFlags(false, 'true'));
     await render(<App />); await start(); await fall();
-    expect(screen.queryByRole('button', { name: ko.revive })).toBeNull();
-    await act(() => controller.dispatch({ type: 'REQUEST_AD' }));
-    expect(controller.readState().screen).toBe('result');
-    expect(screen.queryByTestId('mock-ad-screen')).toBeNull();
+    expect(screen.getByRole('button', { name: ko.revive })).toBeOnTheScreen();
+    await fireEvent.press(screen.getByRole('button', { name: ko.revive }));
+    expect(controller.readState().screen).toBe('ad');
+    expect(screen.getByTestId('mock-ad-screen')).toBeOnTheScreen();
+    expect(screen.getByTestId('mock-ad-disclosure')).toHaveTextContent(ko.mockAdDisclosure);
   });
 
   it('routes danger to haptics only while preserving the other sound cues', async () => {

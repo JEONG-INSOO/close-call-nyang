@@ -2,7 +2,7 @@
 
 ## 현재 구현 범위
 
-P01 로컬 게임과 P02-T02 닉네임·리더보드 화면/온라인 입력 제출까지 구현했습니다. 균형 조작·횡스크롤·세 캐릭터·설정/최고 기록 저장·수집 보상·소리·공유·개발 전용 텍스트 광고는 유지합니다. 실제 Supabase 설정/배포는 아직 없으므로 현재 기본 앱은 로컬 게임으로 동작합니다. 실제 서버 검증은 P02-T03, Pages 공개 배포와 iPhone 검증은 P03입니다. 기존 스타터 README와 예시는 보존했습니다. 실제 검증 범위는 [QA 기록](./qa-report.md)을 확인하세요.
+균형 조작·횡스크롤·세 캐릭터·설정/최고 기록 저장·수집 보상과 Supabase 온라인 랭킹을 구현했고 GitHub Pages와 TestFlight에 전달했습니다. 2026-10-12 소스 업데이트에서는 DEXCONSULTING 텍스트 가상 광고와 판당 1회 부활을 공개 설정으로 켭니다. 이번 소스 변경의 배포 확인과 실제 iPhone 검증은 [새 학습 기록](learning-notes/2026-10-12-public-mock-ad.md)에서 구분합니다. 기존 App Store 심사 제출본은 1.0.0(6)이며 소스 push만으로 바뀌지 않습니다. [QA 기록](./qa-report.md)의 미검증 사항은 유지합니다.
 
 ## Windows 실행
 
@@ -20,7 +20,7 @@ P01 로컬 게임과 P02-T02 닉네임·리더보드 화면/온라인 입력 제
 - `app.config.ts`: iPhone 전용, 가로, 밝은 테마, iOS/web, Metro single 출력. Router는 없습니다.
 - 동적 Expo 설정은 Metro 이전에 읽힙니다. 앱 TypeScript 모듈을 확장자 없이 import하면 초기 설정 평가가 실패할 수 있어 설정을 독립시켰습니다. 앱 식별자와 설정 값 일치는 테스트로 검사합니다.
 - `src/i18n/ko.ts`에서 사용자 문구를 관리합니다.
-- 광고 가상 흐름은 개발 빌드에서만 사용할 수 있습니다. 가드는 `isDev && enableMockAd === 'true'`이며 production은 공개 환경변수만 바꿔도 켜지지 않습니다. 실제 광고 SDK는 없습니다.
+- 광고는 `EXPO_PUBLIC_ENABLE_MOCK_AD=true`의 정확한 opt-in일 때 개발·production 모두 표시하는 로컬 텍스트 가상 광고입니다. SDK/광고 네트워크/추적은 없습니다. EAS와 Pages는 true, diagnostics는 false로 고정합니다. 정상 플레이는 랭킹과 해금 대상이며, 광고 부활 뒤 추가 플레이는 온라인/해금에 포함하지 않습니다. 처음 실패까지의 대기 기록은 계속 전송할 수 있습니다.
 - 오디오의 녹음·마이크·백그라운드 재생 설정은 끕니다. `expo-asset`은 expo-audio의 필수 네이티브 의존성입니다.
 - `babel-preset-expo`가 Reanimated를 구성합니다. 별도 구형 Babel 플러그인을 중복 설치하지 않습니다.
 - TypeScript6의 테스트 전역 타입을 명시했습니다. Jest는 Worklets/safe area와 AsyncStorage·오디오·햅틱·OS 공유 등의 플랫폼 경계를 테스트별로 모의 처리합니다. 실제 폰의 UI 스레드·디스크·소리·OS 동작을 검증한 것으로 해석하지 않습니다.
@@ -49,7 +49,7 @@ npm.cmd run e2e
 npx.cmd expo install --check
 ```
 
-명령은 한 줄씩(try/finally만 하나의 블록으로) 실행하고, 실패하면 멈춰 원인을 해결합니다. PowerShell에서 native 명령의 실패가 다음 줄을 자동 중단시키지는 않으므로 전체 블록을 무작정 연속 실행하지 마세요. `e2e`는 이미 생성된 세 번들을 사용하므로 소스 변경 후 export/fixtures/online-fixtures 빌드를 다시 실행해야 합니다. 기본 앱 검사는 Supabase 공개 환경변수를 비운 로컬 빌드 기준입니다. `EXPO_PUBLIC_ENABLE_MOCK_AD=true`는 production 광고 차단을 시험하기 위한 의도적인 입력이지 출시 광고 활성화 설정이 아닙니다.
+명령은 한 줄씩(try/finally만 하나의 블록으로) 실행하고, 실패하면 멈춰 원인을 해결합니다. PowerShell에서 native 명령의 실패가 다음 줄을 자동 중단시키지는 않으므로 전체 블록을 무작정 연속 실행하지 마세요. `e2e`는 이미 생성된 세 번들을 사용하므로 소스 변경 후 export/fixtures/online-fixtures 빌드를 다시 실행해야 합니다. 기본 앱 검사는 Supabase 공개 환경변수를 비운 로컬 빌드 기준입니다. `EXPO_PUBLIC_ENABLE_MOCK_AD=true`는 텍스트 광고를 켜는 실제 설정이므로 false/미설정의 차단은 별도 단위 테스트로 검사합니다.
 
 - 기본적으로 Playwright가 `127.0.0.1:4173/close-call-nyang/`(기본 앱), `127.0.0.1:4174/fixtures/`(합성 그림), `127.0.0.1:4175/close-call-nyang/`(모의 API 연결 앱)의 서버를 시작·종료합니다. 해당 포트가 사용 중이면 기존 프로세스를 임의로 종료하지 말고 먼저 확인하세요. Windows에서 테스트가 모두 끝난 뒤 Playwright가 관리 서버를 종료하지 못하는 경우, 세 서버를 별도로 띄운 뒤 `PLAYWRIGHT_REUSE_EXISTING_SERVER=true`로 설정해 기존 서버를 재사용할 수 있습니다. 이 옵션은 로컬 실행 전용이며 CI에서는 설정하지 않습니다.
 - 직접 웹을 볼 때는 `npm.cmd run web:serve` 후 첫 주소를 엽니다. 로컬 전용 서버이므로 휴대폰 LAN 접속용이 아닙니다. iPhone 개발은 위 Expo QR 절차를 사용하세요.
