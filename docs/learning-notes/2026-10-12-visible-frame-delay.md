@@ -36,3 +36,6 @@ controller 경계 테스트37개 통과:100.1/250/500ms 복구,500.1ms/1초/10�
 3. 광고 타이머와 물리 틱에 같은 복구 예외를 무조건 적용하면 왜 위험할까?
 
 아이폰에서 효과음을 켠 채 플레이하고, 홈으로 나갔다가 돌아오면 정지창이 남는지도 확인한다. 기기 데이터 삭제/재설치는 필요 없다.
+
+## 공개 배포 결과
+소스 `783f1ce097dfebd0615de8367570d4cad5689091`을 main에 푸시했고 Pages run `38212634050`의 build/deploy가 모두 성공했다. GitHub에서도 Jest725, 랭킹191, 전체 Chromium58 pass/11 의도된 skip/0 fail이다. 공식 index/JS/support/privacy GET200이며 공개 JS에서 visible 콜백/100·500ms 정책/가상 광고 활성화를 확인했다. 기존 개인정보 페이지는 커밋된 바이트와 동일했다. 증거는 `store/web-frame-delay-2026-10-12.json`. 실제 iPhone Safari 재검증과 iOS 바이너리 갱신은 수행하지 않았다.

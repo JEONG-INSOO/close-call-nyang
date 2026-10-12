@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "783f1ce097dfebd0615de8367570d4cad5689091",
+  "workflowRunId": "38212634050",
+  "deploymentStatus": "passed",
+  "publicUrl": "https://jeong-insoo.github.io/close-call-nyang/",
+  "publicBundle": "/close-call-nyang/_expo/static/js/web/index-4cd11fcb34758c694d55b649994ed54e.js",
+  "bundleSha256": "748f51b433352e580fff2567bb89257aeed247b61a6f34e62e65c654a4cb29af",
+  "checks": [
+    "Exact source workflow build and deploy succeeded",
+    "Unit tests: 725 passed / 50 suites",
+    "Ranking client tests: 191 passed / 12 suites",
+    "CI Chromium: 58 passed / 11 intentional skips / 0 failures",
+    "Public index, bundle, support and privacy HTTP 200",
+    "Visible document callback and 100ms/500ms timing policy present in public bundle",
+    "Public mock ad enabled and DEXCONSULTING text disclosure retained",
+    "Public privacy bytes still match committed source"
+  ],
+  "verifiedDate": "2026-10-12",
+  "iphoneSafariVerified": false,
+  "nativeBuildUpdated": false
+}

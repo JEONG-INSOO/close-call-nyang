@@ -1,6 +1,6 @@
 # Task: T02 Pages 배포 확인
 
-## Status: in_progress
+## Status: done
 
 ## Goal
 동일 Safari 수정 요청의 GitHub 업로드 승인 범위에서 T01 소스를 main에 푸시하고 정확한 Pages CI 및 공개 번들을 확인한다.
@@ -14,8 +14,8 @@
 - 학습노트 배포 결과 보완. index-only 선택 스테이징으로 기존 더티 메모 보존.
 
 ## Acceptance Criteria
-- [ ] 정확한 소스 배포 성공 및 공개 응답 확인
-- [ ] 실기기 미검증/네이티브 미변경 구분
+- [x] 정확한 소스 배포 성공 및 공개 응답 확인
+- [x] 실기기 미검증/네이티브 미변경 구분
 
 ## Validation
 - `gh run view <run> --json headSha,status,conclusion,jobs`
@@ -34,6 +34,6 @@ Phase: P01-web
 Task: T02-publish
 ```
 ## Progress
-- [ ] 배포 완료
-- [ ] 공개 검증 통과
+- [x] 배포 완료: source783f1ce / Pages38212634050 build/deploy success.
+- [x] 공개 검증 통과: index/JS/support/privacy200, timing/광고 marker, privacy source hash 동일. CI58pass/11skip, 실제 iPhone 미검증.
 - commit: pending

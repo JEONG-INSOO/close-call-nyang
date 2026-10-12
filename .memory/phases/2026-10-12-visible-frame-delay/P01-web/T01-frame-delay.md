@@ -51,4 +51,4 @@ Task: T01-frame-delay
 ## Progress
 - [x] 구현 완료
 - [x] 검증 통과: Jest725/50 suites, controller37, Chromium phone-landscape7, 타입/parity8/diff-check.
-- commit: pending
+- commit: 783f1ce097dfebd0615de8367570d4cad5689091

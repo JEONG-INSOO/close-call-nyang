@@ -1,5 +1,8 @@
 # Current Context
 
+## Latest checkpoint — 2026-10-12 보이는 웹 프레임 지연 수정 공개 완료
+- visible-frame-delay P01 2/2 완료. source783f1ce/Pages38212634050 성공, Jest725/랭킹191/Chromium58pass·11skip, 공개 JS의 visible/100·500ms 정책 확인. 보이는 playing/countdown의 짧은 지연만 버리고 hidden/수동/긴 중단/native/광고 보호 유지. 증거 store/web-frame-delay-2026-10-12.json 및 전용 학습노트. 실제 iPhone 오디오 원인 실측·새 IPA 변경 없음. 원래 스토어 자료 T03 pending 복귀.
+
 ## Latest checkpoint — 2026-10-12 가상 광고와 Safari 포커스 수정 공개 완료
 - T01 48db104/T02 source0786111, Jest716·Chromium55pass/11skip, source 정확한 Pages run38210229901 build/deploy success. 공식 index/JS/support/privacy200, mock opt-in/foreground marker와 committed privacy hash 일치; store/web-update-2026-10-12.json/전용 학습노트 기록. 정상 랭킹·해금 유지, 부활 뒤 추가 기록만 로컬. 공개 검사는 GET-only, 기존 사용자 아트/QA/test 보존. 단일 P01 3/3 종료 후 스토어 자료 T03 pending 복귀. 실제 iPhone Safari/새 IPA/광고 설문·심사/국가 변경은 미수행이다.
 
@@ -217,16 +220,16 @@
 - 아이콘 Task 완료 후 Active Task를 보존된 베테랑 P01-T03로 복귀한다. 원래 iOS P03-T03도 별도 미완료이고 기존 미커밋 변경은 보존한다.
 
 ## Active Plan
-[보이는 웹 프레임 지연](./plans/2026-10-12-visible-frame-delay.md)
+[App Store 공개 심사 준비](./plans/2026-09-29-app-store-review-prep.md)
 
 ## Active Phase
-[P01 웹 지연 구분](./phases/2026-10-12-visible-frame-delay/P01-web/phase.md)
+[P01 출시 자료·소스 준비](./phases/2026-09-29-app-store-review-prep/P01-readiness/phase.md)
 
 ## Active Task
-[T02 Pages 배포 확인](./phases/2026-10-12-visible-frame-delay/P01-web/T02-publish.md)
+[T03 스토어 자료 기록 정리](./phases/2026-09-29-app-store-review-prep/P01-readiness/T03-store-assets.md)
 
 ## Status
-- Active status: `in_progress` visible-frame-delay P01-T02. T01 구현/Jest725·브라우저7·타입/parity 통과, 정확한 소스 Pages 배포 확인 후 기존 스토어 자료 T03 pending 복귀. 아래는 과거 기록.
+- Active status: `pending` 원래 스토어 자료 T03 복귀. visible-frame-delay P01 2/2 공개 배포/내용 확인 완료. 실제 iPhone 재검증은 별도. 아래는 과거 기록.
 - Active status: `pending` (원래 app-store-review-prep P01-T03 자료 정리 복귀). 2026-10-12 광고·포커스 단일 P01 3/3 공개 배포/내용 확인 완료. 실제 Safari/새 IPA/심사·국가 변경은 별도. 아래는 과거 기록.
 - Active status: `pending` (app-store-review-prep P01-T03 자료 기록 정리). P02-T03 실제 심사 접수/P02 3/3 완료. Apple 승인/공개와 DSA는 별도 미완료. 아래는 이전 기록이다.
 - Active status: `in_progress` (app-store-review-prep P02-T02;시안5장2fe32ec완료、사용자승인/최신촬영빌드·기종·iOS/남은실기기QA증거대기). P01-T03및소개최종확인게이트보존、원격제출없음.
@@ -272,6 +275,7 @@
 - T01 Pages CI gate 구현·검증 완료. Production bundle 검사 통과, typecheck/ranked/Jest/ranking/Playwright 통과. T02 원격 GitHub 인증/production backend preflight로 이동.
 
 ## Next Step (IMPORTANT)
+현재 visible-frame-delay 수정은 공개 배포까지 완료했다. 실제 iPhone Safari 효과음 켠 상태의 재확인 결과를 받으면 필요 시 후속 진단한다. 새 요청 없이 심사/국가/네이티브 빌드를 변경하지 않는다. 포인터는 기존 스토어 자료 T03 pending이다. 아래는 과거 지시다.
 현재 요청은 가상 광고·Safari 포커스 수정·GitHub/Pages 게시까지 완료했다. 이전 app-store-review-prep/P01-readiness/T03-store-assets.md pending으로 복귀하며 다음 사용자 요청 때 실행한다. Safari 실제 기기 확인과 새 네이티브 빌드·광고 설문 검토는 별도다. 나라 설정·심사 취소/재제출을 임의로 수행하지 않는다. 아래는 과거 지시다.
 현재 최우선: 보존된 app-store-review-prep/P01-readiness/T03-store-assets.md 기록 정리. 이미 승인·등록·실제 접수된 자료를 기존 청사진과 대조해 상태를 정리하되 새 시안/메타데이터 변경·재빌드·심사 취소를 하지 않는다. 외부 다음 상태는 Apple 심사 결과/DSA 지원 답변이며 사용자 요청 시 읽기 확인한다. 승인 후 수동 공개는 별도 사용자 승인, 자동 감시/공개 없음. 기존 계정·기록/삭제재설치 not_run/전체QA pending 유지. 아래는 이전 지시다.
 현재 최우선: 원래 app-store-review-prep/P02-ios-delivery/T02-native-qa.md의 시안 승인, 촬영 빌드·기종·iOS와 남은 실기기 QA를 확인한다. 이미지5장 시안과 ZIP은2fe32ec으로 완료. 이후 스토어 소개 최종 확인·개인정보/연령/운영 입력 준비를 거쳐 실제 심사 제출한다. 아래는 과거 지시다.
