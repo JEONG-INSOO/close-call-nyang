@@ -49,7 +49,10 @@ test('pause, focus loss and portrait freeze the game until explicit resume', asy
   await expect(page.getByTestId('game-score')).toHaveText(score!);
   await page.getByRole('button', { name: '이어하기', exact: true }).click();
   // Actual DOM lifecycle event, not a controller/debug command.
-  await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+  await page.evaluate(() => {
+    Object.defineProperty(document, 'hasFocus', { configurable: true, value: () => false });
+    window.dispatchEvent(new Event('blur'));
+  });
   await expect(page.getByTestId('pause-overlay')).toBeVisible();
   await page.evaluate(() => window.dispatchEvent(new Event('focus')));
   await expect(page.getByTestId('pause-overlay')).toBeVisible();
@@ -60,6 +63,22 @@ test('pause, focus loss and portrait freeze the game until explicit resume', asy
   await expect(page.getByTestId('landscape-content')).toBeHidden();
   await page.setViewportSize(landscape);
   await expect(page.getByTestId('pause-overlay')).toBeVisible();
+});
+
+test('a short visible blur followed by focus does not open the resume overlay', async ({ cleanPage: page }) => {
+  await openGame(page); await startGame(page);
+  await page.evaluate(() => {
+    Object.defineProperty(document, 'hasFocus', { configurable: true, value: () => false });
+    window.dispatchEvent(new Event('blur'));
+    setTimeout(() => {
+      Object.defineProperty(document, 'hasFocus', { configurable: true, value: () => true });
+      window.dispatchEvent(new Event('focus'));
+    }, 100);
+  });
+  await page.waitForTimeout(700);
+  await expect(page.getByTestId('pause-overlay')).toHaveCount(0);
+  await expect(page.getByTestId('control-left')).toBeEnabled();
+  await page.getByTestId('pause-button').click();
 });
 
 test('A and ArrowLeft stay independent when only A is released', async ({ cleanPage: page }) => {

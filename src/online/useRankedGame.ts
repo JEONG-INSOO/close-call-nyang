@@ -4,6 +4,7 @@ import type { GameController } from '../game/controller';
 import type { PlayerProfile, RankedRun } from './contracts';
 import type { OnlineStatus, RankingApi } from './types';
 import { createRankedSession } from './rankedSession';
+import { subscribeWebForeground } from '../platform/webForeground';
 
 type Session = ReturnType<typeof createRankedSession>;
 const LOCAL = { state: 'local' as const, hasPending: false, needsPendingDecision: false,
@@ -78,16 +79,7 @@ export function useRankedGame(options: {
       if (!foreground) cancelStart();
     };
     if (Platform.OS === 'web' && typeof document !== 'undefined') {
-      const visibility = () => setForeground(document.visibilityState !== 'hidden');
-      const blur = () => setForeground(false);
-      const focus = () => visibility();
-      visibility();
-      document.addEventListener('visibilitychange', visibility);
-      window.addEventListener('blur', blur); window.addEventListener('focus', focus);
-      return () => {
-        document.removeEventListener('visibilitychange', visibility);
-        window.removeEventListener('blur', blur); window.removeEventListener('focus', focus);
-      };
+      return subscribeWebForeground(setForeground);
     }
     setForeground(AppState.currentState === 'active');
     const subscription = AppState.addEventListener('change', state => setForeground(state === 'active'));

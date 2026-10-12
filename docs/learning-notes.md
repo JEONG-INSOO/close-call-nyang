@@ -1,5 +1,7 @@
 # 우당탕탕 냥대리 학습노트
 
+최신 웹 조작 학습: [Safari의 잠깐 blur와 실제 숨김을 나누기](learning-notes/2026-10-12-safari-focus.md).
+
 최신 심사 학습: [초안·EAS 업로드·App Review 접수·공개의 차이](learning-notes/2026-10-01-app-review-submission.md).
 
 최신 독립 배포 학습: [개인정보 방침 보완의 검증·공식 게시](learning-notes/2026-10-01-policy-supplement.md).

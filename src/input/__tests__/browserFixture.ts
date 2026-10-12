@@ -17,7 +17,8 @@ export function installBrowserFixture() {
     };
   }
   const win = surface();
-  const doc = { ...surface(), visibilityState: 'visible', activeElement: null as unknown, querySelector: jest.fn(() => null as unknown) };
+  const doc = { ...surface(), visibilityState: 'visible', hasFocus: jest.fn(() => true),
+    activeElement: null as unknown, querySelector: jest.fn(() => null as unknown) };
   Object.defineProperty(globalThis, 'window', { configurable: true, value: win });
   Object.defineProperty(globalThis, 'document', { configurable: true, value: doc });
   return {

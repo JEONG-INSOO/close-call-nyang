@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { act, cleanup, renderHook, waitFor } from '@testing-library/react-native';
-import { AppState } from 'react-native';
+import { AppState, Platform } from 'react-native';
+import { installBrowserFixture } from '../../input/__tests__/browserFixture';
 import { createGameController } from '../../game/controller';
 import type { RankedRun } from '../contracts';
 import { PROOF_STORAGE_KEY, type PendingProof } from '../proofQueue';
@@ -81,6 +82,34 @@ test('a late challenge cannot attach after cancellation and local start', async 
   expect(controller.readState().run).toBe(local);
   expect(result.current.submissionState).toBe('local');
   expect(onAcceptedStart).toHaveBeenCalledTimes(1);
+});
+
+test.each(['transient', 'hidden', 'long-blur'] as const)('web online start respects the shared %s foreground decision', async departure => {
+  jest.useFakeTimers();
+  const descriptor = Object.getOwnPropertyDescriptor(Platform, 'OS')!;
+  Object.defineProperty(Platform, 'OS', { configurable: true, value: 'web' });
+  const browser = installBrowserFixture();
+  try {
+    const { settings, api, controller } = setup();
+    const pending = deferred<RankedRun>(); api.startRun.mockImplementation(() => pending.promise);
+    const hook = await renderHook(() => useRankedGame(settings)); await ready();
+    let starting!: Promise<void>;
+    await act(() => { starting = hook.result.current.start(); }); await ready();
+    expect(api.startRun).toHaveBeenCalledTimes(1);
+    browser.doc.hasFocus.mockReturnValue(false);
+    await act(() => { browser.win.emit('blur'); jest.advanceTimersByTime(100); });
+    if (departure === 'transient') {
+      browser.doc.hasFocus.mockReturnValue(true);
+      await act(() => { browser.win.emit('focus'); jest.advanceTimersByTime(500); });
+    } else if (departure === 'hidden') {
+      await act(() => { browser.doc.visibilityState = 'hidden'; browser.doc.emit('visibilitychange'); });
+    } else await act(() => jest.advanceTimersByTime(400));
+    await act(async () => { pending.resolve(challenge()); await starting; });
+    expect(controller.readState().screen).toBe(departure === 'transient' ? 'countdown' : 'title');
+    await hook.unmount(); controller.dispose();
+    expect(browser.win.count()).toBe(0);
+    expect(browser.doc.count()).toBe(0);
+  } finally { browser.restore(); Object.defineProperty(Platform, 'OS', descriptor); jest.useRealTimers(); }
 });
 
 test('a pending prior result requires a choice and local retry never records into its proof', async () => {
