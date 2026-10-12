@@ -1,6 +1,6 @@
 # Task: T03 GitHub 업로드와 Pages 확인
 
-## Status: in_progress
+## Status: done
 
 ## Goal
 검증한 소스 commit만 정상 main push하고 같은 SHA의 CI/Pages와 공개 번들을 확인한다.
@@ -14,11 +14,12 @@
 - phase/plan done, current는 이전 스토어 자료 T03 pending으로 복귀. 학습노트에 실제 push/공개 상태를 별도 기록. 기록 commit은 별도 일반 push, 소스 검증 SHA를 기록 commit과 혼동하지 않는다.
 
 ## Acceptance Criteria
-- [ ] main push와 정확한 workflow 및 공개 내용 근거
-- [ ] 제출 중 빌드6/심사/국가 변경 없음, iPhone Safari 실제 확인은 pending 명시
-- [ ] 기록 커밋·학습노트·pointer 복귀
+- [x] source0786111 정상 main push, run38210229901 build/deploy 모두 success, 공식 index/JS/support/privacy200 및 새 JS opt-in/foreground marker·소스와 방침 hash 일치
+- [x] 제출 중 빌드6/심사/국가 변경 없음, iPhone Safari 실제 확인은 pending 명시
+- [x] sanitized 증거/학습노트, 이전 스토어 자료 Task로 pointer 복귀와 기록 커밋
 
 ## Validation
+- Result: source `0786111a72148ea1c9eb4624ebea59f1ba0d7210` 정상 main push, 정확한 Pages run `38210229901` build/deploy completed/success. `store/web-update-2026-10-12.json`에 공개 번들/방침 SHA와 검사 결과를 기록했다. 완료 기록의 새 commit과 이 배포 sourceSHA는 별개다.
 - 정확한 GitHub run + 공개 HTTP/번들/방침 확인
 - `git diff --cached --check`
 

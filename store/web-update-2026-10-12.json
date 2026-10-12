@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "0786111a72148ea1c9eb4624ebea59f1ba0d7210",
+  "workflowRunId": "38210229901",
+  "status": "passed",
+  "publicUrl": "https://jeong-insoo.github.io/close-call-nyang/",
+  "checks": { "workflow": true, "http": true, "bundle": true, "policy": true },
+  "bundlePath": "/close-call-nyang/_expo/static/js/web/index-72c45ed1a6bf72c82cde253cfff9ce63.js",
+  "bundleSha256": "c0490943482588f1e235376a14a32f37afda92a177d79604296a9403cc2143a4",
+  "privacySha256": "dce04a9e2e4acfbea7f55194b95702e8672893e0ecbf95dfaa8f540b7959b6ac",
+  "verifiedDate": "2026-10-12",
+  "nativeBuildUpdated": false,
+  "iphoneSafariVerified": false,
+  "evidence": "Exact source workflow build and deploy success; public index/JS/support/privacy HTTP200, compiled exact mock-ad opt-in and shared foreground markers, public privacy bytes match committed source. Read-only public checks, no production accounts or scores created. Local Jest716 and Chromium55passed/11intentionally skipped. Real iPhone Safari and a new IPA are separate follow-ups"
+}

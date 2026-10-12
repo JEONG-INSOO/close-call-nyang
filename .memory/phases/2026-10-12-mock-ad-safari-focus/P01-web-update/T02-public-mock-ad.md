@@ -35,6 +35,8 @@
 - `git diff --check`
 
 ## Learning
+완료 소스 커밋: `0786111a72148ea1c9eb4624ebea59f1ba0d7210` (정상 main push 완료). 공식 배포 확인은 T03이다.
+
 기능 제공과 점수 공정성은 서로 다른 플래그다. 마지막 tick의 proof와 부활 뒤 로컬 진행 분리. 질문: 광고를 켜기만 해도 정상 랭킹이 꺼지던 이유? 최초 실패 업로드를 freeze하면? 환경변수 수정만으로 설치된 IPA가 바뀌는가?
 
 ## Commit Message

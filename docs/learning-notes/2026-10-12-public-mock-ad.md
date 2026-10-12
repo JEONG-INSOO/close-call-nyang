@@ -19,6 +19,8 @@ Jest50스위트716/716, 타입, ranked:check8, release11/11, ranking tools67/67,
 첫 전체 브라우저 검사에서도 기존 온라인 시나리오가 광고 버튼0개/결과2행을 기대해 실패했다. 최초 실패의 tick 업로드/finalize 검사는 유지하고 공개 버튼/3행으로 기대를 갱신했다. 광고 브랜드를 정리하려고 검사 중 같은 export 폴더를 재생성한 것은 실수였다. 그 사이 index.html이 없어져 포커스 검사 시작 페이지가 HTTP404로 실패했다. 이는 포커스 로직 실패나 Safari 증거가 아니다. 모든 export가 끝난 뒤 같은 경로를 고정해서 전체 검사를 다시 실행한다.
 
 ## 배포 구분
+source `0786111a72148ea1c9eb4624ebea59f1ba0d7210` 정상 main push 후 정확한 run `38210229901`의 build/deploy success를 확인했다. 공식 index/JS/support/privacy200, 새 JS의 mock true/foreground/가상 광고 표시 marker 확인, 공개 방침 SHA256 `dce04a9e2e4acfbea7f55194b95702e8672893e0ecbf95dfaa8f540b7959b6ac`는 해당 commit 파일과 완전 일치한다. JS는 Unicode escape를 정규화한 뒤 문구를 확인하므로 검색에 없다는 이유로 표시 기능을 부정하지 않는다. 공개 번들 hash와 한계는 `store/web-update-2026-10-12.json`에 기록했다. 운영 계정/점수 생성 없이 공개 GET만 확인했다.
+
 EAS/Pages 설정 true, diagnostics false. 현재 제출된 IPA6과 Apple 소개/광고 설문은 변하지 않는다. 새 네이티브 빌드와 광고 설문·심사 메모 재검토가 후속이다. 공개 개인정보 페이지에는 텍스트 홍보와 SDK/네트워크/추적 없음이라는 실제 동작만 반영한다. 새 계약이 허용한 두 광고 문단과 날짜 이외의 과거 승인 문구는 그대로 검사한다.
 
 ## 다음 연습
