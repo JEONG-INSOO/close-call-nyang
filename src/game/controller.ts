@@ -38,6 +38,7 @@ export interface GameController {
 }
 
 const MAX_FRAME_DELTA_MS = 100;
+const MAX_VISIBLE_FRAME_DELAY_MS = 500;
 const MAX_STEPS_PER_FRAME = 12;
 const SNAPSHOT_INTERVAL_MS = 100;
 const STEP_EPSILON_SECONDS = 1e-10;
@@ -82,7 +83,10 @@ function isRunning(state: GameState): boolean {
 }
 
 /** Owns timing and input, while the engine remains the only gameplay rule source. */
-export function createGameController(flags: { mockAdsEnabled: boolean }): GameController {
+export function createGameController(
+  flags: { mockAdsEnabled: boolean },
+  timing: { isPageVisible?: () => boolean } = {},
+): GameController {
   const engineFlags = { mockAdsEnabled: flags?.mockAdsEnabled === true };
   const input = createInputRegistry();
   let state = createInitialState();
@@ -217,6 +221,14 @@ export function createGameController(flags: { mockAdsEnabled: boolean }): GameCo
     }
     previousTimestamp = timestampMs;
     if (deltaMs > MAX_FRAME_DELTA_MS) {
+      // A short rendering/audio stall is not proof that the player left the page.
+      // Drop this interval (including fractional debt), keeping held controls intact.
+      // Never catch it up as physics ticks or credit it toward an ad reward.
+      if ((state.screen === 'playing' || state.screen === 'countdown') &&
+          deltaMs <= MAX_VISIBLE_FRAME_DELAY_MS && timing.isPageVisible?.() === true) {
+        accumulator = 0;
+        return;
+      }
       input.clear();
       resetClock();
       if (isRunning(state)) dispatch({ type: 'PAUSE' });

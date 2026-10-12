@@ -217,15 +217,16 @@
 - 아이콘 Task 완료 후 Active Task를 보존된 베테랑 P01-T03로 복귀한다. 원래 iOS P03-T03도 별도 미완료이고 기존 미커밋 변경은 보존한다.
 
 ## Active Plan
-[App Store 공개 심사 준비](./plans/2026-09-29-app-store-review-prep.md)
+[보이는 웹 프레임 지연](./plans/2026-10-12-visible-frame-delay.md)
 
 ## Active Phase
-[P01 출시 자료·소스 준비](./phases/2026-09-29-app-store-review-prep/P01-readiness/phase.md)
+[P01 웹 지연 구분](./phases/2026-10-12-visible-frame-delay/P01-web/phase.md)
 
 ## Active Task
-[T03 스토어 자료 기록 정리](./phases/2026-09-29-app-store-review-prep/P01-readiness/T03-store-assets.md)
+[T02 Pages 배포 확인](./phases/2026-10-12-visible-frame-delay/P01-web/T02-publish.md)
 
 ## Status
+- Active status: `in_progress` visible-frame-delay P01-T02. T01 구현/Jest725·브라우저7·타입/parity 통과, 정확한 소스 Pages 배포 확인 후 기존 스토어 자료 T03 pending 복귀. 아래는 과거 기록.
 - Active status: `pending` (원래 app-store-review-prep P01-T03 자료 정리 복귀). 2026-10-12 광고·포커스 단일 P01 3/3 공개 배포/내용 확인 완료. 실제 Safari/새 IPA/심사·국가 변경은 별도. 아래는 과거 기록.
 - Active status: `pending` (app-store-review-prep P01-T03 자료 기록 정리). P02-T03 실제 심사 접수/P02 3/3 완료. Apple 승인/공개와 DSA는 별도 미완료. 아래는 이전 기록이다.
 - Active status: `in_progress` (app-store-review-prep P02-T02;시안5장2fe32ec완료、사용자승인/최신촬영빌드·기종·iOS/남은실기기QA증거대기). P01-T03및소개최종확인게이트보존、원격제출없음.

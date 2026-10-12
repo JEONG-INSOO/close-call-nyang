@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useSharedValue } from 'react-native-reanimated';
+import { Platform } from 'react-native';
 import { createGameController } from './controller';
 import type { SceneFrame } from '../scene/types';
 
@@ -10,7 +11,9 @@ const INITIAL_FRAME: SceneFrame = {
 
 /** One controller for this mounted app; feature flags are startup configuration. */
 export function useGameController(flags: { mockAdsEnabled: boolean }) {
-  const [controller] = useState(() => createGameController(flags));
+  const [controller] = useState(() => createGameController(flags, Platform.OS === 'web' ? {
+    isPageVisible: () => typeof document !== 'undefined' && document.visibilityState === 'visible',
+  } : {}));
   const snapshot = useSyncExternalStore(controller.subscribe, controller.getSnapshot, controller.getSnapshot);
   const frame = useSharedValue<SceneFrame>(INITIAL_FRAME);
   const lease = useRef(0);

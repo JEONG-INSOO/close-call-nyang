@@ -8,8 +8,8 @@ import type { SceneFrame } from '../../scene/types';
 const STEP_MS = 1000 / 120;
 const FLAGS = { mockAdsEnabled: false };
 
-function harness(flags = FLAGS) {
-  const controller = createGameController(flags);
+function harness(flags = FLAGS, timing: Parameters<typeof createGameController>[1] = {}) {
+  const controller = createGameController(flags, timing);
   let now = 0;
   return {
     controller,
@@ -31,8 +31,8 @@ function harness(flags = FLAGS) {
   };
 }
 
-function playing(flags = FLAGS) {
-  const clock = harness(flags);
+function playing(flags = FLAGS, timing: Parameters<typeof createGameController>[1] = {}) {
+  const clock = harness(flags, timing);
   clock.start();
   clock.step(360);
   expect(clock.controller.readState().screen).toBe('playing');
@@ -113,7 +113,7 @@ describe('controller fixed-step clock', () => {
     expect(states[1]).toEqual(states[2]);
   });
 
-  test('100ms consumes twelve fixed ticks, but a longer delta pauses without fast-forwarding', () => {
+  test('default/native policy: 100ms consumes twelve ticks, but a longer delta pauses', () => {
     const clock = playing();
     clock.jump(100);
     expect(clock.controller.readState().run!.stepIndex).toBe(12);
@@ -131,6 +131,77 @@ describe('controller fixed-step clock', () => {
     clock.start();
     clock.jump(4000);
     expect(clock.controller.readState()).toMatchObject({ screen: 'paused', resumeTo: 'countdown', countdownSeconds: 3 });
+  });
+
+  test.each([100.1, 250, 500])('visible %sms stall drops time without pause, ticks, effects or lost held input', delay => {
+    const clock = playing(FLAGS, { isPageVisible: () => true });
+    const controller = clock.controller;
+    const ticks: PlayedTick[] = [];
+    const effects = jest.fn();
+    controller.subscribeTicks(tick => ticks.push(tick));
+    controller.subscribeEffects(effects);
+    controller.setInput('touch', 'held-right', 1, true);
+    clock.jump(4); // Fractional debt must not leak across the discarded interval.
+    const before = controller.readState();
+    clock.jump(delay);
+    expect(controller.readState()).toBe(before);
+    expect(ticks).toEqual([]);
+    expect(effects).not.toHaveBeenCalled();
+    clock.jump(5);
+    expect(controller.readState()).toBe(before);
+    clock.jump(4);
+    expect(ticks).toEqual([{ runId: 1, tickIndex: 1, direction: 1, terminal: false }]);
+    expect(controller.readState()).toEqual(transition(before, {
+      type: 'TICK', dt: BALANCE.fixedDt, input: { left: false, right: true },
+    }, FLAGS).state);
+  });
+
+  test('visible countdown tolerates a brief stall without skipping time', () => {
+    const clock = harness(FLAGS, { isPageVisible: () => true });
+    clock.start();
+    clock.jump(250);
+    expect(clock.controller.readState()).toMatchObject({ screen: 'countdown', countdownSeconds: 3 });
+    clock.step();
+    expect(clock.controller.readState().countdownSeconds).toBeCloseTo(3 - BALANCE.fixedDt, 12);
+  });
+
+  test.each([500.1, 1000, 10000])('visible %sms interruption still pauses and clears held input', delay => {
+    const clock = playing(FLAGS, { isPageVisible: () => true });
+    clock.controller.setInput('touch', 'held', 1, true);
+    const before = clock.controller.readState();
+    clock.jump(delay);
+    expect(clock.controller.readState()).toMatchObject({ screen: 'paused', resumeTo: 'playing', run: before.run });
+    clock.controller.dispatch({ type: 'RESUME' });
+    clock.seedClock(); clock.step();
+    expect(clock.controller.readState()).toEqual(transition(before, {
+      type: 'TICK', dt: BALANCE.fixedDt, input: { left: false, right: false },
+    }, FLAGS).state);
+  });
+
+  test('visibility is read at the delayed frame, and becoming visible never resumes a paused game', () => {
+    let visible = true;
+    const clock = playing(FLAGS, { isPageVisible: () => visible });
+    visible = false;
+    clock.jump(150);
+    const paused = clock.controller.readState();
+    expect(paused.screen).toBe('paused');
+    visible = true;
+    clock.jump(250); clock.step(10);
+    expect(clock.controller.readState()).toBe(paused);
+  });
+
+  test('manual pause and ad time cannot be bypassed by visible short-delay recovery', () => {
+    const clock = playing({ mockAdsEnabled: true }, { isPageVisible: () => true });
+    clock.controller.dispatch({ type: 'PAUSE' });
+    clock.seedClock(); clock.jump(250);
+    expect(clock.controller.readState().screen).toBe('paused');
+    clock.controller.dispatch({ type: 'RESUME' });
+    clock.seedClock(); fallWithLegalInputs(clock);
+    clock.controller.dispatch({ type: 'REQUEST_AD' });
+    clock.seedClock(); clock.jump(150);
+    expect(clock.controller.readState()).toMatchObject({
+      screen: 'paused', resumeTo: 'ad', adSeconds: 5, run: { reviveUsed: false },
+    });
   });
 
   test.each([NaN, Infinity, -Infinity])('nonfinite timestamp %s resets rather than poisoning the clock', (invalid) => {

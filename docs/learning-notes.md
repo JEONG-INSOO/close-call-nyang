@@ -1,5 +1,7 @@
 # 우당탕탕 냥대리 학습노트
 
+최신 타이밍 학습: [짧은 렌더 지연과 실제 화면 이탈 구분](learning-notes/2026-10-12-visible-frame-delay.md).
+
 최신 웹 조작 학습: [Safari의 잠깐 blur와 실제 숨김을 나누기](learning-notes/2026-10-12-safari-focus.md).
 
 최신 광고 학습: [가상 광고를 공개 기능으로 켜되 정상 기록을 유지하기](learning-notes/2026-10-12-public-mock-ad.md).

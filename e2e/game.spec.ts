@@ -111,6 +111,39 @@ test('a short visible blur followed by focus does not open the resume overlay', 
   await page.getByTestId('pause-button').click();
 });
 
+test('a brief visible rendering stall keeps playing, but actual hiding requires manual resume', async ({ cleanPage: page }) => {
+  await openGame(page); await startGame(page);
+  await page.evaluate(() => new Promise<void>(resolve => {
+    requestAnimationFrame(() => {
+      const until = performance.now() + 180;
+      while (performance.now() < until) { /* Reproduce a busy main thread, not an audio claim. */ }
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    });
+  }));
+  await expect(page.getByTestId('pause-overlay')).toHaveCount(0);
+  await expect(page.getByTestId('control-right')).toBeEnabled();
+  const before = await leanDegrees(page);
+  await page.keyboard.down('ArrowRight');
+  await expect.poll(() => leanDegrees(page)).toBeGreaterThan(before + 3);
+  await page.keyboard.up('ArrowRight');
+  await page.evaluate(() => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'hidden' });
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await expect(page.getByTestId('pause-overlay')).toBeVisible();
+  const paused = await leanDegrees(page);
+  await page.evaluate(() => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'visible' });
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await page.waitForTimeout(250);
+  await expect(page.getByTestId('pause-overlay')).toBeVisible();
+  expect(await leanDegrees(page)).toBeCloseTo(paused, 7);
+  await page.getByRole('button', { name: '이어하기', exact: true }).click();
+  await expect(page.getByTestId('control-right')).toBeEnabled();
+  await page.getByTestId('pause-button').click();
+});
+
 test('A and ArrowLeft stay independent when only A is released', async ({ cleanPage: page }) => {
   await openGame(page); await startGame(page);
   await page.keyboard.down('a'); await page.keyboard.down('ArrowLeft');
