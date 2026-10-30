@@ -12,6 +12,8 @@ function fakeController() {
   const setInput = jest.fn(registry.set);
   const controller = {
     readState: () => ({ screen }), setInput,
+    clearInput: jest.fn(registry.clear), resetFrameClock: jest.fn(),
+    dispatch: jest.fn(() => { screen = 'paused'; listeners.forEach(listener => listener()); }),
     subscribe: (listener: () => void) => { listeners.add(listener); return () => listeners.delete(listener); },
   } as unknown as GameController;
   return { controller, registry, setInput, screen(value: string) { screen = value; listeners.forEach(listener => listener()); } };
@@ -94,5 +96,18 @@ describe('web keyboard sequence handling', () => {
     const game = fakeController();
     await renderHook(() => useNativeKeyboardInput(game.controller));
     expect(browser.win.count()).toBe(0);
+  });
+  it('Escape pauses active play and clears both inputs, but never toggles resume or steals form input', async () => {
+    const game = fakeController();
+    await renderHook(() => useKeyboardInput(game.controller));
+    game.registry.set('touch', 'finger', 1, true);
+    await act(() => { browser.win.emit('keydown', key('KeyA')); browser.win.emit('keydown', key('Escape')); });
+    expect(game.controller.dispatch).toHaveBeenCalledWith({ type: 'PAUSE' });
+    expect(game.registry.read()).toEqual({ left: false, right: false });
+    await act(() => browser.win.emit('keydown', key('Escape')));
+    expect(game.controller.dispatch).toHaveBeenCalledTimes(1);
+    game.screen('playing');
+    await act(() => browser.win.emit('keydown', key('Escape', { closest: () => ({}) })));
+    expect(game.controller.dispatch).toHaveBeenCalledTimes(1);
   });
 });

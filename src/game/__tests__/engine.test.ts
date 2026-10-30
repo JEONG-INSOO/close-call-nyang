@@ -385,7 +385,7 @@ describe('seeded directional events', () => {
       expect(workEvent.phase).toBe('warning');
       expect(workEvent.remainingSeconds).toBeGreaterThan(BALANCE.warningSeconds - 2 * DT);
       expect(workEvent.remainingSeconds).toBeLessThanOrEqual(BALANCE.warningSeconds);
-      const allowed = distanceM < 51 ? ['coffeeRush', 'lateCommute'] : ['urgentEdit', 'bossCall', 'longMeeting'];
+      const allowed = distanceM < 51 ? ['coffeeRush', 'lateCommute'] : ['urgentEdit', 'bossCall', 'longMeeting', 'resignation'];
       expect(allowed).toContain(workEvent.id);
       expect([-1, 1]).toContain(workEvent.direction);
       expect(result.effects.filter(effect => effect.type === 'eventWarning')).toEqual([

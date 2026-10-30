@@ -159,7 +159,7 @@ describe('whole-run fixed-time and production regressions', () => {
     game.dispose();
   });
 
-  it('preserves ~90 active seconds to 100 through an hour-long pause, bounded steps and no 100 effect', () => {
+  it('preserves ~83.65 active seconds to 100 through an hour-long pause, bounded steps and no 100 effect', () => {
     const time = clock(120);
     const game = time.controller;
     time.start(1, 98765); time.advance(3);
@@ -178,8 +178,8 @@ describe('whole-run fixed-time and production regressions', () => {
       expect(game.readState().screen).toBe('playing');
       if (before.distanceM < 100 && after.distanceM >= 100) {
         crossed = true;
-        expect(after.elapsedSeconds).toBeGreaterThanOrEqual(89.5);
-        expect(after.elapsedSeconds).toBeLessThanOrEqual(90.5);
+        expect(after.elapsedSeconds).toBeGreaterThanOrEqual(83.15);
+        expect(after.elapsedSeconds).toBeLessThanOrEqual(84.15);
         expect(game.getSnapshot().score).toBe(100);
         expect(game.getSnapshot().state).toBe(game.readState());
         expect(time.effects.slice(effectCount).every(item => ['footstep', 'wobble', 'eventWarning'].includes(item.effect.type))).toBe(true);
@@ -222,7 +222,7 @@ describe('isolated 1000 m fixture stability (not production gameplay evidence)',
       if (next.effects.some(effect => effect.type === 'eventWarning')) {
         warnings += 1;
         expect(run.event?.phase).toBe('warning');
-        expect(['urgentEdit', 'bossCall', 'longMeeting']).toContain(run.event?.id);
+        expect(['urgentEdit', 'bossCall', 'longMeeting', 'resignation']).toContain(run.event?.id);
         warnedAt = run.elapsedSeconds - (BALANCE.warningSeconds - run.event!.remainingSeconds);
       }
       if (before.event?.phase === 'warning' && before.event.remainingSeconds > DT * 1.01) {

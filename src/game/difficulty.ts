@@ -17,7 +17,7 @@ export function stageOf(distanceM: number): Stage {
 
 export function speedAt(distanceM: number): number {
   const acceleratedDistance = Math.max(0, safeDistance(distanceM) - 15);
-  return BALANCE.baseSpeedMps * (1 + 0.7 * stableLog1p(acceleratedDistance / 85));
+  return BALANCE.baseSpeedMps * (1 + 1.05 * stableLog1p(acceleratedDistance / 85));
 }
 
 export function difficultyAt(distanceM: number): Difficulty {
@@ -28,7 +28,7 @@ export function difficultyAt(distanceM: number): Difficulty {
     speedMps: speedAt(distance),
     instability: 7.6 + 1.1 * level,
     disturbance: 1.8 + 0.32 * level,
-    eventStrength: 1.6 + 0.65 * level,
+    eventStrength: 1.6 + 1.8 * level,
     eventIntervalSeconds: Math.max(4, 6 / (1 + 0.3 * level)),
   };
 }

@@ -23,6 +23,18 @@ export function useKeyboardInput(controller: GameController): void {
       held.clear();
     };
     const keydown = (event: KeyboardEvent) => {
+      if (event.code === 'Escape') {
+        const state = controller.readState();
+        if (event.repeat || !['playing', 'countdown', 'ad'].includes(state.screen) ||
+            editable(event.target) || editable(document.activeElement) ||
+            document.querySelector('[aria-modal="true"], [role="dialog"], dialog[open]')) return;
+        event.preventDefault();
+        releaseAll();
+        controller.clearInput();
+        controller.resetFrameClock();
+        controller.dispatch({ type: 'PAUSE' });
+        return;
+      }
       const direction = DIRECTION[event.code];
       if (!direction || !eligible(event)) return;
       event.preventDefault();

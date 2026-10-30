@@ -93,7 +93,7 @@ describe('active control versus repeated commands, not a human fun benchmark', (
         state = tick(state, direction).state;
       }
       expect(state.screen).toBe('playing'); expect(state.run!.distanceM).toBeGreaterThanOrEqual(101);
-      expect(state.run!.elapsedSeconds).toBeGreaterThan(90); expect(state.run!.elapsedSeconds).toBeLessThan(92);
+      expect(state.run!.elapsedSeconds).toBeGreaterThan(84); expect(state.run!.elapsedSeconds).toBeLessThan(86);
       return { fraction: active / ticks, changesPerSecond: changes / state.run!.elapsedSeconds };
     });
     // Measured baseline 4caea00 for identical policy/seeds: active .417, changes 2.537/s.

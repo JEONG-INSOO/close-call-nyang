@@ -3,7 +3,7 @@ export type Direction = -1 | 1;
 export type Stage = 'street' | 'office';
 export type Screen = 'title' | 'countdown' | 'playing' | 'paused' | 'ad' | 'result';
 export type InputState = Readonly<{ left: boolean; right: boolean }>;
-export type EventId = 'coffeeRush' | 'lateCommute' | 'urgentEdit' | 'bossCall' | 'longMeeting';
+export type EventId = 'coffeeRush' | 'lateCommute' | 'urgentEdit' | 'bossCall' | 'longMeeting' | 'resignation';
 
 export interface WorkEvent {
   id: EventId;

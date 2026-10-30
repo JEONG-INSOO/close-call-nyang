@@ -12,7 +12,7 @@ import type { SceneFrame } from '../../src/scene/types';
 import { palette } from '../../src/theme/tokens';
 
 export const FIXTURE_NOTICE = 'TEST FIXTURE — 합성 상태 / iOS 스크린샷 아님';
-const DISTANCES = [0, 14.9, 15, 50, 50.5, 51, 100, 250] as const;
+const DISTANCES = [0, 14.9, 15, 50, 50.5, 51, 60, 70, 100, 250] as const;
 const ANGLES = [-Math.PI / 3, -0.55, 0, 0.55, Math.PI / 3] as const;
 const POSES = [
   { id: 'left', angle: -0.55, fallen: false },

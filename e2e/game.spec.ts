@@ -111,6 +111,19 @@ test('a short visible blur followed by focus does not open the resume overlay', 
   await page.getByTestId('pause-button').click();
 });
 
+test('Escape pauses without automatically resuming on another press', async ({ cleanPage: page }) => {
+  await openGame(page); await startGame(page);
+  await page.keyboard.down('ArrowRight');
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('pause-overlay')).toBeVisible();
+  await page.keyboard.up('ArrowRight');
+  const angle = await leanDegrees(page);
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(200);
+  await expect(page.getByTestId('pause-overlay')).toBeVisible();
+  expect(await leanDegrees(page)).toBeCloseTo(angle, 7);
+});
+
 test('a brief visible rendering stall keeps playing, but actual hiding requires manual resume', async ({ cleanPage: page }) => {
   await openGame(page); await startGame(page);
   await page.evaluate(() => new Promise<void>(resolve => {

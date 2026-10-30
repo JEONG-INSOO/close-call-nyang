@@ -29,7 +29,7 @@ function assertCheckpoint(state: GameState): void {
         run.nextEventAt, run.nextFootstepAt, run.lastWobbleAt].every(Number.isFinite)) reject();
   const event = run.event;
   if (event !== null && (!event ||
-      !['coffeeRush', 'lateCommute', 'urgentEdit', 'bossCall', 'longMeeting'].includes(event.id) ||
+      !['coffeeRush', 'lateCommute', 'urgentEdit', 'bossCall', 'longMeeting', 'resignation'].includes(event.id) ||
       ![-1, 1].includes(event.direction) || !['warning', 'active'].includes(event.phase) ||
       !Number.isFinite(event.remainingSeconds) || event.remainingSeconds < 0 ||
       !Number.isFinite(event.strength) || event.strength < 0)) reject();

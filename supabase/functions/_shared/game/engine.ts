@@ -11,7 +11,7 @@ import type {
 type Flags = Readonly<{ mockAdsEnabled: boolean }>;
 
 const STREET_EVENTS: readonly EventId[] = ['coffeeRush', 'lateCommute'];
-const OFFICE_EVENTS: readonly EventId[] = ['urgentEdit', 'bossCall', 'longMeeting'];
+const OFFICE_EVENTS: readonly EventId[] = ['urgentEdit', 'bossCall', 'longMeeting', 'resignation'];
 const UINT32_MAX = 0xffffffff;
 
 export function createInitialState(): GameState {

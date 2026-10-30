@@ -55,10 +55,10 @@ describe('initial difficulty tuning', () => {
     const level = Math.log1p(extra / 35);
     const expected = {
       level,
-      speedMps: BALANCE.baseSpeedMps * (1 + 0.7 * Math.log1p(extra / 85)),
+      speedMps: BALANCE.baseSpeedMps * (1 + 1.05 * Math.log1p(extra / 85)),
       instability: 7.6 + 1.1 * level,
       disturbance: 1.8 + 0.32 * level,
-      eventStrength: 1.6 + 0.65 * level,
+      eventStrength: 1.6 + 1.8 * level,
       eventIntervalSeconds: Math.max(4, 6 / (1 + 0.3 * level)),
     };
     const actual = difficultyAt(distance);
@@ -91,7 +91,7 @@ describe('initial difficulty tuning', () => {
     expect(points[points.length - 1].eventIntervalSeconds).toBe(4);
   });
 
-  test('speed-only fixed-step integration reaches 100 meters in 90 ± 0.5 active seconds', () => {
+  test('stronger acceleration reaches 100 meters in 83.65 ± 0.5 active seconds', () => {
     let distance = 0;
     let elapsed = 0;
     while (distance < 100 && elapsed < 120) {
@@ -99,7 +99,7 @@ describe('initial difficulty tuning', () => {
       elapsed += BALANCE.fixedDt;
     }
     expect(distance).toBeGreaterThanOrEqual(100);
-    expect(elapsed).toBeGreaterThanOrEqual(89.5);
-    expect(elapsed).toBeLessThanOrEqual(90.5);
+    expect(elapsed).toBeGreaterThanOrEqual(83.15);
+    expect(elapsed).toBeLessThanOrEqual(84.15);
   });
 });

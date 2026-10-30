@@ -12,6 +12,8 @@ export interface SceneFrame {
   playing: boolean;
   fallen: boolean;
   seed: number;
+  resignationDirection?: -1 | 1;
+  resignationProgress?: number;
 }
 
 export interface Viewport {

@@ -11,6 +11,7 @@ export interface GameHudProps {
 const EVENT_LABELS: Record<EventId, string> = {
   coffeeRush: ko.eventCoffeeRush, lateCommute: ko.eventLateCommute,
   urgentEdit: ko.eventUrgentEdit, bossCall: ko.eventBossCall, longMeeting: ko.eventLongMeeting,
+  resignation: '사표 내고 퇴장! 동료가 달려오는 방향을 확인하세요',
 };
 
 /** Text updates on controller publications, not on every animation frame. */

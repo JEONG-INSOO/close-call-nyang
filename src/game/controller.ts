@@ -61,6 +61,9 @@ function sceneFrameOf(state: GameState): SceneFrame {
     fallen: state.screen === 'result' || state.screen === 'ad' ||
       (state.screen === 'paused' && state.resumeTo === 'ad'),
     seed: run?.seed ?? 0,
+    resignationDirection: run?.event?.id === 'resignation' ? run.event.direction : undefined,
+    resignationProgress: run?.event?.id === 'resignation' && run.event.phase === 'active'
+      ? 1 - run.event.remainingSeconds / BALANCE.activeEventSeconds : undefined,
   };
 }
 
