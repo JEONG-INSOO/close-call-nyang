@@ -1,5 +1,7 @@
 # 우당탕탕 냥대리 학습노트
 
+최신 배포 학습: [웹 게시와 Expo 계정 없는 iOS 빌드](learning-notes/2026-10-30-release-update.md).
+
 최신 입력 안내 학습: [첫 닉네임 입력과 로컬 표식](learning-notes/2026-10-30-nickname-entry.md).
 
 최신 랭킹 학습: [서버가 확인한 부활과 기존 최고 합산](learning-notes/2026-10-30-ranked-revival.md).

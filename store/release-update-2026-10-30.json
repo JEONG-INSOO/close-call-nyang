@@ -1,0 +1,62 @@
+{
+  "ascAppId": "6815771701",
+  "bundleIdentifier": "com.mocca.closecallnyang",
+  "version": "1.0.1",
+  "sourceCommit": "d8d85f77d723f072a041c7b8d80c8f92b8c96caf",
+  "buildProvider": "github-actions-macos-26-xcode-26.6",
+  "expoAccountUsedForNewBuild": false,
+  "unsignedBuild": {
+    "runId": 41012370017,
+    "buildNumber": "101",
+    "status": "success",
+    "artifactId": 12958302479,
+    "archiveIdentityValidated": true,
+    "installable": false,
+    "appleUploadCompleted": false
+  },
+  "signedBuild": {
+    "runId": 41024386585,
+    "workflowCommit": "b209549bffb1ee872a62f2275c4f5213c9b02154",
+    "buildNumber": "104",
+    "status": "success",
+    "artifactId": 12962998199,
+    "appleUploadCompleted": true,
+    "deliveryId": "42b453ce-ad73-4c07-9589-e1912778946f",
+    "processingState": "VALID",
+    "observedAt": "2026-10-30T08:14:12.078Z",
+    "appleBuildId": "42b453ce-ad73-4c07-9589-e1912778946f"
+  },
+  "apiAccessConsent": "user_approved_and_submitted",
+  "appleReleaseKeyCreated": true,
+  "keyRole": "APP_MANAGER",
+  "distributionCertificateCreated": true,
+  "dedicatedAppStoreProfileCreated": true,
+  "existingCertificatesRevoked": false,
+  "githubSecretNamesStored": [
+    "APPLE_SIGNING_CERTIFICATE_P12",
+    "APPLE_SIGNING_CERTIFICATE_PASSWORD",
+    "APPLE_PROVISIONING_PROFILE",
+    "APP_STORE_CONNECT_PRIVATE_KEY",
+    "APP_STORE_CONNECT_KEY_ID",
+    "APP_STORE_CONNECT_ISSUER_ID"
+  ],
+  "newReviewSubmitted": false,
+  "newVersionApproved": false,
+  "newVersionPublic": false,
+  "previousAttempts": [
+    {
+      "runId": 41017069997,
+      "buildNumber": "102",
+      "status": "cancelled",
+      "appleUploadCompleted": false,
+      "reason": "Xcode compilation stopped producing progress logs; canceled after checking Apple."
+    },
+    {
+      "runId": 41022899891,
+      "buildNumber": "103",
+      "status": "cancelled",
+      "appleUploadCompleted": false,
+      "reason": "Signing helper stalled; replaced with direct trusted codesign and separate upload step."
+    }
+  ]
+}

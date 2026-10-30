@@ -1,5 +1,5 @@
 # Task: T02 iOS1.0.1 서명 빌드와 Apple 업로드
-## Status: in_progress
+## Status: done
 ## Goal
 검증한 동일 게임 소스를 서명 IPA로 만들어 ASC6815771701에 업로드한다.
 ## Decision
@@ -13,7 +13,7 @@
 - 격리된GitHubcheckout이커밋된소스만사용하므로사용자dirty아트가업로드되지않는다. 서명자료없는unsignedarchive를설치가능IPA나업로드성공이라표시금지.
 ## Implementation
 - Recovery: signed102의Xcode모듈precompile로그가07:06:59UTC에서장시간정체됐고Apple새빌드없음을확인후해당run만cancel. 성공한unsigned101 artifact12958302479/run41012370017/d8d85f7을재사용한다. archive출처headSHA/event/conclusion과고정artifactID/digest검증, git diff runtime영역으로현재소스와일치확인후서명만수행. 새코드가다르면실패해오래된산출물사용금지.
-- app-store모드는prebuild재컴파일대신고정archive다운로드→프로필/P12설치→공식fastlane resign→codesign검증→IPA업로드. 산출물전달중실행비트누락을CFBundleExecutable대상에복구. CFBundleVersion은현재run번호로갱신하며실제게임소스와서명workflowSHA를별도로receipt에남긴다. permissions에publicartifact다운로드용actions:read만추가.
+- app-store모드는prebuild재컴파일대신고정archive다운로드→프로필/P12설치→직접codesign으로8개framework와app서명→deep/strict검증→IPA업로드. 산출물전달중실행비트누락을CFBundleExecutable대상에복구. CFBundleVersion은현재run번호로갱신하며실제게임소스와서명workflowSHA를별도로receipt에남긴다. permissions에publicartifact다운로드용actions:read만추가.
 - app.config.ts config.version:string 1.0.0→1.0.1. package.json/lockroot도1.0.1로일치. bundle/team/project/icon/landscape/tablet false유지. CI IOS_BUILD_NUMBER는1..9999문자열.
 - GitHub production공개URL/key, mockadtrue/diagnosticsfalse확인. checkout은커밋된소스만사용, privatekey/profile/p12는ActionsSecrets→RUNNER_TEMP로만전달. Docs/아트dirty는런타임빌드에자동포함하지않는다.
 - workflow_dispatch unsigned-archive실행→실제archive+receipt확인. 사용자키발급/자료저장승인뒤 app-store실행→정확한GitHubrunId/소스SHA/빌드번호와Apple처리대조. 자동중복빌드/무관한최신빌드재제출금지.
@@ -26,8 +26,8 @@
 - version1.0.1/GitHubworkflow/임시서명스크립트구현. typecheck/release11/config23/서명가드4/YAML/셸문법통과. source-only d8d85f7. unsigned101실제성공. 사용자자료저장·API사용동의승인후GitHub6Secrets등록과signed102실행. Apple업로드성공은아직관찰전.
 - 빌드소스를고정하기위한source-only커밋을먼저만든다. Task는실제서명빌드·업로드전까지in_progress. 기존dirty파일제외.
 ## Acceptance
-- [ ] 서명빌드완료/정확한버전·식별자
-- [ ] 정확한buildId Apple업로드완료
+- [x] 서명빌드완료/정확한버전·식별자
+- [x] 정확한deliveryId Apple업로드완료; build처리대기
 ## Learning
 마케팅버전과buildNumber, compile/sign/upload/review분리, 깨끗한스냅샷의재현성. 실기기QA는확인한범위만기록. 복습: unsignedarchive는왜설치불가인가? 서명인증서와업로드API키는어떻게다른가? retry전에왜서버의실제상태를확인해야하나?
 ## Commit Message
@@ -46,3 +46,9 @@ Plan: 2026-10-30-release-update
 Phase: P01-release
 Task: T02-ios-build
 ```
+
+## Signed upload checkpoint
+- b209549/41024386585: 서명3초·Appleupload성공,1.0.1(104). receipt/game source d8d85f7·workflow SHA를분리했다. Apple buildUploads의정확한delivery42b453ce-ad73-4c07-9589-e1912778946f는PROCESSING/errors0/warnings0. VALID관찰전Task완료로표시하지않는다.
+
+## Completion
+- AppleGET exact1.0.1/build104/id42b453ce-ad73-4c07-9589-e1912778946f VALID확인. typecheck/release11/서명가드6통과. signed IPA12962998199/receipt의source·workflow·identity와실제upload완료대조. 새실기기QA미수행, 심사제출아직전.
