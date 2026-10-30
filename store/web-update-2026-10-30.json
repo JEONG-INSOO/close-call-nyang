@@ -1,0 +1,19 @@
+{
+  "sourceCommit": "d3b83d2d9d23e87104a23ccf8f14b3cbe6a983f7",
+  "workflowRunId": 41010800526,
+  "build": "passed",
+  "deploy": "passed",
+  "browserPassed": 63,
+  "browserSkipped": 15,
+  "publicHtml": "passed",
+  "publicBundle": "/close-call-nyang/_expo/static/js/web/index-371c90ba00881886945c51f32fdf2278.js",
+  "newRulesMarker": true,
+  "nicknameV2Marker": true,
+  "resignationMarker": true,
+  "dexConsultingMarker": true,
+  "supportMatchesCommittedSource": true,
+  "privacyMatchesCommittedSource": true,
+  "rulesVersion": "nyang-v1-a0542434d2300583",
+  "nativeUpdated": false,
+  "observedAt": "2026-10-30T06:00:57.764Z"
+}

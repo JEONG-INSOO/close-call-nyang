@@ -1,5 +1,5 @@
 # Task: T01 공식 웹 게시
-## Status: in_progress
+## Status: done
 ## Goal
 사용자 승인된 최신 게임을 공식 Pages에서 제공한다.
 ## Implementation
@@ -11,8 +11,10 @@
 - 선행 Jest738/typecheck/브라우저6pass6skip/staticexport 완료. GitHub CI의 unit/type/browser 및 Pages 배포 완료 확인.
 - gh run view RUN --json headSha,status,conclusion,jobs, 공개URL GET.
 ## Acceptance
-- [ ] GitHub main과 Pages의 정확한 소스 일치
-- [ ] 공개 번들/지원·개인정보 정상
+- [x] GitHub main과 Pages의 정확한 소스 일치
+- [x] 공개 번들/지원·개인정보 정상
+## Results
+d3b83d2 정상push→41010800526 build/deploy성공. Chromium63pass/15의도적skip. 공개index-371c90ba00881886945c51f32fdf2278.js에서rules/닉네임v2/resignation/DEXCONSULTING확인. support/privacy200/소스SHA256일치. iOS아직미변경.
 ## Learning
 push와 CI build/deploy의 차이, 공개 HTML이 참조하는 JS 해시 확인, 서버 배포와 정적웹 배포의 독립성. 질문: push 성공이 배포 성공인가? 웹만 바꾸면 IPA가 바뀌나? 해시로 무엇을 입증하나?
 ## Commit Message

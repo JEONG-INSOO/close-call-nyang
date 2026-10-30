@@ -1,7 +1,16 @@
 # Task: T02 iOS1.0.1 서명 빌드와 Apple 업로드
-## Status: pending
+## Status: in_progress
 ## Goal
 검증한 동일 게임 소스를 서명 IPA로 만들어 ASC6815771701에 업로드한다.
+## Updated Decision (supersedes EAS steps below)
+- 사용자는 Expo 계정 사용을 거절했다. EAS login/build/submit 실행 금지. 아래 EAS 계획은 역사이며 이 절을 따른다.
+- `.github/workflows/ios-app-store.yml` new: workflow_dispatch만, main ref만, contents:read, concurrency취소false, macos-26/Xcode26.6. mode choice unsigned-archive/app-store. 기본unsigned-archive는 Applesecrets없이실제xcodearchive빌드, 업로드없음. app-store는 인증secrets누락시사전실패, 서명export+Appleupload.
+- `scripts/ios-release.mjs` new: mode/config/buildnumber검증, 생성workspace/project의단일appscheme선택, 임시경로내signingfiles처리, profileteam/bundle/만료검사, exportOptions.plist생성, 산출물경로·해시등민감하지않은receipt만출력. source에인증서/키포함금지.
+- `scripts/ios-release.sh` new: 임시keychain·profile설치, prebuild/pod/archive/export/upload 실행. trap으로자체임시keychain/profile/key만정리. 로그에키/비밀번호/base64/profile원문금지, 항상xtraceoff.
+- app.config.ts config.version/package/lockroot 1.0.1. `IOS_BUILD_NUMBER` optionaldigits1..9999만허용. workflow는100+run_number로고유번호, attempt재시도동일번호는업로드중복여부먼저확인. 기존EAS설정은삭제하지않으나사용하지않는다.
+- Apple_SIGNING_CERTIFICATE_P12, APPLE_SIGNING_CERTIFICATE_PASSWORD, APPLE_PROVISIONING_PROFILE, APP_STORE_CONNECT_PRIVATE_KEY 및 keyID/issuerID를이저장소의ActionsSecrets로사용할계획. 기존값없음확인. 새AppleAPI키/인증서발급·GitHub에비밀자료제공은구체적사용자승인후진행, 사용자비밀번호/2FA채팅금지.
+- `scripts/ios-release.test.mjs` new: reject잘못된build/target/privateartifacts, unsigned모드secrets없어도허용/appstore모드빠진credentials거절, profile와exportoptions검증. 실행한macOS빌드증거와로컬정적검사를구별.
+- 격리된GitHubcheckout이커밋된소스만사용하므로사용자dirty아트가업로드되지않는다. 서명자료없는unsignedarchive를설치가능IPA나업로드성공이라표시금지.
 ## Implementation
 - app.config.ts config.version:string 1.0.0→1.0.1. package.json version:string 및 package-lock root package version도1.0.1로 일치. bundle/team/project/icon/landscape/tablet false 유지. 버전 고정 테스트가 있으면 의미있는 조건만 동기화.
 - EAS production read-only env/schema 확인: 실제project production 공개URL/key, mockadtrue/diagnosticsfalse. 토큰 출력 금지.

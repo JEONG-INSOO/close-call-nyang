@@ -226,9 +226,10 @@
 [P01 릴리스](./phases/2026-10-30-release-update/P01-release/phase.md)
 
 ## Active Task
-[T01-web-deploy](./phases/2026-10-30-release-update/P01-release/T01-web-deploy.md)
+[T02-ios-build](./phases/2026-10-30-release-update/P01-release/T02-ios-build.md)
 
 ## Status
+- Active status: in_progress release-update P01-T02. 웹d3b83d2/Pages41010800526성공·Chromium63pass15skip·공개마커/방침해시확인. 사용자Expo계정거절→GitHubMac/Xcode배포로전환, EAS인증중단. Apple로그인정상, 서명자료/Secrets준비필요.
 - Active status: in_progress release-update P01-T01. 사용자 웹푸시와AppStore업데이트승인. d3b83d2 push완료/Pages41010800526검사중. Apple로그인정상/공개1.0출시확인. Expo CLI계정권한달라소유계정기기로그인대기.
 - Active status: `pending` 원래 스토어 자료T03 복귀. office-events 3/3 완료: 배경6상황/사표/가속/ESC, 1회부활랭킹·평생최고통합, 첫닉네임실제입력1회. 운영v5/migration/smoke 완료·기존131/구앱호환 유지. Jest738/52suites·브라우저6pass/6skip·static웹검사 통과. 새웹/IPA미게시, staging슬롯제한 복원못함. 아래는 과거 기록.
 - Active status: `in_progress` office-events P01-T03. T02 code+운영migration/v5/부활smoke 완료,737unit/Deno53/static29/로컬SQLrollback. 기존131/구앱규칙유지. staging은무료슬롯제한 복원못함, 기존다른프로젝트중지없음. 다음 첫닉네임직접입력1회. 웹/IPA아직미게시.
@@ -279,6 +280,7 @@
 - T01 Pages CI gate 구현·검증 완료. Production bundle 검사 통과, typecheck/ranked/Jest/ranking/Playwright 통과. T02 원격 GitHub 인증/production backend preflight로 이동.
 
 ## Next Step (IMPORTANT)
+T02갱신청사진에따라Expo계정없는GitHubMac빌드구성. unsigned컴파일먼저검증. Apple신규인증서/API접근/GitHub비밀저장은구체적승인후. 기존Apple버전1.0공개, 다음1.0.1.
 T01 정확한Pages실행성공과공개새번들확인,완료커밋후T02 1.0.1격리빌드. Expo소유계정인증대기동안독립준비. 사용자dirty아트보존/기존국가지역유지.
 이번 게임/닉네임 구현·운영랭킹 반영은 완료. GitHub push와공식웹게시에는 명시적사용자요청이 필요하며 아직 하지 않았다. 사용자 요청 시 현재 완료커밋들을검증된main으로게시하고 실제Pages결과확인. 새IPA는별도. 기존 사용자아트/QA보존. 아래는 과거 지시.
 T03-nickname-entry.md에 따라 최초닉네임입력창1회 및 브라우저/Jest검사. T02운영v5는 완료; staging복원보류/무료한도2개. 새웹게시와IPA갱신은 구분한다.
