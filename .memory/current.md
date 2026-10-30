@@ -229,6 +229,7 @@
 [T03-app-review](./phases/2026-10-30-release-update/P01-release/T03-app-review.md)
 
 ## Status
+- Active status: done release-update P01 3/3. 공식웹완료, GitHubMac/Expo계정없이1.0.1(104) AppleVALID·한영승인문구/광고true/정확한빌드연결·실제심사접수완료. 2026-10-30 17:18KST submissionf020aefa-30e0-42ea-95ee-70a6be43251a WAITING_FOR_REVIEW. 승인/공개false,AFTER_APPROVAL유지.
 - Active status: in_progress release-update P01-T03. iOS1.0.1(104) run41024386585 signed/upload success; Apple42b453ce-ad73-4c07-9589-e1912778946f VALID. Expo계정미사용. T02done, 승인한한영문구와가상광고설문/빌드연결후심사제출진행.
 - Active status: in_progress release-update P01-T02. 웹d3b83d2/Pages41010800526성공·Chromium63pass15skip·공개마커/방침해시확인. 사용자Expo계정거절→GitHubMac/Xcode배포로전환, EAS인증중단. Apple로그인정상, 서명자료/Secrets준비필요.
 - Active status: in_progress release-update P01-T01. 사용자 웹푸시와AppStore업데이트승인. d3b83d2 push완료/Pages41010800526검사중. Apple로그인정상/공개1.0출시확인. Expo CLI계정권한달라소유계정기기로그인대기.
@@ -281,6 +282,7 @@
 - T01 Pages CI gate 구현·검증 완료. Production bundle 검사 통과, typecheck/ranked/Jest/ranking/Playwright 통과. T02 원격 GitHub 인증/production backend preflight로 이동.
 
 ## Next Step (IMPORTANT)
+Apple심사결과확인또는추가요청에대응한다. 현재접수취소·중복제출·새빌드불필요. 삭제재설치/새실기기QA미수행이력과사용자아트보존. 완료근거store/release-update-2026-10-30.json·학습노트참고.
 T03 승인문구등록, 광고설문true대조, exact1.0.1(104)연결·심사메모갱신·최종접수확인. 기존국가/가격/아트와과거QA보존.
 T02갱신청사진에따라Expo계정없는GitHubMac빌드구성. unsigned컴파일먼저검증. Apple신규인증서/API접근/GitHub비밀저장은구체적승인후. 기존Apple버전1.0공개, 다음1.0.1.
 T01 정확한Pages실행성공과공개새번들확인,완료커밋후T02 1.0.1격리빌드. Expo소유계정인증대기동안독립준비. 사용자dirty아트보존/기존국가지역유지.

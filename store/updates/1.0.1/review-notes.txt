@@ -1,0 +1,11 @@
+The game interface is in Korean and uses landscape orientation. No demo login credentials are required.
+
+To play, tap "업무 시작" on the home screen and hold the left/right on-screen buttons to balance the cat. Distance is shown as project completion percentage and can exceed 100%.
+
+The first-launch nickname prompt can be skipped. To set the first nickname later, open home > "설정" > "닉네임 설정" (shown only before a nickname is set). The online leaderboard is under home > "랭킹". It uses anonymous authentication and requires an internet connection; a nickname is required to register scores.
+
+To report or hide another player, open "랭킹" and tap the three-dot button on that player's row. Online account/profile and score deletion is available in "설정" > "온라인 프로필과 기록 삭제". Privacy policy and customer support links are also in "설정"; scroll down if needed.
+
+Reward characters are cosmetic: "성실한 냥대리" unlocks after reaching 100% without revival once, and "베테랑 냥대리" after reaching 100% without revival in ten separate runs.
+
+This release has no in-app purchases or external advertising SDK. After falling, tap "광고 보고 일어서기" to view a bundled 5-second DEXCONSULTING text-based mock advertisement and revive once per run. No external ad network or advertising tracking is used. Runs started online with a nickname can submit additional post-revival progress after server replay verification. New office scenes include a coworker rushing out with a resignation letter, with a directional balance event. Speed and balance difficulty increase as play continues.

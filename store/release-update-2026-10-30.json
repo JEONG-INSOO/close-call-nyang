@@ -40,7 +40,7 @@
     "APP_STORE_CONNECT_KEY_ID",
     "APP_STORE_CONNECT_ISSUER_ID"
   ],
-  "newReviewSubmitted": false,
+  "newReviewSubmitted": true,
   "newVersionApproved": false,
   "newVersionPublic": false,
   "previousAttempts": [
@@ -58,5 +58,40 @@
       "appleUploadCompleted": false,
       "reason": "Signing helper stalled; replaced with direct trusted codesign and separate upload step."
     }
-  ]
+  ],
+  "ascVersionId": "262994c1-b6d5-46f1-8e6a-fc3fbbdd1ea8",
+  "releaseMode": "AFTER_APPROVAL",
+  "listingReadbackVerified": true,
+  "reviewNotesReadbackVerified": true,
+  "advertisingDeclaration": true,
+  "inheritedScreenshots": {
+    "displayType": "APP_IPHONE_67",
+    "count": 5,
+    "state": "COMPLETE",
+    "primaryLocale": "en-US",
+    "koreanUsesPrimaryFallback": true
+  },
+  "reviewStatus": "WAITING_FOR_REVIEW",
+  "observedAt": "2026-10-30T08:18:41.629Z",
+  "reviewSubmissionId": "f020aefa-30e0-42ea-95ee-70a6be43251a",
+  "reviewItemId": "ZjAyMGFlZmEtMzBlMC00MmVhLTk1ZWUtNzBhNmJlNDMyNTFhfDZ8ODk0MjA5ODE5",
+  "appStoreVersionState": "WAITING_FOR_REVIEW",
+  "submittedDate": "2026-10-30T08:18:36.719Z",
+  "uiReceipt": "output/ios-1.0.1-review-waiting.png (ignored)",
+  "qa": {
+    "typecheck": "passed",
+    "releaseTests": 11,
+    "signingGuardTests": 6,
+    "newDeviceQa": "not_run"
+  },
+  "listingHashes": {
+    "ko-KR": {
+      "description": "1fcc3abdb70c5902e044b8d1f783737c1ec721ff3281b42d23c5808dcb461a6b",
+      "whatsNew": "41dad0eef4cf17b09ae52c32964ca3910704916384296177f3a55f56ad4ea120"
+    },
+    "en-US": {
+      "description": "713792f957b9eb81b48fb928039d4e75199ba53e9c6dddf1e602db71385b6fff",
+      "whatsNew": "0b0263425c743fc95a34b9f4d2de10cbd89f19fae27b22af54a8c5edce8d3995"
+    }
+  }
 }

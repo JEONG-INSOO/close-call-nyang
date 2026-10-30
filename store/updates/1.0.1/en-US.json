@@ -1,0 +1,13 @@
+{
+  "version": "1.0.1",
+  "locale": "en-US",
+  "appStoreLocale": "en-US",
+  "description": "Even getting to work is an adventure for this little office cat!\nUse the left and right buttons to keep your balance as you walk. Every step raises your project's success percentage, and the challenge keeps going beyond 100%.\nPick up coffee at 15% and feel the pace increase. From 51%, the scenery changes to the office. There is no balance gauge: watch the cat's movements and trust your timing.\nReach 100% in one run without revival to unlock a new character. Reach it in ten separate runs without revival to unlock another. Your collection is saved on this device, and characters have no differences in gameplay abilities.\nSet a nickname if you want to join the shared online leaderboard. View the Top 30 and your own rank based on your highest server-verified whole-number success percentage. Players can share the same nickname, and tied scores share a rank.\nYou can also play without an internet connection. Runs started offline cannot be submitted to the online leaderboard. Progress does not sync between devices, and anonymous accounts cannot be recovered after reinstalling the app.\nThe game interface is in Korean.\n\nAfter a fall, finish a DEXCONSULTING text-based mock ad to get back up once. For runs started online with a nickname, your additional progress after revival can also count toward the leaderboard after server verification. Character unlocks count only runs that reach 100% without revival.",
+  "whatsNew": "Discover more office scenes and a coworker rushing out with a resignation letter.\nThe pace and balance challenge increase as you progress.\nGet back up once after a mock ad and compete with your continued score.\nImproved the first nickname setup prompt.",
+  "keywords": "cat,balance,casual,walking,office,chibi,offline,leaderboard",
+  "promotionalText": "Small paws, big projects! Help an adorable office cat keep its balance and make it through a wonderfully wobbly workday.",
+  "supportUrl": "https://jeong-insoo.github.io/close-call-nyang/support/",
+  "approval": "user_approved_2026-10-30",
+  "appStoreLocalizationId": "bb9d3f70-889d-4511-a48a-404fbc7975fa",
+  "readbackVerified": true
+}

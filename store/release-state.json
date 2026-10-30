@@ -26,5 +26,7 @@
   },
   "releaseMode": "manual",
   "submissionId": "e0347b70-45bb-4aac-a9f2-d76c8d8cf60d",
-  "submittedAt": "2026-09-30T02:24:43.663Z"
+  "submittedAt": "2026-09-30T02:24:43.663Z",
+  "latestUpdateRecord": "store/release-update-2026-10-30.json",
+  "historicalSnapshotNote": "This file retains the original version 1.0/build 6 submission evidence. Read latestUpdateRecord for version 1.0.1/build 104 and its actual review status."
 }

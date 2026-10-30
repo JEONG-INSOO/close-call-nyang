@@ -1,5 +1,5 @@
 # Task: T03 App Store 업데이트 심사 제출
-## Status: in_progress
+## Status: done
 ## Goal
 처리된1.0.1 빌드를새업데이트에연결하고사용자승인범위에서심사제출까지진행한다.
 ## Implementation
@@ -20,8 +20,8 @@
 - en what's new: ‘Discover more office scenes and a coworker rushing out with a resignation letter.\nThe pace and balance challenge increase as you progress.\nGet back up once after a mock ad and compete with your continued score.\nImproved the first nickname setup prompt.’
 - 승인후 store/updates/1.0.1/ko-KR.json/en-US.json에버전별소개·새기능·승인근거저장. 이전출시승인hash파일은역사보존해덮어쓰지않음. age답변advertising은새앱내가상브랜드광고와일치하도록확인/수정, 추적·수집추가없음.
 ## Acceptance
-- [ ] 최신처리된build연결/스토어내용일치
-- [ ] 실제심사접수또는정확한외부차단상태
+- [x] 최신처리된build연결/스토어내용일치
+- [x] 실제심사접수
 ## Learning
 마케팅등록/바이너리업로드/심사접수/승인/출시5단계차이. 질문: Submit성공이공개인가? 가상광고가설문에영향을주는이유? 이전심사상태를덮어쓰면왜안되나?
 ## Commit Message
@@ -32,3 +32,8 @@ Plan: 2026-10-30-release-update
 Phase: P01-release
 Task: T03-app-review
 ```
+
+## Completion evidence
+- 1.0.1 version262994c1-b6d5-46f1-8e6a-fc3fbbdd1ea8/build104 VALID연결. 승인한한영설명/새기능/심사메모GETreadback일치. 기존프로모션복원·keywords유지,완료스크린샷5장상속. editableAppInfo 광고true,추적/공개표수집범위추가없음.
+- reviewSubmission f020aefa-30e0-42ea-95ee-70a6be43251a, 2026-10-30T08:18:36.719Z actualsubmitted, 두리소스WAITING_FOR_REVIEW. 브라우저심사대기중확인/ignored output/ios-1.0.1-review-waiting.png. 기존AFTER_APPROVAL유지,승인/공개false.
+- typecheck/release11/signing6통과. 새실기기QA not_run. 승인문구는store/updates/1.0.1,최신접수는store/release-update-2026-10-30.json. 기존사용자dirty작업보존.
