@@ -83,8 +83,9 @@ jobs:
       - name: Build unsigned archive
         if: inputs.mode == 'unsigned-archive'
         run: bash scripts/ios-release.sh
-      - name: Sign verified archive and upload to Apple
+      - name: Sign verified archive
         if: inputs.mode == 'app-store'
+        timeout-minutes: 5
         env:
           APPLE_SIGNING_CERTIFICATE_P12: ${{ secrets.APPLE_SIGNING_CERTIFICATE_P12 }}
           APPLE_SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_SIGNING_CERTIFICATE_PASSWORD }}
@@ -92,7 +93,15 @@ jobs:
           APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-        run: bash scripts/ios-release.sh
+        run: bash scripts/ios-release.sh sign-only
+      - name: Upload signed app to Apple
+        if: inputs.mode == 'app-store'
+        timeout-minutes: 15
+        env:
+          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        run: bash scripts/ios-release.sh upload-only
       - name: Keep unsigned archive for compilation evidence
         if: success() && inputs.mode == 'unsigned-archive'
         uses: actions/upload-artifact@v4

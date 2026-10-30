@@ -14,6 +14,13 @@ export function validatePinnedArchive(run, artifact) {
 }
 export const signingNames = ['APPLE_SIGNING_CERTIFICATE_P12', 'APPLE_SIGNING_CERTIFICATE_PASSWORD',
   'APPLE_PROVISIONING_PROFILE', 'APP_STORE_CONNECT_PRIVATE_KEY', 'APP_STORE_CONNECT_KEY_ID', 'APP_STORE_CONNECT_ISSUER_ID'];
+export function validateUploadKey(env) {
+  for(const name of signingNames.slice(3))if(!env[name])throw new Error(`Missing ${name}`);
+  if (!/^[A-Z0-9]{10}$/.test(env.APP_STORE_CONNECT_KEY_ID) ||
+      !/^[a-f0-9-]{36}$/i.test(env.APP_STORE_CONNECT_ISSUER_ID)) throw new Error('Invalid Apple API identifiers');
+  const key = createPrivateKey(env.APP_STORE_CONNECT_PRIVATE_KEY);
+  if (key.asymmetricKeyType !== 'ec' || key.asymmetricKeyDetails?.namedCurve !== 'prime256v1') throw new Error('Expected Apple P-256 key');
+}
 
 export function validateRelease(env, requireSigning = false) {
   if (!['unsigned-archive','app-store'].includes(env.RELEASE_MODE)) throw new Error('Invalid release mode');
@@ -24,10 +31,7 @@ export function validateRelease(env, requireSigning = false) {
   if (requireSigning) {
     if (env.RELEASE_MODE !== 'app-store') throw new Error('Signing requires app-store mode');
     for (const name of signingNames) if (!env[name]) throw new Error(`Missing ${name}`);
-    if (!/^[A-Z0-9]{10}$/.test(env.APP_STORE_CONNECT_KEY_ID) ||
-        !/^[a-f0-9-]{36}$/i.test(env.APP_STORE_CONNECT_ISSUER_ID)) throw new Error('Invalid Apple API identifiers');
-    const key = createPrivateKey(env.APP_STORE_CONNECT_PRIVATE_KEY);
-    if (key.asymmetricKeyType !== 'ec' || key.asymmetricKeyDetails?.namedCurve !== 'prime256v1') throw new Error('Expected Apple P-256 key');
+    validateUploadKey(env);
   }
   return { mode:env.RELEASE_MODE, buildNumber:env.IOS_BUILD_NUMBER };
 }
@@ -65,7 +69,10 @@ async function main(command) {
   const temp = env.RUNNER_TEMP;
   if (!temp || process.platform !== 'darwin') throw new Error('This command runs only on a hosted Mac');
   const root = resolve(temp,'nyang-build');
-  if (command === 'credentials') {
+  if(command === 'upload-credentials') {
+    validateRelease(env);validateUploadKey(env);
+    await writeFile(resolve(temp,'nyang-signing',`AuthKey_${env.APP_STORE_CONNECT_KEY_ID}.p8`),env.APP_STORE_CONNECT_PRIVATE_KEY,{mode:0o600});
+  } else if (command === 'credentials') {
     validateRelease(env, true);
     const dir = resolve(temp,'nyang-signing');
     await writeFile(resolve(dir,'certificate.p12'),Buffer.from(env.APPLE_SIGNING_CERTIFICATE_P12,'base64'),{mode:0o600});

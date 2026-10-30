@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createHash } from 'node:crypto';
+import { createHash, generateKeyPairSync } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
-import { validateRelease, validateProfile, exportOptions, validatePinnedArchive, ARCHIVE_SOURCE, BUNDLE, TEAM } from './ios-release.mjs';
+import { validateRelease, validateUploadKey, validateProfile, exportOptions, validatePinnedArchive, ARCHIVE_SOURCE, BUNDLE, TEAM } from './ios-release.mjs';
 
 const env={RELEASE_MODE:'unsigned-archive',IOS_BUILD_NUMBER:'101',
   EXPO_PUBLIC_SUPABASE_URL:'https://fgojrxmpxpzdiwsktjsx.supabase.co',EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY:'sb_publishable_fixture123',
@@ -43,4 +43,12 @@ test('rejects substituted, expired, failed or differently sourced compiled artif
   assert.equal(validatePinnedArchive(run,artifact),ARCHIVE_SOURCE);
   for(const patch of [{head_sha:'other'},{head_branch:'untrusted'},{conclusion:'failure'},{event:'pull_request'}]) assert.throws(()=>validatePinnedArchive({...run,...patch},artifact));
   for(const patch of [{id:1},{digest:'wrong'},{expired:true},{workflow_run:{head_sha:'other'}}]) assert.throws(()=>validatePinnedArchive(run,{...artifact,...patch}));
+});
+test('upload validation needs only the Apple upload key and rejects an unsuitable RSA key',()=>{
+  const key=generateKeyPairSync('ec',{namedCurve:'prime256v1',privateKeyEncoding:{type:'pkcs8',format:'pem'},publicKeyEncoding:{type:'spki',format:'pem'}});
+  const upload={APP_STORE_CONNECT_PRIVATE_KEY:key.privateKey,APP_STORE_CONNECT_KEY_ID:'A123456789',APP_STORE_CONNECT_ISSUER_ID:'a0000000-0000-4000-8000-000000000001'};
+  assert.doesNotThrow(()=>validateUploadKey(upload));
+  assert.throws(()=>validateUploadKey({...upload,APP_STORE_CONNECT_PRIVATE_KEY:''}),/Missing/);
+  const rsa=generateKeyPairSync('rsa',{modulusLength:2048,privateKeyEncoding:{type:'pkcs8',format:'pem'},publicKeyEncoding:{type:'spki',format:'pem'}});
+  assert.throws(()=>validateUploadKey({...upload,APP_STORE_CONNECT_PRIVATE_KEY:rsa.privateKey}),/P-256/);
 });

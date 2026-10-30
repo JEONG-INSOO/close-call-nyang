@@ -7,6 +7,16 @@ node scripts/ios-release.mjs preflight
 build_dir="$RUNNER_TEMP/nyang-build"
 signing_dir="$RUNNER_TEMP/nyang-signing"
 mkdir -p "$build_dir"
+if [[ "${1:-all}" == 'upload-only' ]]; then
+  mkdir -p "$signing_dir"
+  trap 'rm -f -- "$signing_dir"/AuthKey_*.p8' EXIT
+  node scripts/ios-release.mjs upload-credentials
+  unset APP_STORE_CONNECT_PRIVATE_KEY
+  test -f "$build_dir/export/Nyang.ipa"
+  API_PRIVATE_KEYS_DIR="$signing_dir" xcrun altool --upload-app --type ios --file "$build_dir/export/Nyang.ipa" --apiKey "$APP_STORE_CONNECT_KEY_ID" --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID"
+  node scripts/ios-release.mjs receipt
+  exit 0
+fi
 keychain_path=''
 installed_profile=''
 cleanup() {
@@ -37,7 +47,7 @@ if [[ "$RELEASE_MODE" == 'app-store' ]]; then
   security create-keychain -p "$keychain_password" "$keychain_path"
   security set-keychain-settings -lut 21600 "$keychain_path"
   security unlock-keychain -p "$keychain_password" "$keychain_path"
-  security import "$signing_dir/certificate.p12" -P "$APPLE_SIGNING_CERTIFICATE_PASSWORD" -t cert -f pkcs12 -k "$keychain_path" >/dev/null
+  security import "$signing_dir/certificate.p12" -P "$APPLE_SIGNING_CERTIFICATE_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security -t cert -f pkcs12 -k "$keychain_path" >/dev/null
   unset APPLE_SIGNING_CERTIFICATE_P12 APPLE_SIGNING_CERTIFICATE_PASSWORD APPLE_PROVISIONING_PROFILE APP_STORE_CONNECT_PRIVATE_KEY
   security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$keychain_password" "$keychain_path" >/dev/null
   security list-keychains -d user -s "$keychain_path" "$HOME/Library/Keychains/login.keychain-db"
@@ -61,6 +71,7 @@ PY
   test ! -e "$profile_destination"
   installed_profile="$profile_destination"
   cp "$signing_dir/profile.mobileprovision" "$installed_profile"
+  printf 'Signing identity and dedicated App Store profile installed.\n'
   # Reuse only the pinned compiled game; GitHub has already verified its origin.
   python3 - "$build_dir" "$signing_dir" <<'PY'
 import os, pathlib, plistlib, json, shutil, sys
@@ -71,6 +82,11 @@ if receipt.get('sourceCommit') != os.environ['ARCHIVE_SOURCE_SHA'] or receipt.ge
 apps = list((root / 'Game.xcarchive/Products/Applications').glob('*.app'))
 if len(apps) != 1: raise SystemExit('Expected one compiled app')
 app = apps[0]
+if (app / 'PlugIns').exists() or (app / 'Watch').exists(): raise SystemExit('This signer supports the verified single-app archive only')
+frameworks = app / 'Frameworks'
+for item in frameworks.iterdir():
+    if item.is_dir() and not item.name.endswith('.framework'): raise SystemExit('Unexpected executable container')
+    if item.is_file() and not item.name.endswith('.dylib'): raise SystemExit('Unexpected framework file')
 info_path = app / 'Info.plist'
 with info_path.open('rb') as stream: info = plistlib.load(stream)
 if (info.get('CFBundleIdentifier'), info.get('CFBundleShortVersionString'), info.get('CFBundleVersion')) != ('com.mocca.closecallnyang', '1.0.1', '101'):
@@ -95,17 +111,24 @@ PY
   validate_archive
   mkdir -p "$build_dir/export"
   ipa_path="$build_dir/export/Nyang.ipa"
-  (cd "$build_dir/ipa-staging" && /usr/bin/zip --symlinks -q -r "$ipa_path" Payload)
-  FASTLANE_SKIP_UPDATE_CHECK=1 FASTLANE_OPT_OUT_USAGE=1 FASTLANE_DISABLE_COLORS=1 \
-    fastlane run resign ipa:"$ipa_path" signing_identity:"$SIGNING_FINGERPRINT" \
-      provisioning_profile:"$signing_dir/profile.mobileprovision" entitlements:"$signing_dir/entitlements.plist" \
-      bundle_version:"$IOS_BUILD_NUMBER" keychain_path:"$keychain_path"
-  # The freshly signed payload is verified before sending it to Apple.
-  mkdir -p "$build_dir/signed-check"
-  /usr/bin/ditto -x -k "$ipa_path" "$build_dir/signed-check"
-  signed_apps=("$build_dir/signed-check/Payload/"*.app)
+  signed_apps=("$build_dir/ipa-staging/Payload/"*.app)
   test "${#signed_apps[@]}" -eq 1
+  cp "$signing_dir/profile.mobileprovision" "${signed_apps[0]}/embedded.mobileprovision"
+  # This pinned app has flat embedded frameworks and no app extensions.
+  for framework in "${signed_apps[0]}/Frameworks/"*.framework; do
+    test -d "$framework"
+    printf 'Signing framework: %s\n' "${framework##*/}"
+    codesign --force --sign "$SIGNING_FINGERPRINT" --keychain "$keychain_path" --timestamp=none "$framework"
+  done
+  for library in "${signed_apps[0]}/Frameworks/"*.dylib; do
+    if [[ -f "$library" ]]; then codesign --force --sign "$SIGNING_FINGERPRINT" --keychain "$keychain_path" --timestamp=none "$library"; fi
+  done
+  printf 'Signing Nyang application.\n'
+  codesign --force --sign "$SIGNING_FINGERPRINT" --keychain "$keychain_path" --timestamp=none --generate-entitlement-der --entitlements "$signing_dir/entitlements.plist" "${signed_apps[0]}"
   codesign --verify --deep --strict "${signed_apps[0]}"
+  printf 'All application and framework signatures verified.\n'
+  (cd "$build_dir/ipa-staging" && /usr/bin/zip --symlinks -q -r "$ipa_path" Payload)
+  if [[ "${1:-all}" == 'sign-only' ]]; then exit 0; fi
   ipa_files=("$build_dir/export/"*.ipa)
   test "${#ipa_files[@]}" -eq 1 && test -f "${ipa_files[0]}"
   API_PRIVATE_KEYS_DIR="$signing_dir" xcrun altool --upload-app --type ios --file "${ipa_files[0]}" --apiKey "$APP_STORE_CONNECT_KEY_ID" --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID"
