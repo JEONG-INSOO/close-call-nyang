@@ -1,5 +1,5 @@
 # Task: T03 첫 진입 닉네임 입력창
-## Status: pending
+## Status: done
 ## Goal
 닉네임이 없는 첫 진입에 안내 버튼 단계 없이 실제 입력칸을 한 번 표시한다.
 ## Implementation
@@ -12,6 +12,11 @@
 - 새 웹/online 빌드 후 nickname-onboarding E2E. 처음 저장하지 않고 닫아도 게임 시작 가능, 설정에서 추후 설정 가능.
 ## Learning
 한 번 표시했다는 로컬 표식은 서버 프로필이 아니다. 복습: 표식 버전 변경 이유? 가입은 언제 발생? 기존 닉네임 사용자는 왜 예외인가?
+## Results
+- Jest52 suites/738개 및 typecheck 통과.
+- 최신 main/online 웹 빌드 생성, static web 검증 통과. 닉네임3화면과 모의온라인3흐름6pass/6의도적skip. 광고 부활 두 번째proof 제출 포함. small-landscape 캡처에서 입력칸·닫기·스크롤 영역 육안 확인.
+- 운영서버는 T02에서 migration202610300001/functionv5 적용·실제smoke 완료. 이 Task는 신규 DB 변경 없음. 새 웹 공개/새 IPA는 아직 미수행.
+- 학습노트 docs/learning-notes/2026-10-30-nickname-entry.md. 이전v1 표식과 기존 프로필/점수/캐릭터 보존.
 ## Commit Message
 ```text
 feat(onboarding): show nickname entry once on first visit

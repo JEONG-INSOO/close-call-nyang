@@ -4,4 +4,4 @@
 ## Phases
 | Phase | Status | Blueprint |
 |---|---|---|
-| P01 | in_progress | [청사진](../phases/2026-10-30-office-events/P01-game/phase.md) |
+| P01 | done | [청사진](../phases/2026-10-30-office-events/P01-game/phase.md) |

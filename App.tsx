@@ -20,7 +20,6 @@ import { CharacterSelectPanel } from './src/screens/CharacterSelectPanel';
 import { MockAdScreen } from './src/screens/MockAdScreen';
 import { SettingsPanel } from './src/screens/SettingsPanel';
 import { NicknamePanel } from './src/screens/NicknamePanel';
-import { NicknameWelcomePanel } from './src/screens/NicknameWelcomePanel';
 import { LeaderboardScreen } from './src/screens/LeaderboardScreen';
 import { PendingRankingPanel } from './src/screens/PendingRankingPanel';
 import { useOnlineProfile } from './src/online/useOnlineProfile';
@@ -33,7 +32,7 @@ import { useNicknameOnboarding } from './src/services/useNicknameOnboarding';
 import { clearGameResume, loadGameResume, resumeStateFromGameState, saveGameResume } from './src/services/gameResume';
 import { palette } from './src/theme/tokens';
 
-type Panel = 'settings' | 'characters' | 'nickname' | 'nicknameWelcome' | 'leaderboard' | 'diagnostics' | null;
+type Panel = 'settings' | 'characters' | 'nickname' | 'leaderboard' | 'diagnostics' | null;
 let Diagnostics: (() => React.JSX.Element) | null = null;
 if (__DEV__ && process.env.EXPO_PUBLIC_REPLAY_DIAGNOSTICS === 'true') {
   Diagnostics = require('./src/online/__dev__/RankedReplayDiagnostics').RankedReplayDiagnostics;
@@ -74,7 +73,6 @@ export default function App(): React.JSX.Element {
     if (onboarding.status !== 'ready' || onboarding.handled) return;
     if (online.status === 'ready' && online.profile) {
       onboarding.markHandled();
-      if (panelRef.current === 'nicknameWelcome') changePanel(null);
       return;
     }
     if (welcomePresented.current || online.status !== 'guest' || online.profile || online.isBusy || online.deletionPending ||
@@ -82,19 +80,11 @@ export default function App(): React.JSX.Element {
         controller.readState().screen !== 'title') return;
     welcomePresented.current = true;
     ranking.cancelStart();
-    changePanel('nicknameWelcome');
+    onboarding.markHandled();
+    changePanel('nickname');
   }, [onboarding.status, onboarding.handled, onboarding.markHandled, online.status, online.profile,
     online.isBusy, online.deletionPending, portraitBlocked, resumeLoading, ranking.startBusy,
     ranking.pendingChoice, ranking.cancelStart, panel, snapshot.state.screen, controller, changePanel]);
-
-  const deferNickname = useCallback(() => {
-    onboarding.markHandled();
-    changePanel(null);
-  }, [onboarding.markHandled, changePanel]);
-  const setupNickname = useCallback(() => {
-    onboarding.markHandled();
-    changePanel('nickname');
-  }, [onboarding.markHandled, changePanel]);
 
   useEffect(() => {
     let active = true;
@@ -270,8 +260,6 @@ export default function App(): React.JSX.Element {
           onSave={online.saveNickname} busy={online.isBusy || online.deletionPending}
           disabled={online.status === 'unconfigured' || online.profile !== null}
           error={online.status === 'unconfigured' ? '랭킹 연결 전입니다. 닉네임 없이도 바로 플레이할 수 있어요.' : online.error} />
-        <NicknameWelcomePanel visible={panel === 'nicknameWelcome' && !portraitBlocked}
-          onSetup={setupNickname} onLater={deferNickname} />
         <LeaderboardScreen visible={panel === 'leaderboard'} api={online.api} myProfile={online.profile}
           onClose={closePanel} refreshKey={ranking.refreshKey} />
         <PendingRankingPanel visible={ranking.pendingChoice} busy={ranking.startBusy} error={ranking.pendingError}

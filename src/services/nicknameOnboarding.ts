@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export const NICKNAME_ONBOARDING_KEY = 'close-call-nyang.nickname-onboarding.v1';
+export const NICKNAME_ONBOARDING_KEY = 'close-call-nyang.nickname-onboarding.v2';
 
 export interface NicknameOnboardingRecord { schemaVersion: 1; handled: boolean }
 export interface NicknameOnboardingLoad { handled: boolean; status: 'ready' | 'memoryOnly' }

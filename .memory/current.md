@@ -220,15 +220,16 @@
 - 아이콘 Task 완료 후 Active Task를 보존된 베테랑 P01-T03로 복귀한다. 원래 iOS P03-T03도 별도 미완료이고 기존 미커밋 변경은 보존한다.
 
 ## Active Plan
-[사무실과 이벤트](./plans/2026-10-30-office-events.md)
+[App Store 심사 준비](./plans/2026-09-29-app-store-review-prep.md)
 
 ## Active Phase
-[P01 사무실과 이벤트](./phases/2026-10-30-office-events/P01-game/phase.md)
+[P01 출시 준비](./phases/2026-09-29-app-store-review-prep/P01-readiness/phase.md)
 
 ## Active Task
-[T03 첫 닉네임 입력](./phases/2026-10-30-office-events/P01-game/T03-nickname-entry.md)
+[T03 스토어 자료](./phases/2026-09-29-app-store-review-prep/P01-readiness/T03-store-assets.md)
 
 ## Status
+- Active status: `pending` 원래 스토어 자료T03 복귀. office-events 3/3 완료: 배경6상황/사표/가속/ESC, 1회부활랭킹·평생최고통합, 첫닉네임실제입력1회. 운영v5/migration/smoke 완료·기존131/구앱호환 유지. Jest738/52suites·브라우저6pass/6skip·static웹검사 통과. 새웹/IPA미게시, staging슬롯제한 복원못함. 아래는 과거 기록.
 - Active status: `in_progress` office-events P01-T03. T02 code+운영migration/v5/부활smoke 완료,737unit/Deno53/static29/로컬SQLrollback. 기존131/구앱규칙유지. staging은무료슬롯제한 복원못함, 기존다른프로젝트중지없음. 다음 첫닉네임직접입력1회. 웹/IPA아직미게시.
 - Active status: `in_progress` office-events P01-T02. T01 배경6상황/사표/가속/ESC 완료,733tests. T02 부활 기록+기존 통합랭킹→T03 첫닉네임 입력. 오똥비131 운영 반영96601fa. 원격 신규코드 배포 별도. 아래는 과거 기록.
 - Active status: `pending` 원래 스토어 자료 T03 복귀. visible-frame-delay P01 2/2 공개 배포/내용 확인 완료. 실제 iPhone 재검증은 별도. 아래는 과거 기록.
@@ -277,6 +278,7 @@
 - T01 Pages CI gate 구현·검증 완료. Production bundle 검사 통과, typecheck/ranked/Jest/ranking/Playwright 통과. T02 원격 GitHub 인증/production backend preflight로 이동.
 
 ## Next Step (IMPORTANT)
+이번 게임/닉네임 구현·운영랭킹 반영은 완료. GitHub push와공식웹게시에는 명시적사용자요청이 필요하며 아직 하지 않았다. 사용자 요청 시 현재 완료커밋들을검증된main으로게시하고 실제Pages결과확인. 새IPA는별도. 기존 사용자아트/QA보존. 아래는 과거 지시.
 T03-nickname-entry.md에 따라 최초닉네임입력창1회 및 브라우저/Jest검사. T02운영v5는 완료; staging복원보류/무료한도2개. 새웹게시와IPA갱신은 구분한다.
 office-events P01-T02 청사진을 읽고1회 부활의 서버 연결 및 기존 최고 합산 구현. 이후T03 실제 닉네임 입력창. T01은 로컬 검증/생성 완료이며 아직 운영 신규코드 배포 없음.
 현재 visible-frame-delay 수정은 공개 배포까지 완료했다. 실제 iPhone Safari 효과음 켠 상태의 재확인 결과를 받으면 필요 시 후속 진단한다. 새 요청 없이 심사/국가/네이티브 빌드를 변경하지 않는다. 포인터는 기존 스토어 자료 T03 pending이다. 아래는 과거 지시다.

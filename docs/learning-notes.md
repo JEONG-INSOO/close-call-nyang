@@ -1,5 +1,7 @@
 # 우당탕탕 냥대리 학습노트
 
+최신 입력 안내 학습: [첫 닉네임 입력과 로컬 표식](learning-notes/2026-10-30-nickname-entry.md).
+
 최신 랭킹 학습: [서버가 확인한 부활과 기존 최고 합산](learning-notes/2026-10-30-ranked-revival.md).
 
 최신 게임 학습: [사무실 상황·사표 퇴장·후반 가속·ESC](learning-notes/2026-10-30-office-events.md).

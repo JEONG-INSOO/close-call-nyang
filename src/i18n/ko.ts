@@ -34,7 +34,7 @@ export const ko = {
   nicknameRankingNextRun: '설정 후 다음 도전부터 랭킹에 참여할 수 있어요',
   nicknamePlaceholder: '예: 출근하는 냥대리',
   nicknameRules: '2~12글자 · 한글, 영문, 숫자, 글자 사이 공백 · 같은 닉네임도 괜찮아요.',
-  nicknamePublicNotice: '닉네임과 최고 기록은 랭킹에 공개돼요. 설정하지 않아도 바로 플레이할 수 있어요.',
+  nicknamePublicNotice: '닉네임을 설정하면 다음 도전부터 랭킹에 기록을 등록할 수 있어요. 닉네임과 최고 기록은 공개돼요. 설정하지 않아도 플레이할 수 있어요.',
   guestIdentityNotice: '이 기기의 익명 계정으로 참여해요. 앱·브라우저 데이터를 지우면 기존 계정에 다시 접근할 수 없어요. 같은 닉네임으로 기록을 되찾을 수는 없어요.',
   saving: '저장 중…',
   starting: '업무 준비 중…',

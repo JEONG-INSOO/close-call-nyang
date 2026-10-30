@@ -75,16 +75,17 @@ async function finishRun() {
   expect(controller.readState().screen).toBe('result');
 }
 
-it('offers one welcome, saves later locally, and keeps manual setup after remount', async () => {
+it('offers actual input once, saves the display marker, and keeps manual setup after remount', async () => {
   const first = await render(<App />);
-  expect(screen.getByTestId('nickname-welcome-panel')).toBeOnTheScreen();
+  expect(screen.getByTestId('nickname-panel')).toBeOnTheScreen();
+  expect(screen.getByTestId('nickname-input')).toBeOnTheScreen();
   expect(mockOnline.saveNickname).not.toHaveBeenCalled();
-  await fireEvent.press(screen.getByTestId('nickname-welcome-later'));
-  expect(screen.queryByTestId('nickname-welcome-panel')).toBeNull();
+  await fireEvent.press(screen.getByTestId('nickname-panel-close'));
+  expect(screen.queryByTestId('nickname-panel')).toBeNull();
   expect(JSON.parse((await AsyncStorage.getItem(NICKNAME_ONBOARDING_KEY))!)).toEqual({ schemaVersion: 1, handled: true });
   await first.unmount();
   await render(<App />);
-  expect(screen.queryByTestId('nickname-welcome-panel')).toBeNull();
+  expect(screen.queryByTestId('nickname-panel')).toBeNull();
   expect(screen.queryByTestId('title-nickname')).toBeNull();
   await fireEvent.press(screen.getByTestId('title-settings'));
   await fireEvent.press(screen.getByTestId('settings-nickname-edit'));
@@ -93,8 +94,6 @@ it('offers one welcome, saves later locally, and keeps manual setup after remoun
 
 it('keeps result minimal and allows first setup from settings after returning home', async () => {
   const view = await render(<App />);
-  await fireEvent.press(screen.getByTestId('nickname-welcome-setup'));
-  expect(screen.queryByTestId('nickname-welcome-panel')).toBeNull();
   expect(screen.getByTestId('nickname-panel')).toBeOnTheScreen();
   expect(mockOnline.saveNickname).not.toHaveBeenCalled();
   await fireEvent.press(screen.getByTestId('nickname-panel-close'));
@@ -121,17 +120,29 @@ it('keeps result minimal and allows first setup from settings after returning ho
   expect(screen.queryByText(ko.rankingSubmitted)).toBeNull();
 });
 
+it('offers the new input once to a guest who dismissed the old welcome without removing that marker', async () => {
+  const oldKey = 'close-call-nyang.nickname-onboarding.v1';
+  const oldRecord = JSON.stringify({ schemaVersion: 1, handled: true });
+  await AsyncStorage.setItem(oldKey, oldRecord);
+  await render(<App />);
+  expect(screen.getByTestId('nickname-input')).toBeOnTheScreen();
+  expect(await AsyncStorage.getItem(oldKey)).toBe(oldRecord);
+  expect(mockOnline.saveNickname).not.toHaveBeenCalled();
+  await fireEvent.press(screen.getByTestId('nickname-panel-close'));
+  expect(JSON.parse((await AsyncStorage.getItem(NICKNAME_ONBOARDING_KEY))!).handled).toBe(true);
+});
+
 it('never prompts an existing profile or an uncertain online state', async () => {
   mockOnline.status = 'ready';
   mockOnline.profile = { publicId: 'public-1', nickname: '기존 냥대리', updatedAt: '2026-09-28T00:00:00Z' };
   const first = await render(<App />);
-  expect(screen.queryByTestId('nickname-welcome-panel')).toBeNull();
+  expect(screen.queryByTestId('nickname-panel')).toBeNull();
   await first.unmount();
   expect(JSON.parse((await AsyncStorage.getItem(NICKNAME_ONBOARDING_KEY))!)).toEqual({ schemaVersion: 1, handled: true });
   await AsyncStorage.clear();
   mockOnline.status = 'offline'; mockOnline.profile = null;
   await render(<App />);
-  expect(screen.queryByTestId('nickname-welcome-panel')).toBeNull();
+  expect(screen.queryByTestId('nickname-panel')).toBeNull();
   await start(); await finishRun();
   expect(screen.queryByTestId('result-nickname-notice')).toBeNull();
 });
@@ -144,10 +155,10 @@ it('lets a guest play while the welcome read is pending and shows it only back a
   await render(<App />);
   await start();
   await act(async () => { finishRead(null); await Promise.resolve(); });
-  expect(screen.queryByTestId('nickname-welcome-panel')).toBeNull();
+  expect(screen.queryByTestId('nickname-panel')).toBeNull();
   await fireEvent.press(screen.getByRole('button', { name: ko.pause }));
   await fireEvent.press(screen.getByRole('button', { name: ko.home }));
-  expect(screen.getByTestId('nickname-welcome-panel')).toBeOnTheScreen();
+  expect(screen.getByTestId('nickname-panel')).toBeOnTheScreen();
 });
 
 it('does not auto-open when onboarding storage cannot be read', async () => {
@@ -155,7 +166,7 @@ it('does not auto-open when onboarding storage cannot be read', async () => {
   jest.spyOn(AsyncStorage, 'getItem').mockImplementation(key => key === NICKNAME_ONBOARDING_KEY
     ? Promise.reject(new Error('read failed')) : realGet(key));
   await render(<App />);
-  expect(screen.queryByTestId('nickname-welcome-panel')).toBeNull();
+  expect(screen.queryByTestId('nickname-panel')).toBeNull();
   await start();
   expect(controller.readState().screen).toBe('playing');
 });

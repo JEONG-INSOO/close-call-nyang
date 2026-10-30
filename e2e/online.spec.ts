@@ -111,8 +111,8 @@ test('simulated API: ad revival submits a second verified input proof', async ({
 });
 async function close(page: Page, panel: string) { await page.getByTestId(panel).getByRole('button', { name: '닫기', exact: true }).click(); }
 async function deferFirstNickname(page: Page) {
-  await expect(page.getByTestId('nickname-welcome-panel')).toBeVisible();
-  await page.getByTestId('nickname-welcome-later').click();
+  await expect(page.getByTestId('nickname-panel')).toBeVisible();
+  await page.getByTestId('nickname-panel-close').click();
 }
 async function join(page: Page) {
   await page.getByTestId('title-settings').click();

@@ -19,7 +19,7 @@ export const test = base.extend<{ cleanPage: Page }>({
     // Gameplay/layout scenarios represent a returning guest. First-launch onboarding
     // has its own real-click regression; this does not create a profile or unlock rewards.
     await page.addInitScript(() => {
-      const key = 'close-call-nyang.nickname-onboarding.v1';
+      const key = 'close-call-nyang.nickname-onboarding.v2';
       if (localStorage.getItem(key) === null) localStorage.setItem(key, JSON.stringify({ schemaVersion: 1, handled: true }));
     });
     await use(page);
