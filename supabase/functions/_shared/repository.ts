@@ -4,6 +4,7 @@ import type { GameState } from './game/types.ts';
 import { ApiFailure, databaseFailure } from './api-error.ts';
 
 export interface RunCheckpoint extends RankedRun {
+  parentRunId?: string | null;
   userId: string; state: GameState; acceptedSeq: number; lastDigest: string | null;
   totalTicks: number; status: 'active' | 'terminal' | 'finalized'; receipt: SubmitResult | null;
 }
@@ -14,6 +15,7 @@ export interface RankingRepository {
   getProfile(userId: string): Promise<PlayerProfile | null>;
   getBoard(userId: string | null, version: string): Promise<LeaderboardResponse>;
   startRun(userId: string, version: string, state: GameState, seed: number, engineRunId: number): Promise<RunCheckpoint>;
+  startRevivedRun?(userId: string, parentRunId: string, state: GameState): Promise<RunCheckpoint>;
   getRun(userId: string, runId: string): Promise<RunCheckpoint>;
   commitChunk(userId: string, runId: string, seq: number, digest: string, state: GameState, ticks: number, terminal: boolean): Promise<ChunkAck>;
   finalizeRun(userId: string, runId: string): Promise<SubmitResult>;
@@ -29,6 +31,7 @@ interface RpcArguments {
   rank_get_profile: { p_user_id: string };
   rank_get_board: { p_user_id: string | null; p_rules_version: string };
   rank_start_run: { p_user_id: string; p_rules_version: string; p_initial_state: GameState; p_seed: number; p_engine_run_id: number };
+  rank_start_revived_run: { p_user_id: string; p_parent_run_id: string; p_initial_state: GameState };
   rank_get_run: { p_user_id: string; p_run_id: string };
   rank_commit_chunk: { p_user_id: string; p_run_id: string; p_expected_seq: number; p_digest: string; p_state: GameState; p_added_ticks: number; p_terminal: boolean };
   rank_finalize_run: { p_user_id: string; p_run_id: string };
@@ -41,6 +44,7 @@ interface RpcArguments {
 interface RpcResults {
   rank_upsert_profile: PlayerProfile; rank_get_profile: PlayerProfile | null;
   rank_get_board: LeaderboardResponse; rank_start_run: RunCheckpoint; rank_get_run: RunCheckpoint;
+  rank_start_revived_run: RunCheckpoint;
   rank_commit_chunk: ChunkAck; rank_finalize_run: SubmitResult;
   rank_get_deletion_status: DeletionStatus | null; rank_delete_player_data: DeletionStatus;
   rank_complete_deletion: void; rank_record_report: void; rank_limit: LimitResult;
@@ -66,6 +70,7 @@ export function createRepository(admin: SupabaseClient): RankingRepository {
       p_user_id: id, p_rules_version: version, p_initial_state: state, p_seed: seed, p_engine_run_id: engineRunId,
     }),
     getRun: (id, runId) => call('rank_get_run', { p_user_id: id, p_run_id: runId }),
+    startRevivedRun: (id, runId, state) => call('rank_start_revived_run', { p_user_id: id, p_parent_run_id: runId, p_initial_state: state }),
     commitChunk: (id, runId, seq, digest, state, ticks, terminal) => call('rank_commit_chunk', {
       p_user_id: id, p_run_id: runId, p_expected_seq: seq, p_digest: digest,
       p_state: state, p_added_ticks: ticks, p_terminal: terminal,

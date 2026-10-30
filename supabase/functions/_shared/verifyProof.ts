@@ -14,11 +14,13 @@ export class ProofValidationError extends Error {
 
 function reject(): never { throw new ProofValidationError(); }
 
-function assertCheckpoint(state: GameState): void {
+function assertCheckpoint(state: GameState, allowRevival: boolean): void {
   const run = state?.run;
   if (!run || state.screen !== 'playing' || state.resumeTo !== null ||
       state.countdownSeconds !== 0 || state.adSeconds !== 0 ||
-      run.reviveUsed !== false || run.protectionSeconds !== 0 ||
+      typeof run.reviveUsed !== 'boolean' || (!allowRevival && run.reviveUsed) || !Number.isFinite(run.protectionSeconds) ||
+      run.protectionSeconds < 0 || run.protectionSeconds > BALANCE.protectionSeconds ||
+      (!run.reviveUsed && run.protectionSeconds !== 0) ||
       !Number.isSafeInteger(run.id) || run.id < 1 || run.id > 0x7fffffff ||
       !Number.isInteger(run.seed) || run.seed < 1 || run.seed > 0xffffffff ||
       !Number.isInteger(run.rng) || run.rng < 1 || run.rng > 0xffffffff ||
@@ -36,10 +38,10 @@ function assertCheckpoint(state: GameState): void {
 }
 
 /** Only playing-tick controls are accepted; scores/actions/revival cannot be supplied. */
-export function verifyChunk(checkpoint: GameState, spans: readonly InputSpan[]): {
+export function verifyChunk(checkpoint: GameState, spans: readonly InputSpan[], options: { allowRevival?: boolean; transition?: typeof transition } = {}): {
   state: GameState; ticks: number; terminal: boolean;
 } {
-  assertCheckpoint(checkpoint);
+  assertCheckpoint(checkpoint, options.allowRevival === true);
   if (!Array.isArray(spans) || spans.length < 1 || spans.length > 1200) reject();
   let ticks = 0;
   for (const span of spans) {
@@ -56,7 +58,7 @@ export function verifyChunk(checkpoint: GameState, spans: readonly InputSpan[]):
     for (let index = 0; index < span.ticks; index += 1) {
       if (state.screen !== 'playing') reject();
       const before = state.run!;
-      state = transition(state, { type: 'TICK', dt: BALANCE.fixedDt, input }, { mockAdsEnabled: false }).state;
+      state = (options.transition ?? transition)(state, { type: 'TICK', dt: BALANCE.fixedDt, input }, { mockAdsEnabled: false }).state;
       simulated += 1;
       const run = state.run;
       if (!run || run.stepIndex !== before.stepIndex + 1 || run.elapsedSeconds <= before.elapsedSeconds ||

@@ -1,0 +1,21 @@
+{
+  "projectRef": "fgojrxmpxpzdiwsktjsx",
+  "migrationVersion": "202610300001",
+  "functionVersion": 5,
+  "functionStatus": "ACTIVE",
+  "gatewayVerifyJwtBefore": false,
+  "gatewayVerifyJwtAfter": false,
+  "protectedRoutesStillUseGetUser": true,
+  "currentRulesVersion": "nyang-v1-a0542434d2300583",
+  "supportedLegacyRulesVersion": "nyang-v1-bc732af6f2a7ea66",
+  "localRollbackSqlPassed": true,
+  "productionRevivalSmokePassed": true,
+  "ownTestAccountCleanupPassed": true,
+  "cleanupRequiredCount": 0,
+  "signupResponseUncertain": false,
+  "existing131Retained": true,
+  "stagingRestored": false,
+  "stagingBlocker": "Two active free projects limit",
+  "nativeBuildUpdated": false,
+  "newWebPublished": false
+}

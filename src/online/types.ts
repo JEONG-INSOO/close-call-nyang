@@ -9,6 +9,7 @@ export interface RankingApi {
   deleteProfile(): Promise<void>;
   getLeaderboard(): Promise<LeaderboardResponse>;
   startRun(): Promise<RankedRun>;
+  reviveRun?(parentRunId: string): Promise<import('./contracts').RankedRevival>;
   sendChunk(chunk: ProofChunk): Promise<ChunkAck>;
   finalizeRun(runId: string): Promise<SubmitResult>;
   reportNickname(publicId: string, reason: ReportReason): Promise<void>;

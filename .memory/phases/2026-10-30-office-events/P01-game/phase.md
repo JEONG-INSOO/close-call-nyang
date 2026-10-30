@@ -2,7 +2,7 @@
 | Task | Status | Blueprint |
 |---|---|---|
 | T01 | done | [구현과 로컬 검증](./T01-office-events.md) |
-| T02 | in_progress | [광고 부활 및 통합 랭킹](./T02-ranked-revival.md) |
-| T03 | pending | [첫 진입 닉네임](./T03-nickname-entry.md) |
+| T02 | done | [광고 부활 및 통합 랭킹](./T02-ranked-revival.md) |
+| T03 | in_progress | [첫 진입 닉네임](./T03-nickname-entry.md) |
 ## Progress
-- done: 1/3 (active: T02)
+- done: 2/3 (active: T03)

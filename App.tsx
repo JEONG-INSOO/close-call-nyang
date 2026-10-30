@@ -239,7 +239,10 @@ export default function App(): React.JSX.Element {
             onLeaderboard={() => openOnline('leaderboard')}
             onlineNotice={ranking.localNotice ?? (online.status === 'unconfigured' ? '랭킹 연결을 준비 중이에요. 지금은 기기에 기록됩니다.' : online.error)} />}
           {screen === 'countdown' && <CountdownOverlay seconds={snapshot.state.countdownSeconds} />}
-          {screen === 'paused' && <PauseOverlay onResume={resume} onHome={home} onSettings={openSettings} />}
+          {screen === 'paused' && !ranking.revivalBusy && <PauseOverlay onResume={resume} onHome={home} onSettings={openSettings} />}
+          {ranking.revivalBusy && <View testID="revival-connecting" style={styles.revivalConnecting}>
+            <Text accessibilityLiveRegion="polite">기록을 이어가는 중이에요…</Text>
+          </View>}
           {screen === 'ad' && <MockAdScreen secondsRemaining={snapshot.state.adSeconds} onCancel={cancelAd} />}
           {screen === 'result' && <ResultScreen score={snapshot.score}
             bestScore={Math.max(preferences.value.bestScore, snapshot.score)} canRevive={canRevive}
@@ -289,4 +292,6 @@ const styles = StyleSheet.create({
   storageNotice: { position: 'absolute', top: 4, left: '15%', right: '15%', alignItems: 'center', zIndex: 90 },
   storageText: { color: palette.ink, backgroundColor: palette.paper, padding: 6, borderRadius: 8, fontSize: 12, textAlign: 'center' },
   diagnosticsButton: { position: 'absolute', left: 8, bottom: 8, padding: 12, backgroundColor: palette.paper, zIndex: 100 },
+  revivalConnecting: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: '#FFF8F0CC', alignItems: 'center', justifyContent: 'center', zIndex: 30 },
 });

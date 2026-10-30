@@ -2,6 +2,7 @@ import { createRankingApi, invalidateLeaderboardCache } from '../api';
 import * as client from '../client';
 import { RULES_VERSION } from '../rulesVersion';
 import { OnlineApiError, onlineErrorMessage } from '../types';
+import { createInitialState, transition } from '../../game/engine';
 
 jest.mock('react-native-url-polyfill/auto', () => ({}));
 jest.mock('../client', () => ({
@@ -42,6 +43,18 @@ test('missing public environment returns no API', () => {
   mocks.getOnlineConfig.mockReturnValue(null);
   expect(createRankingApi()).toBeNull();
   expect(fetchMock).not.toHaveBeenCalled();
+});
+
+test('revival sends only the parent ID and accepts only a matching protected server checkpoint', async () => {
+  let initialState = transition(createInitialState(), { type: 'START', runId: run.engineRunId, seed: run.seed }, { mockAdsEnabled: false }).state;
+  initialState = { ...initialState, screen: 'playing', countdownSeconds: 0,
+    run: { ...initialState.run!, reviveUsed: true, protectionSeconds: 1.5 } };
+  fetchMock.mockResolvedValueOnce(response({ ...run, initialState }));
+  const revived = await createRankingApi()!.reviveRun!(runId);
+  expect(revived.initialState.run!.reviveUsed).toBe(true);
+  expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({ runId });
+  fetchMock.mockResolvedValueOnce(response({ ...run, initialState: { ...initialState, run: { ...initialState.run!, stepIndex: 5 } } }));
+  await expect(createRankingApi()!.reviveRun!(runId)).rejects.toMatchObject({ code: 'UNAVAILABLE' });
 });
 test('public board does not sign up or manufacture an Authorization header', async () => {
   mocks.getOnlineIdentity.mockResolvedValue(null);

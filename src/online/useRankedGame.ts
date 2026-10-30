@@ -30,10 +30,12 @@ export function useRankedGame(options: {
     session?.getSnapshot ?? localSnapshot, session?.getSnapshot ?? localSnapshot);
   const [restored, setRestored] = useState<Session | null>(null);
   const [startBusy, setStartBusy] = useState(false);
+  const [revivalBusy, setRevivalBusy] = useState(false);
   const [pendingChoice, setPendingChoice] = useState(false);
   const [localNotice, setLocalNotice] = useState<string | null>(null);
   const [currentRanked, setCurrentRanked] = useState<{ session: Session; runId: string } | null>(null);
-  const activeRecording = useRef<{ session: Session; engineRunId: number } | null>(null);
+  const activeRecording = useRef<{ session: Session; engineRunId: number; revived?: boolean } | null>(null);
+  const rankedRunRef = useRef(currentRanked); rankedRunRef.current = currentRanked;
   const generation = useRef(0);
   const starting = useRef(false);
   const lease = useRef(0);
@@ -45,7 +47,7 @@ export function useRankedGame(options: {
   const cancelStart = useCallback(() => {
     generation.current += 1;
     starting.current = false;
-    if (alive.current) setStartBusy(false);
+    if (alive.current) { setStartBusy(false); setRevivalBusy(false); }
   }, []);
 
   useEffect(() => {
@@ -90,9 +92,55 @@ export function useRankedGame(options: {
     const recording = activeRecording.current;
     if (!recording || recording.session !== currentSession.current || tick.runId !== recording.engineRunId) return;
     // Detach revived play without freezing the first fall's pending upload.
-    if (controller.readState().run?.reviveUsed) { activeRecording.current = null; return; }
+    if (controller.readState().run?.reviveUsed && !recording.revived) { activeRecording.current = null; return; }
     recording.session.record(tick);
     if (tick.terminal) activeRecording.current = null;
+  }), [controller]);
+
+  useEffect(() => controller.subscribeEffects(effects => {
+    if (!effects.some(effect => effect.type === 'revive')) return;
+    const ranked = rankedRunRef.current;
+    const api = latest.current.online.api;
+    if (!ranked || ranked.session !== currentSession.current || !api?.reviveRun) return;
+    const localState = controller.readState();
+    if (localState.screen !== 'countdown' || !localState.run?.reviveUsed) return;
+    const request = ++generation.current;
+    const owner = ranked.session;
+    setRevivalBusy(true);
+    const parentId = ranked.runId;
+    controller.clearInput(); controller.resetFrameClock();
+    controller.dispatch({ type: 'PAUSE' });
+    const stillCurrent = () => alive.current && request === generation.current &&
+      currentSession.current === owner && latest.current.online.api === api &&
+      controller.readState().screen === 'paused' && controller.readState().resumeTo === 'countdown' &&
+      controller.readState().run?.id === localState.run!.id;
+    void (async () => {
+      try {
+        await owner.retry();
+        if (!stillCurrent()) return;
+        if (owner.getSnapshot().receipt?.runId !== parentId) throw new Error('First fall is not acknowledged');
+        const challenge = await api.reviveRun!(parentId);
+        if (!stillCurrent()) return;
+        const initial = challenge.initialState;
+        if (initial.run?.distanceM !== localState.run!.distanceM || initial.run.seed !== localState.run!.seed ||
+            initial.run.id !== localState.run!.id || initial.run.reviveUsed !== true || initial.run.stepIndex !== 0 ||
+            !owner.begin(challenge)) throw new Error('Revival checkpoint mismatch');
+        if (!controller.restore({ ...initial, screen: 'paused', resumeTo: 'countdown', countdownSeconds: 3 })) {
+          owner.freeze(); throw new Error('Cannot restore verified revival');
+        }
+        activeRecording.current = { session: owner, engineRunId: challenge.engineRunId, revived: true };
+        setCurrentRanked({ session: owner, runId: challenge.runId });
+        controller.dispatch({ type: 'RESUME' });
+      } catch {
+        if (!stillCurrent()) return;
+        activeRecording.current = null;
+        setCurrentRanked(null);
+        setLocalNotice('부활 기록의 온라인 연결을 확인하지 못했어요. 이어서 플레이할 수 있지만 이후 점수는 기기에만 저장돼요.');
+        controller.dispatch({ type: 'RESUME' });
+      } finally {
+        if (alive.current && request === generation.current) setRevivalBusy(false);
+      }
+    })();
   }), [controller]);
 
   useEffect(() => {
@@ -195,7 +243,7 @@ export function useRankedGame(options: {
     }
   }, [cancelStart, controller]);
   const isCurrent = currentRanked?.session === session;
-  return { start, startLocal, discardAndStart, retryPending, cancelStart, deleteProfile, leaveRun, localNotice, startBusy,
+  return { start, startLocal, discardAndStart, retryPending, cancelStart, deleteProfile, leaveRun, localNotice, startBusy, revivalBusy,
     pendingChoice, closePending: () => { cancelStart(); setPendingChoice(false); }, pendingError: localNotice ?? snapshot.error,
     submissionState: isCurrent ? snapshot.state : 'local' as const,
     receipt: isCurrent && snapshot.receipt?.runId === currentRanked?.runId ? snapshot.receipt : null,

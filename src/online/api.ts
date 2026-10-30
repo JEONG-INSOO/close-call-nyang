@@ -3,6 +3,7 @@ import { clearOnlineSession, getOnlineConfig, getOnlineIdentity, getPendingDelet
 import { validateNickname } from './nickname';
 import { RULES_VERSION } from './rulesVersion';
 import { OnlineApiError, type RankingApi } from './types';
+import { isRestorableGameState } from '../game/resume';
 
 const ERROR_CODES = new Set<ApiErrorCode>(['INVALID_INPUT', 'UNAUTHORIZED', 'FORBIDDEN', 'RATE_LIMITED', 'NICKNAME_REJECTED', 'PROFILE_REQUIRED', 'EXPIRED', 'OUT_OF_ORDER', 'PROOF_REJECTED', 'RULES_MISMATCH', 'NOT_FINISHED', 'UNAVAILABLE']);
 let cacheGeneration = 0;
@@ -125,6 +126,16 @@ export function createRankingApi(expectedUserId?: string): RankingApi | null {
       return value;
     },
     async startRun() { return parseRun(await request('/runs', 'POST', { rulesVersion: RULES_VERSION }, 2_000)); },
+    async reviveRun(runId) {
+      const value = object(await request('/runs/revive', 'POST', { runId }));
+      const run = parseRun(value);
+      const state = value.initialState as import('../game/types').GameState;
+      required(state?.screen === 'playing' && state.resumeTo === null && state.countdownSeconds === 0 && state.adSeconds === 0 &&
+        isRestorableGameState({ ...state, screen: 'paused', resumeTo: 'playing' }) &&
+        state.run?.id === run.engineRunId && state.run.seed === run.seed &&
+        state.run.reviveUsed === true && state.run.stepIndex === 0 && state.run.protectionSeconds === 1.5);
+      return { ...run, initialState: state };
+    },
     async sendChunk(chunk) { return parseAck(await request('/runs/chunks', 'POST', chunk)); },
     async finalizeRun(runId) {
       const value = parseReceipt(await request('/runs/finalize', 'POST', { runId }));

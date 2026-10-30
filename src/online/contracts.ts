@@ -12,6 +12,9 @@ export interface RankedRun {
   runId: string; engineRunId: number; seed: number; rulesVersion: string;
   issuedAt: string; expiresAt: string;
 }
+export interface RankedRevival extends RankedRun {
+  initialState: import('../game/types.ts').GameState;
+}
 /** Playing ticks only. Both controls held and neither held are direction 0. */
 export interface InputSpan { direction: -1 | 0 | 1; ticks: number }
 export interface ProofChunk { runId: string; seq: number; spans: InputSpan[] }

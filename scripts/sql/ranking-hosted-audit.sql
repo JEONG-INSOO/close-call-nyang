@@ -5,10 +5,10 @@
 -- Expected invariants:
 --   * Exactly six private tables, RLS enabled, no policies; FORCE RLS is not required.
 --   * anon/authenticated/service_role have NO direct table or column privileges.
---   * Twelve public RPCs are SECURITY DEFINER; only service_role has EXECUTE.
+--   * Thirteen public RPCs are SECURITY DEFINER; only service_role has EXECUTE.
 --   * Eight private helpers have no client/service EXECUTE; only cleanup is DEFINER.
 --   * All routines use an explicitly empty search_path and have a trusted owner.
---   * No PUBLIC grants on the private schema/tables or the twenty routines.
+--   * No PUBLIC grants on the private schema/tables or the twenty-one routines.
 --   * Owners should be the intended migration owner, not an app/client role.
 -- Checks are catalog evidence only: not REST, concurrency, replay, or cleanup tests.
 with
@@ -22,6 +22,7 @@ expected_routines(signature, category, expected_definer, needs_runs_type) as (
     ('public.rank_get_profile(uuid)', 'rpc', true, false),
     ('public.rank_get_board(uuid,text)', 'rpc', true, false),
     ('public.rank_start_run(uuid,text,jsonb,bigint,integer)', 'rpc', true, false),
+    ('public.rank_start_revived_run(uuid,uuid,jsonb)', 'rpc', true, false),
     ('public.rank_get_run(uuid,uuid)', 'rpc', true, false),
     ('public.rank_commit_chunk(uuid,uuid,integer,text,jsonb,integer,boolean)', 'rpc', true, false),
     ('public.rank_finalize_run(uuid,uuid)', 'rpc', true, false),
@@ -125,9 +126,9 @@ select pg_catalog.jsonb_build_object(
   'taskComplete', false,
   'checkedAt', pg_catalog.clock_timestamp(),
   'auditingRole', current_user,
-  'expectedMigrationVersion', '202609210001',
+  'expectedMigrationVersion', '202610300001',
   'expectedMigrationPresent', exists (
-    select 1 from supabase_migrations.schema_migrations where version = '202609210001'
+    select 1 from supabase_migrations.schema_migrations where version = '202610300001'
   ),
   'migrationVersions', (
     select coalesce(pg_catalog.jsonb_agg(m.version order by m.version), '[]'::jsonb)

@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { RULES_VERSION } from '../_shared/game/rulesVersion.ts';
 import { createHandler } from './handler.ts';
+import { legacyKernels } from '../_shared/legacyKernels.ts';
 
 const url = Deno.env.get('SUPABASE_URL');
 const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -25,7 +26,7 @@ if (!url || !serviceKey || !salt || salt.length < 32 || !validOrigins || origins
 } else {
   const admin = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
   Deno.serve(createHandler({
-    admin, allowedOrigins: origins, rulesVersion: RULES_VERSION,
+    admin, allowedOrigins: origins, rulesVersion: RULES_VERSION, legacyKernels,
     authIssuer: `${url.replace(/\/$/, '')}/auth/v1`, rateLimitSalt: salt,
   }));
 }

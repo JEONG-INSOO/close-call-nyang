@@ -41,7 +41,7 @@ function playAndFall(controller: ReturnType<typeof createGameController>) {
   controller.advanceFrame(0);
   for (let index = 1; index <= 181; index += 1) controller.advanceFrame(index * 1000 / 60);
   controller.setInput('keyboard', 'right', 1, true);
-  for (let index = 182; index <= 280 && controller.readState().screen !== 'result'; index += 1) controller.advanceFrame(index * 1000 / 60);
+  for (let index = 182; index <= 700 && controller.readState().screen !== 'result'; index += 1) controller.advanceFrame(index * 1000 / 60);
   expect(controller.readState().screen).toBe('result');
 }
 
@@ -94,6 +94,59 @@ test.each(['submitted', 'pending'] as const)('revival preserves the first %s res
   expect(api.sendChunk).toHaveBeenCalledTimes(state === 'pending' ? 2 : 1);
   expect(api.finalizeRun).toHaveBeenCalledTimes(1);
   for (const [chunk] of api.sendChunk.mock.calls) expect(JSON.stringify(chunk)).toBe(firstProof);
+  await hook.unmount(); controller.dispose();
+});
+
+test('a server-linked revival submits its continued score under a new proof, preserving the first receipt', async () => {
+  const { settings, api, controller } = setup(true, true);
+  const childId = 'c0000000-0000-4000-8000-000000000002';
+  const reviveRun = jest.fn(async () => {
+    const state = controller.readState();
+    return { ...challenge(), runId: childId, initialState: { ...state, screen: 'playing' as const,
+      resumeTo: null, countdownSeconds: 0, run: { ...state.run!, stepIndex: 0 } } };
+  });
+  const revivedApi = { ...api, reviveRun };
+  const hook = await renderHook(() => useRankedGame({ ...settings, online: { ...settings.online, api: revivedApi } }));
+  // Keep a stable API identity across renders, as the real client does.
+  await ready();
+  await act(() => hook.result.current.start()); await act(() => playAndFall(controller));
+  await waitFor(() => expect(hook.result.current.submissionState).toBe('submitted'));
+  await act(() => {
+    controller.dispatch({ type: 'REQUEST_AD' }); controller.advanceFrame(0);
+    for (let i = 1; i <= 301; i++) controller.advanceFrame(i * 1000 / 60);
+  });
+  await waitFor(() => expect(controller.readState()).toMatchObject({ screen: 'countdown', run: { stepIndex: 0, reviveUsed: true } }));
+  await act(() => playAndFall(controller));
+  await waitFor(() => expect(api.finalizeRun).toHaveBeenCalledWith(childId));
+  expect(api.finalizeRun).toHaveBeenCalledWith(challenge().runId);
+  expect(reviveRun).toHaveBeenCalledTimes(1);
+  expect(api.sendChunk.mock.calls.map(([chunk]) => chunk.runId)).toEqual([challenge().runId, childId]);
+  await hook.unmount(); controller.dispose();
+});
+
+test.each(['cancel', 'identity'] as const)('a late revival response cannot restore gameplay after %s', async departure => {
+  const { settings, api, controller } = setup(true, true);
+  const pending = deferred<import('../contracts').RankedRevival>();
+  const revivedApi = { ...api, reviveRun: jest.fn(() => pending.promise) };
+  const hook = await renderHook<ReturnType<typeof useRankedGame>, { id: string | null }>(
+    ({ id }) => useRankedGame({ ...settings, online: { ...settings.online, api: revivedApi, userId: id } }),
+    { initialProps: { id: userId as string | null } },
+  );
+  await ready(); await act(() => hook.result.current.start()); await act(() => playAndFall(controller));
+  await waitFor(() => expect(hook.result.current.submissionState).toBe('submitted'));
+  await act(() => {
+    controller.dispatch({ type: 'REQUEST_AD' }); controller.advanceFrame(0);
+    for (let i = 1; i <= 301; i++) controller.advanceFrame(i * 1000 / 60);
+  });
+  await waitFor(() => expect(revivedApi.reviveRun).toHaveBeenCalledTimes(1));
+  const paused = controller.readState();
+  if (departure === 'cancel') await act(() => hook.result.current.cancelStart());
+  else await hook.rerender({ id: null });
+  await act(async () => pending.resolve({ ...challenge(), runId: 'c0000000-0000-4000-8000-000000000002',
+    initialState: { ...paused, screen: 'playing', resumeTo: null, countdownSeconds: 0,
+      run: { ...paused.run!, stepIndex: 0 } } }));
+  expect(controller.readState()).toBe(paused);
+  expect(api.finalizeRun).toHaveBeenCalledTimes(1);
   await hook.unmount(); controller.dispose();
 });
 

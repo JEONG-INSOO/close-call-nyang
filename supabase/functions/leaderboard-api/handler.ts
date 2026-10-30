@@ -9,11 +9,13 @@ import { createRateLimiter, type LimitScope } from '../_shared/rate-limit.ts';
 import { createRepository, type RankingRepository } from '../_shared/repository.ts';
 import { digestSpans, objectWithKeys, proofChunk, readJson, requireEmptyBody, rulesVersion, uuid } from '../_shared/validation.ts';
 import { ProofValidationError, verifyChunk } from '../_shared/verifyProof.ts';
+import { revivedCheckpoint } from '../_shared/reviveCheckpoint.ts';
 
 export interface ServerDependencies {
   admin: SupabaseClient;
   allowedOrigins: readonly string[];
   rulesVersion: string;
+  legacyKernels?: Record<string, { createInitialState: typeof createInitialState; transition: typeof transition }>;
   authIssuer?: string;
   rateLimitSalt?: string;
   /** Dependency seams are server-local only, never selected by request data. */
@@ -39,6 +41,11 @@ export function createHandler(deps: ServerDependencies): (request: Request) => P
   const auth = deps.auth ?? createAuthService(deps.admin, deps.authIssuer ?? '');
   const limit = createRateLimiter(repository, deps.rateLimitSalt ?? '');
   const origins = new Set(deps.allowedOrigins);
+  const kernelFor = (version: string) => {
+    if (version === deps.rulesVersion) return { createInitialState, transition };
+    if (deps.legacyKernels && Object.hasOwn(deps.legacyKernels, version)) return deps.legacyKernels[version];
+    throw new ApiFailure('RULES_MISMATCH');
+  };
 
   return async request => {
     const headers = new Headers({
@@ -64,6 +71,7 @@ export function createHandler(deps: ServerDependencies): (request: Request) => P
         'GET /leaderboard': 'read', 'GET /profile': 'read', 'POST /profile': 'profile',
         'DELETE /profile': 'deletion', 'POST /runs': 'start', 'POST /runs/chunks': 'chunk',
         'POST /runs/finalize': 'finalize', 'POST /reports': 'report',
+        'POST /runs/revive': 'start',
       };
       if (!Object.hasOwn(scopes, route)) throw new ApiFailure('INVALID_INPUT');
       if (path !== '/leaderboard' && [...url.searchParams].length !== 0) throw new ApiFailure('INVALID_INPUT');
@@ -89,7 +97,7 @@ export function createHandler(deps: ServerDependencies): (request: Request) => P
           throw new ApiFailure('INVALID_INPUT');
         }
         const version = rulesVersion(url.searchParams.get('rulesVersion'));
-        if (version !== deps.rulesVersion) throw new ApiFailure('RULES_MISMATCH');
+        kernelFor(version);
         const board = await repository.getBoard(userId, version);
         // The personalized object must never enter a shared/CDN cache.
         headers.set('Cache-Control', 'private, max-age=30');
@@ -116,14 +124,14 @@ export function createHandler(deps: ServerDependencies): (request: Request) => P
       if (route === 'POST /runs') {
         const body = objectWithKeys(value, ['rulesVersion']);
         const version = rulesVersion(body.rulesVersion);
-        if (version !== deps.rulesVersion) throw new ApiFailure('RULES_MISMATCH');
+        const kernel = kernelFor(version);
         const random = crypto.getRandomValues(new Uint32Array(2));
         const seed = random[0] || 1;
         const engineRunId = (random[1] & 0x7fffffff) || 1;
         const flags = { mockAdsEnabled: false };
-        let state = transition(createInitialState(), { type: 'START', seed, runId: engineRunId }, flags).state;
+        let state = kernel.transition(kernel.createInitialState(), { type: 'START', seed, runId: engineRunId }, flags).state;
         for (let tick = 0; tick < 360; tick += 1) {
-          state = transition(state, { type: 'TICK', dt: BALANCE.fixedDt, input: { left: false, right: false } }, flags).state;
+          state = kernel.transition(state, { type: 'TICK', dt: BALANCE.fixedDt, input: { left: false, right: false } }, flags).state;
         }
         if (state.screen !== 'playing' || !state.run || state.run.protectionSeconds !== 0 || state.run.reviveUsed) throw new ApiFailure('UNAVAILABLE');
         const run = await repository.startRun(subject, version, state, seed, engineRunId);
@@ -133,7 +141,7 @@ export function createHandler(deps: ServerDependencies): (request: Request) => P
         const chunk = proofChunk(value);
         const checkpoint = await repository.getRun(subject, chunk.runId);
         if (checkpoint.userId !== subject || checkpoint.runId !== chunk.runId) throw new ApiFailure('FORBIDDEN');
-        if (checkpoint.rulesVersion !== deps.rulesVersion) throw new ApiFailure('RULES_MISMATCH');
+        const kernel = kernelFor(checkpoint.rulesVersion);
         const digest = await digestSpans(chunk.spans);
         if (chunk.seq === checkpoint.acceptedSeq && digest === checkpoint.lastDigest) {
           // SQL rechecks ownership/expiry and returns the original acknowledgement without extending TTL.
@@ -141,8 +149,20 @@ export function createHandler(deps: ServerDependencies): (request: Request) => P
         }
         if (chunk.seq !== checkpoint.acceptedSeq + 1) throw new ApiFailure('OUT_OF_ORDER', { expectedSeq: checkpoint.acceptedSeq + 1 });
         if (checkpoint.status !== 'active') throw new ApiFailure('PROOF_REJECTED');
-        const verified = verifyChunk(checkpoint.state, chunk.spans);
+        const verified = verifyChunk(checkpoint.state, chunk.spans, { allowRevival: !!checkpoint.parentRunId, transition: kernel.transition });
         return json(ack(await repository.commitChunk(subject, chunk.runId, chunk.seq, digest, verified.state, verified.ticks, verified.terminal)));
+      }
+      if (route === 'POST /runs/revive') {
+        const body = objectWithKeys(value, ['runId']);
+        const parent = await repository.getRun(subject, uuid(body.runId));
+        if (parent.userId !== subject) throw new ApiFailure('FORBIDDEN');
+        const kernel = kernelFor(parent.rulesVersion);
+        if (parent.status !== 'finalized' || parent.state.run?.reviveUsed) throw new ApiFailure('PROOF_REJECTED');
+        if (!repository.startRevivedRun) throw new ApiFailure('UNAVAILABLE');
+        const initialState = revivedCheckpoint(parent.state, kernel.transition);
+        const run = await repository.startRevivedRun(subject, parent.runId, initialState);
+        return json({ runId: run.runId, engineRunId: run.engineRunId, seed: run.seed, rulesVersion: run.rulesVersion,
+          issuedAt: run.issuedAt, expiresAt: run.expiresAt, initialState });
       }
       if (route === 'POST /runs/finalize') {
         const body = objectWithKeys(value, ['runId']);

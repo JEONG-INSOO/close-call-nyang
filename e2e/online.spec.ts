@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { RULES_VERSION } from '../src/online/rulesVersion';
+import { createInitialState, transition } from '../src/game/engine';
 
 const ORIGIN = 'https://nyang-ranking-fixture.invalid';
 const APP = 'http://127.0.0.1:4175/close-call-nyang/';
@@ -8,10 +9,17 @@ const ME = 'b0000000-0000-4000-8000-000000000001';
 const OTHER = 'b0000000-0000-4000-8000-000000000002';
 const SECOND = 'b0000000-0000-4000-8000-000000000003';
 const RUN = 'c0000000-0000-4000-8000-000000000001';
-async function simulatedApi(page: Page) {
+async function simulatedApi(page: Page, enableRevival = false) {
   let nickname: string | null = null; let signupCount = 0; let reported: unknown = null;
   let failDelete = false; let failStart = false; let deleted = false; let ticks = 0;
   const errors: string[] = []; const writes: string[] = [];
+  let engineState = createInitialState();
+  let currentRunId = RUN;
+  const childId = 'c0000000-0000-4000-8000-000000000002';
+  const tick = (direction: number, mockAdsEnabled = false) => {
+    engineState = transition(engineState, { type: 'TICK', dt: 1 / 120,
+      input: { left: direction === -1, right: direction === 1 } }, { mockAdsEnabled }).state;
+  };
   const timestamp = () => new Date().toISOString();
   const profile = () => nickname ? { publicId: ME, nickname, updatedAt: timestamp() } : null;
   page.on('pageerror', error => errors.push(error.message));
@@ -57,20 +65,50 @@ async function simulatedApi(page: Page) {
     if (path.endsWith('/runs')) {
       if (failStart) { await reply({ code: 'UNAVAILABLE', message: 'simulated failure' }, 503); return; }
       ticks = 0;
+      currentRunId = RUN;
+      engineState = transition(createInitialState(), { type: 'START', runId: 701, seed: 42 }, { mockAdsEnabled: false }).state;
+      for (let i = 0; i < 360; i++) tick(0);
       await reply({ runId: RUN, engineRunId: 701, seed: 42, rulesVersion: RULES_VERSION,
         issuedAt: timestamp(), expiresAt: new Date(Date.now() + 86400000).toISOString() }); return;
     }
     if (path.endsWith('/runs/chunks')) {
+      if (enableRevival) for (const span of body.spans) for (let i = 0; i < span.ticks; i++) tick(span.direction);
       ticks += body.spans.reduce((sum: number, span: { ticks: number }) => sum + span.ticks, 0);
-      await reply({ acceptedSeq: body.seq, totalTicks: ticks, terminal: true,
+      await reply({ acceptedSeq: body.seq, totalTicks: ticks, terminal: enableRevival ? engineState.screen === 'result' : true,
         expiresAt: new Date(Date.now() + 86400000).toISOString() }); return;
     }
-    if (path.endsWith('/runs/finalize')) { await reply({ runId: RUN, score: 0, bestScore: 12, rank: 101, improved: false }); return; }
+    if (path.endsWith('/runs/finalize')) { await reply({ runId: currentRunId,
+      score: enableRevival ? Math.floor(engineState.run!.distanceM) : 0, bestScore: 12, rank: 101, improved: false }); return; }
+    if (enableRevival && path.endsWith('/runs/revive')) {
+      if (body.runId !== RUN || engineState.screen !== 'result' || engineState.run?.reviveUsed) { await reply({ code: 'PROOF_REJECTED' }, 422); return; }
+      engineState = transition(engineState, { type: 'REQUEST_AD' }, { mockAdsEnabled: true }).state;
+      for (let i = 0; i < 960; i++) tick(0, true);
+      engineState = { ...engineState, run: { ...engineState.run!, stepIndex: 0 } };
+      currentRunId = childId; ticks = 0;
+      await reply({ runId: childId, engineRunId: 701, seed: 42, rulesVersion: RULES_VERSION,
+        issuedAt: timestamp(), expiresAt: new Date(Date.now() + 86400000).toISOString(), initialState: engineState }); return;
+    }
     errors.push(`Unexpected simulated request ${path}`); await reply({}, 500);
   });
   return { errors, writes, signupCount: () => signupCount, reported: () => reported, deleted: () => deleted,
     setFailDelete: (value: boolean) => { failDelete = value; }, setFailStart: (value: boolean) => { failStart = value; } };
 }
+
+test('simulated API: ad revival submits a second verified input proof', async ({ page }, info) => {
+  test.skip(info.project.name !== 'phone-landscape', 'One configured browser flow; not hosted evidence.');
+  test.setTimeout(60000);
+  const api = await simulatedApi(page, true); await page.goto(APP); await deferFirstNickname(page); await join(page);
+  await page.getByTestId('start-button').click(); await expect(page.getByTestId('control-right')).toBeEnabled();
+  await page.keyboard.down('ArrowRight'); await expect(page.getByTestId('result-screen')).toBeVisible(); await page.keyboard.up('ArrowRight');
+  await expect.poll(() => api.writes.filter(p => p.endsWith('/runs/finalize')).length).toBe(1);
+  await page.getByTestId('revive-button').click();
+  await expect(page.getByTestId('control-right')).toBeEnabled({ timeout: 15000 });
+  await page.keyboard.down('ArrowRight'); await expect(page.getByTestId('result-screen')).toBeVisible(); await page.keyboard.up('ArrowRight');
+  await expect.poll(() => api.writes.filter(p => p.endsWith('/runs/finalize')).length).toBe(2);
+  expect(api.writes.filter(p => p.endsWith('/runs/revive'))).toHaveLength(1);
+  await expect(page.getByTestId('revive-button')).toHaveCount(0);
+  expect(api.errors).toEqual([]);
+});
 async function close(page: Page, panel: string) { await page.getByTestId(panel).getByRole('button', { name: '닫기', exact: true }).click(); }
 async function deferFirstNickname(page: Page) {
   await expect(page.getByTestId('nickname-welcome-panel')).toBeVisible();

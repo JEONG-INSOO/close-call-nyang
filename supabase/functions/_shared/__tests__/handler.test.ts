@@ -8,6 +8,7 @@ import { BALANCE } from '../game/balance.ts';
 import { RULES_VERSION } from '../game/rulesVersion.ts';
 import type { RankingRepository, RunCheckpoint } from '../repository.ts';
 import { digestSpans, MAX_BODY_BYTES } from '../validation.ts';
+import { legacyKernels } from '../legacyKernels.ts';
 
 const USER = '11111111-1111-4111-8111-111111111111';
 const OTHER = '22222222-2222-4222-8222-222222222222';
@@ -17,6 +18,7 @@ const ORIGIN = 'https://jeong-insoo.github.io';
 const NOW = '2026-09-22T00:00:00Z';
 const EXPIRES = '2026-09-23T00:00:00Z';
 const FLAGS = { mockAdsEnabled: false };
+const CHILD = '55555555-5555-4555-8555-555555555555';
 const nickname = { publicId: PUBLIC, nickname: '냥대리', updatedAt: NOW };
 const entry = { publicId: PUBLIC, nickname: '냥대리', score: 123, rank: 1, achievedAt: NOW, isMe: true };
 
@@ -32,7 +34,7 @@ function initialCheckpoint(): RunCheckpoint {
   };
 }
 
-function harness(options: { repository?: Partial<RankingRepository>; auth?: Partial<AuthService>; checkpoint?: RunCheckpoint } = {}) {
+function harness(options: { repository?: Partial<RankingRepository>; auth?: Partial<AuthService>; checkpoint?: RunCheckpoint; legacyKernels?: typeof legacyKernels } = {}) {
   const calls: { method: string; args: unknown[] }[] = [];
   const checkpoint = options.checkpoint ?? initialCheckpoint();
   const record = (method: string, ...args: unknown[]) => calls.push({ method, args });
@@ -65,7 +67,7 @@ function harness(options: { repository?: Partial<RankingRepository>; auth?: Part
   };
   const handler = createHandler({
     admin: {} as SupabaseClient, allowedOrigins: [ORIGIN], rulesVersion: RULES_VERSION,
-    rateLimitSalt: 'unit-test-only-salt-never-a-deployed-secret', repository, auth,
+    rateLimitSalt: 'unit-test-only-salt-never-a-deployed-secret', repository, auth, legacyKernels: options.legacyKernels,
   });
   const request = (path: string, method = 'GET', body?: unknown, token: string | null = 'valid', headers: Record<string, string> = {}) => {
     const values: Record<string, string> = { ...headers };
@@ -77,6 +79,48 @@ function harness(options: { repository?: Partial<RankingRepository>; auth?: Part
   };
   return { handler, request, calls, checkpoint };
 }
+
+Deno.test('revive route derives the child only from my finalized first fall, never client scores', async () => {
+  const parent = initialCheckpoint();
+  while (parent.state.screen === 'playing') parent.state = transition(parent.state, {
+    type: 'TICK', dt: BALANCE.fixedDt, input: { left: false, right: true },
+  }, FLAGS).state;
+  parent.status = 'finalized';
+  const h = harness({ checkpoint: parent, repository: {
+    async startRevivedRun(id, runId, state) {
+      assert.equal(id, USER); assert.equal(runId, RUN);
+      assert.equal(state.run!.distanceM, parent.state.run!.distanceM);
+      assert.equal(state.run!.stepIndex, 0); assert.equal(state.run!.reviveUsed, true);
+      return { ...parent, runId: CHILD, state, status: 'active', parentRunId: RUN };
+    },
+  } });
+  const response = await h.request('/runs/revive', 'POST', { runId: RUN });
+  assert.equal(response.status, 200);
+  const value = await response.json();
+  assert.equal(value.runId, CHILD); assert.equal(value.initialState.run.protectionSeconds, 1.5);
+  assert.equal((await h.request('/runs/revive', 'POST', { runId: RUN, score: 999 })).status, 400);
+  parent.userId = OTHER;
+  assert.equal((await h.request('/runs/revive', 'POST', { runId: RUN })).status, 403);
+  parent.userId = USER; parent.state.run!.reviveUsed = true;
+  assert.equal((await h.request('/runs/revive', 'POST', { runId: RUN })).status, 422);
+});
+
+Deno.test('published old clients retain challenges and replay their original physics', async () => {
+  const version = 'nyang-v1-bc732af6f2a7ea66';
+  const kernel = legacyKernels[version];
+  const checkpoint = initialCheckpoint(); checkpoint.rulesVersion = version;
+  checkpoint.state.run = { ...checkpoint.state.run!, distanceM: 70, elapsedSeconds: 60, hasCoffee: true, nextEventAt: 100 };
+  const h = harness({ checkpoint, legacyKernels });
+  assert.equal((await h.request('/runs', 'POST', { rulesVersion: version })).status, 200);
+  const response = await h.request('/runs/chunks', 'POST', { runId: RUN, seq: 0, spans: [{ direction: 0, ticks: 10 }] });
+  assert.equal(response.status, 200);
+  let expected = checkpoint.state;
+  for (let i = 0; i < 10; i++) expected = kernel.transition(expected, {
+    type: 'TICK', dt: BALANCE.fixedDt, input: { left: false, right: false },
+  }, FLAGS).state;
+  const committed = h.calls.find(call => call.method === 'commitChunk')!.args[4];
+  assert.deepEqual(committed, expected);
+});
 
 Deno.test('anonymous leaderboard read never creates an identity and caches privately', async () => {
   const h = harness();
