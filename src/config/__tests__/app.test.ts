@@ -76,4 +76,21 @@ describe('Expo configuration', () => {
       },
     ]);
   });
+
+  it('accepts a canonical GitHub build number and rejects invalid Apple versions', () => {
+    const original = process.env.IOS_BUILD_NUMBER;
+    try {
+      for (const value of ['101', '9999']) {
+        process.env.IOS_BUILD_NUMBER = value;
+        jest.isolateModules(() => expect(require('../../../app.config').default.ios.buildNumber).toBe(value));
+      }
+      for (const value of ['', '0', '01', '10000', '1.2', '7\n']) {
+        process.env.IOS_BUILD_NUMBER = value;
+        expect(() => jest.isolateModules(() => require('../../../app.config'))).toThrow('IOS_BUILD_NUMBER');
+      }
+    } finally {
+      if (original === undefined) delete process.env.IOS_BUILD_NUMBER;
+      else process.env.IOS_BUILD_NUMBER = original;
+    }
+  });
 });

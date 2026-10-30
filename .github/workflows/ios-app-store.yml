@@ -1,0 +1,94 @@
+name: Build iOS without an Expo account
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Unsigned compilation check or signed Apple upload
+        type: choice
+        options: [unsigned-archive, app-store]
+        default: unsigned-archive
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-release
+  cancel-in-progress: false
+
+jobs:
+  ios:
+    if: github.ref == 'refs/heads/main'
+    runs-on: macos-26
+    timeout-minutes: 75
+    env:
+      CI: '1'
+      EXPO_NO_DOTENV: '1'
+      EXPO_NO_TELEMETRY: '1'
+      EXPO_PUBLIC_SUPABASE_URL: ${{ vars.EXPO_PUBLIC_SUPABASE_URL }}
+      EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+      EXPO_PUBLIC_ENABLE_MOCK_AD: 'true'
+      EXPO_PUBLIC_REPLAY_DIAGNOSTICS: 'false'
+      RELEASE_MODE: ${{ inputs.mode }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Select Xcode 26.6
+        run: |
+          sudo xcode-select --switch /Applications/Xcode_26.6.app/Contents/Developer
+          xcodebuild -version
+      - name: Assign unique build number
+        run: |
+          number=$((100 + GITHUB_RUN_NUMBER))
+          test "$number" -le 9999
+          echo "IOS_BUILD_NUMBER=$number" >> "$GITHUB_ENV"
+      - name: Validate release configuration
+        run: node scripts/ios-release.mjs preflight
+      - run: npm ci
+      - name: Validate committed source
+        run: |
+          npm run typecheck
+          npm run ranked:check
+          npm run test:release
+          node --test scripts/ios-release.test.mjs
+      - name: Generate native Xcode project without an Expo login
+        run: |
+          npx --no-install expo prebuild --platform ios --no-install
+          pod install --project-directory=ios
+      - name: Build unsigned archive
+        if: inputs.mode == 'unsigned-archive'
+        run: bash scripts/ios-release.sh
+      - name: Build, sign and upload to Apple
+        if: inputs.mode == 'app-store'
+        env:
+          APPLE_SIGNING_CERTIFICATE_P12: ${{ secrets.APPLE_SIGNING_CERTIFICATE_P12 }}
+          APPLE_SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_SIGNING_CERTIFICATE_PASSWORD }}
+          APPLE_PROVISIONING_PROFILE: ${{ secrets.APPLE_PROVISIONING_PROFILE }}
+          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        run: bash scripts/ios-release.sh
+      - name: Keep unsigned archive for compilation evidence
+        if: success() && inputs.mode == 'unsigned-archive'
+        uses: actions/upload-artifact@v4
+        with:
+          name: unsigned-ios-${{ env.IOS_BUILD_NUMBER }}
+          path: |
+            ${{ runner.temp }}/nyang-build/Game.xcarchive
+            ${{ runner.temp }}/nyang-build/receipt.json
+          retention-days: 3
+      - name: Keep signed app and upload receipt
+        if: success() && inputs.mode == 'app-store'
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-store-ios-${{ env.IOS_BUILD_NUMBER }}
+          path: |
+            ${{ runner.temp }}/nyang-build/export/*.ipa
+            ${{ runner.temp }}/nyang-build/receipt.json
+          retention-days: 7

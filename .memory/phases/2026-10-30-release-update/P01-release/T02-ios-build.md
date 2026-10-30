@@ -20,6 +20,9 @@
 ## Validation
 - npm.cmd run typecheck; npm.cmd run test:release; 필요시version관련Jest.
 - EAS정확한project/bundle/version/buildNumber 및클라우드완료; ASC실제처리/빌드조회. mac없는 환경에서도클라우드Mac서명과ExpoGo를구별.
+## Source preparation checkpoint
+- EAS steps superseded by Updated Decision. version1.0.1/GitHubworkflow/임시서명스크립트구현. typecheck/release11/config23/서명가드4/YAML/셸문법통과. Apple자료GitHub등록·서명빌드·업로드는아직안함.
+- 빌드소스를고정하기위한source-only커밋을먼저만든다. Task는실제서명빌드·업로드전까지in_progress. 기존dirty파일제외.
 ## Acceptance
 - [ ] 서명빌드완료/정확한버전·식별자
 - [ ] 정확한buildId Apple업로드완료
