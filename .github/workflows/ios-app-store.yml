@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: ios-release
@@ -58,13 +59,31 @@ jobs:
           npm run test:release
           node --test scripts/ios-release.test.mjs
       - name: Generate native Xcode project without an Expo login
+        if: inputs.mode == 'unsigned-archive'
         run: |
           npx --no-install expo prebuild --platform ios --no-install
           pod install --project-directory=ios
+      - name: Verify pinned archive provenance and unchanged app source
+        if: inputs.mode == 'app-store'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node scripts/ios-release.mjs verify-pinned-archive
+          git fetch --no-tags --depth=1 origin d8d85f77d723f072a041c7b8d80c8f92b8c96caf
+          git diff --exit-code d8d85f77d723f072a041c7b8d80c8f92b8c96caf HEAD -- App.tsx app.config.ts package.json package-lock.json index.ts babel.config.js src assets
+      - name: Download verified compiled archive
+        if: inputs.mode == 'app-store'
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: '12958302479'
+          run-id: '41012370017'
+          github-token: ${{ github.token }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/nyang-build
       - name: Build unsigned archive
         if: inputs.mode == 'unsigned-archive'
         run: bash scripts/ios-release.sh
-      - name: Build, sign and upload to Apple
+      - name: Sign verified archive and upload to Apple
         if: inputs.mode == 'app-store'
         env:
           APPLE_SIGNING_CERTIFICATE_P12: ${{ secrets.APPLE_SIGNING_CERTIFICATE_P12 }}

@@ -31,13 +31,6 @@ if [[ "$RELEASE_MODE" == 'app-store' ]]; then
   node scripts/ios-release.mjs credentials
 fi
 
-# The preceding workflow step generated these sources without signing secrets.
-project_name=$(node scripts/ios-release.mjs project)
-workspace="ios/$project_name.xcworkspace"
-scheme="$project_name"
-archive_args=(-workspace "$workspace" -scheme "$scheme" -configuration Release
-  -destination 'generic/platform=iOS' -archivePath "$build_dir/Game.xcarchive")
-
 if [[ "$RELEASE_MODE" == 'app-store' ]]; then
   keychain_path="$signing_dir/signing.keychain-db"
   keychain_password=$(openssl rand -hex 32)
@@ -68,28 +61,58 @@ PY
   test ! -e "$profile_destination"
   installed_profile="$profile_destination"
   cp "$signing_dir/profile.mobileprovision" "$installed_profile"
-  export PROFILE_UUID="$profile_uuid"
-  # Set signing on the application target only, so CocoaPods targets do not inherit a profile.
-  ruby - "$project_name" <<'RUBY'
-require 'xcodeproj'
-project = Xcodeproj::Project.open("ios/#{ARGV[0]}.xcodeproj")
-apps = project.targets.select { |t| t.product_type == 'com.apple.product-type.application' }
-raise 'Expected one application target' unless apps.length == 1
-apps.first.build_configurations.each do |configuration|
-  configuration.build_settings['CODE_SIGN_STYLE'] = 'Manual'
-  configuration.build_settings['DEVELOPMENT_TEAM'] = 'S9RLQ8474U'
-  configuration.build_settings['CODE_SIGN_IDENTITY'] = ENV.fetch('SIGNING_FINGERPRINT')
-  configuration.build_settings['PROVISIONING_PROFILE_SPECIFIER'] = ENV.fetch('PROFILE_UUID')
-end
-project.save
-RUBY
-  xcodebuild "${archive_args[@]}" archive
+  # Reuse only the pinned compiled game; GitHub has already verified its origin.
+  python3 - "$build_dir" "$signing_dir" <<'PY'
+import os, pathlib, plistlib, json, shutil, sys
+root, signing = map(pathlib.Path, sys.argv[1:])
+receipt = json.loads((root / 'receipt.json').read_text())
+if receipt.get('sourceCommit') != os.environ['ARCHIVE_SOURCE_SHA'] or receipt.get('mode') != 'unsigned-archive' or receipt.get('buildNumber') != '101':
+    raise SystemExit('Unexpected compiled archive receipt')
+apps = list((root / 'Game.xcarchive/Products/Applications').glob('*.app'))
+if len(apps) != 1: raise SystemExit('Expected one compiled app')
+app = apps[0]
+info_path = app / 'Info.plist'
+with info_path.open('rb') as stream: info = plistlib.load(stream)
+if (info.get('CFBundleIdentifier'), info.get('CFBundleShortVersionString'), info.get('CFBundleVersion')) != ('com.mocca.closecallnyang', '1.0.1', '101'):
+    raise SystemExit('Unexpected compiled app identity')
+info['CFBundleVersion'] = os.environ['IOS_BUILD_NUMBER']
+with info_path.open('wb') as stream: plistlib.dump(info, stream)
+for candidate in app.rglob('Info.plist'):
+    try:
+        with candidate.open('rb') as stream: bundle = plistlib.load(stream)
+    except (ValueError, plistlib.InvalidFileException): continue
+    executable = bundle.get('CFBundleExecutable')
+    if executable:
+        if pathlib.Path(executable).name != executable: raise SystemExit('Unexpected executable path')
+        binary = candidate.parent / executable
+        if binary.is_file(): binary.chmod(0o755)
+for binary in app.rglob('*.dylib'): binary.chmod(0o755)
+with (signing / 'profile.plist').open('rb') as stream: profile = plistlib.load(stream)
+with (signing / 'entitlements.plist').open('wb') as stream: plistlib.dump(profile['Entitlements'], stream)
+(root / 'ipa-staging/Payload').mkdir(parents=True, exist_ok=True)
+shutil.copytree(app, root / 'ipa-staging/Payload' / app.name, symlinks=True)
+PY
   validate_archive
-  xcodebuild -exportArchive -archivePath "$build_dir/Game.xcarchive" -exportOptionsPlist "$build_dir/ExportOptions.plist" -exportPath "$build_dir/export"
+  mkdir -p "$build_dir/export"
+  ipa_path="$build_dir/export/Nyang.ipa"
+  (cd "$build_dir/ipa-staging" && /usr/bin/zip --symlinks -q -r "$ipa_path" Payload)
+  FASTLANE_SKIP_UPDATE_CHECK=1 FASTLANE_OPT_OUT_USAGE=1 FASTLANE_DISABLE_COLORS=1 \
+    fastlane run resign ipa:"$ipa_path" signing_identity:"$SIGNING_FINGERPRINT" \
+      provisioning_profile:"$signing_dir/profile.mobileprovision" entitlements:"$signing_dir/entitlements.plist" \
+      bundle_version:"$IOS_BUILD_NUMBER" keychain_path:"$keychain_path"
+  # The freshly signed payload is verified before sending it to Apple.
+  mkdir -p "$build_dir/signed-check"
+  /usr/bin/ditto -x -k "$ipa_path" "$build_dir/signed-check"
+  signed_apps=("$build_dir/signed-check/Payload/"*.app)
+  test "${#signed_apps[@]}" -eq 1
+  codesign --verify --deep --strict "${signed_apps[0]}"
   ipa_files=("$build_dir/export/"*.ipa)
   test "${#ipa_files[@]}" -eq 1 && test -f "${ipa_files[0]}"
   API_PRIVATE_KEYS_DIR="$signing_dir" xcrun altool --upload-app --type ios --file "${ipa_files[0]}" --apiKey "$APP_STORE_CONNECT_KEY_ID" --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID"
 else
+  project_name=$(node scripts/ios-release.mjs project)
+  archive_args=(-workspace "ios/$project_name.xcworkspace" -scheme "$project_name" -configuration Release
+    -destination 'generic/platform=iOS' -archivePath "$build_dir/Game.xcarchive")
   xcodebuild "${archive_args[@]}" archive CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=''
   validate_archive
 fi

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
-import { validateRelease, validateProfile, exportOptions, BUNDLE, TEAM } from './ios-release.mjs';
+import { validateRelease, validateProfile, exportOptions, validatePinnedArchive, ARCHIVE_SOURCE, BUNDLE, TEAM } from './ios-release.mjs';
 
 const env={RELEASE_MODE:'unsigned-archive',IOS_BUILD_NUMBER:'101',
   EXPO_PUBLIC_SUPABASE_URL:'https://fgojrxmpxpzdiwsktjsx.supabase.co',EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY:'sb_publishable_fixture123',
@@ -36,4 +36,11 @@ test('workflow is dispatch-only, main-only and does not use EAS, Expo tokens or 
   assert.doesNotMatch(workflow,/EXPO_TOKEN|eas (build|submit)|write-all|\.p8\s*$/m);
   assert.match(workflow,/persist-credentials: false/);
   assert.doesNotMatch(workflow,/path:.*nyang-signing/);
+});
+test('rejects substituted, expired, failed or differently sourced compiled artifacts',()=>{
+  const run={id:41012370017,head_sha:ARCHIVE_SOURCE,head_branch:'main',event:'workflow_dispatch',conclusion:'success'};
+  const artifact={id:12958302479,name:'unsigned-ios-101',expired:false,workflow_run:{head_sha:ARCHIVE_SOURCE},digest:'sha256:f9d368f02cacb158b15b81fa3a570b7ac123d2253060412e098d6f56a88c135a'};
+  assert.equal(validatePinnedArchive(run,artifact),ARCHIVE_SOURCE);
+  for(const patch of [{head_sha:'other'},{head_branch:'untrusted'},{conclusion:'failure'},{event:'pull_request'}]) assert.throws(()=>validatePinnedArchive({...run,...patch},artifact));
+  for(const patch of [{id:1},{digest:'wrong'},{expired:true},{workflow_run:{head_sha:'other'}}]) assert.throws(()=>validatePinnedArchive(run,{...artifact,...patch}));
 });

@@ -1,10 +1,17 @@
-import { readFile, writeFile, readdir } from 'node:fs/promises';
+import { readFile, writeFile, readdir, appendFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash, createPrivateKey } from 'node:crypto';
 
 export const TEAM = 'S9RLQ8474U';
 export const BUNDLE = 'com.mocca.closecallnyang';
+export const ARCHIVE_SOURCE = 'd8d85f77d723f072a041c7b8d80c8f92b8c96caf';
+export function validatePinnedArchive(run, artifact) {
+  if(run.id!==41012370017||run.head_sha!==ARCHIVE_SOURCE||run.head_branch!=='main'||run.event!=='workflow_dispatch'||run.conclusion!=='success'||
+    artifact.id!==12958302479||artifact.expired||artifact.name!=='unsigned-ios-101'||artifact.workflow_run?.head_sha!==ARCHIVE_SOURCE||
+    artifact.digest!=='sha256:f9d368f02cacb158b15b81fa3a570b7ac123d2253060412e098d6f56a88c135a') throw new Error('Expected immutable successful app archive');
+  return ARCHIVE_SOURCE;
+}
 export const signingNames = ['APPLE_SIGNING_CERTIFICATE_P12', 'APPLE_SIGNING_CERTIFICATE_PASSWORD',
   'APPLE_PROVISIONING_PROFILE', 'APP_STORE_CONNECT_PRIVATE_KEY', 'APP_STORE_CONNECT_KEY_ID', 'APP_STORE_CONNECT_ISSUER_ID'];
 
@@ -45,6 +52,16 @@ export function exportOptions(profile, fingerprint) {
 async function main(command) {
   const env = process.env;
   if (command === 'preflight') { console.log(JSON.stringify(validateRelease(env))); return; }
+  if (command === 'verify-pinned-archive') {
+    const get=async path=>{
+      const response=await fetch(`https://api.github.com/repos/JEONG-INSOO/close-call-nyang/${path}`,{
+        headers:{Authorization:`Bearer ${env.GH_TOKEN}`,Accept:'application/vnd.github+json'},signal:AbortSignal.timeout(20000)});
+      if(!response.ok)throw new Error('Expected accessible pinned archive');return response.json();
+    };
+    const source=validatePinnedArchive(await get('actions/runs/41012370017'),await get('actions/artifacts/12958302479'));
+    await appendFile(env.GITHUB_ENV,`ARCHIVE_SOURCE_SHA=${source}\n`);
+    console.log('Pinned successful main archive ID, digest and source verified.');return;
+  }
   const temp = env.RUNNER_TEMP;
   if (!temp || process.platform !== 'darwin') throw new Error('This command runs only on a hosted Mac');
   const root = resolve(temp,'nyang-build');
@@ -67,7 +84,7 @@ async function main(command) {
     await writeFile(resolve(root,'ExportOptions.plist'),exportOptions(profile,env.SIGNING_FINGERPRINT));
     console.log(validateProfile(profile));
   } else if (command === 'receipt') {
-    await writeFile(resolve(root,'receipt.json'),JSON.stringify({sourceCommit:env.GITHUB_SHA,version:'1.0.1',
+    await writeFile(resolve(root,'receipt.json'),JSON.stringify({sourceCommit:env.ARCHIVE_SOURCE_SHA??env.GITHUB_SHA,workflowCommit:env.GITHUB_SHA,version:'1.0.1',
       buildNumber:env.IOS_BUILD_NUMBER,mode:env.RELEASE_MODE,team:TEAM,bundle:BUNDLE,
       appleUploadCompleted:env.RELEASE_MODE==='app-store',reviewSubmitted:false,observedAt:new Date().toISOString()},null,2));
   } else throw new Error('Unknown command');
