@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-30",
+  "projectRef": "fgojrxmpxpzdiwsktjsx",
+  "publicId": "ef99e46b-ed9e-432d-a2a6-e7e67e8f7480",
+  "nickname": "오똥비",
+  "rulesVersion": "nyang-v1-bc732af6f2a7ea66",
+  "previousScore": 82,
+  "correctedScore": 131,
+  "reason": "Owner-requested correction for reported ad-revived play",
+  "serverReplayVerified131": false,
+  "databaseVerified": true,
+  "publicBoardVerified": true,
+  "publicRankAfterCorrection": 3,
+  "scope": "One existing best-score row only; no fabricated input replay or run"
+}
